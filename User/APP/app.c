@@ -228,17 +228,17 @@ void TmrCallback (OS_TMR *p_tmr, void *p_arg) //软件定时器MyTmr的回调函数
 
 static  void  AppTaskTmr ( void * p_arg )
 {
-	OS_ERR      err;
-	OS_TMR      my_tmr;   //声明软件定时器对象
+    OS_ERR      err;
+    OS_TMR      my_tmr;   //声明软件定时器对象
     u8 para[5] = {0x3C,0x01,0x41,0x3E,0x00};
     CPU_SR_ALLOC();      //使用到临界段（在关/开中断时）时必需该宏，该宏声明和定义一个局部变
                                          //量，用于保存关中断前的 CPU 状态寄存器 SR（临界段关中断只需保存SR）
                                          //，开中断时将该值还原.
 	(void)p_arg;
 
-
-  /* 创建软件定时器 */
-  OSTmrCreate ((OS_TMR              *)&my_tmr,             //软件定时器对象
+    macLED1_ON();
+    /* 创建软件定时器 */
+    OSTmrCreate ((OS_TMR              *)&my_tmr,             //软件定时器对象
                (CPU_CHAR            *)"MySoftTimer",       //命名软件定时器
                (OS_TICK              )20,                  //定时器初始值，依10Hz时基计算，即为1s
                (OS_TICK              )20,                  //定时器周期重载值，依10Hz时基计算，即为1s
@@ -247,8 +247,8 @@ static  void  AppTaskTmr ( void * p_arg )
                (void                *)"Timer Over!",       //传递实参给回调函数
                (OS_ERR              *)err);                //返回错误类型
 							 
-	/* 启动软件定时器 */						 
-  OSTmrStart ((OS_TMR   *)&my_tmr, //软件定时器对象
+    /* 启动软件定时器 */						 
+    OSTmrStart ((OS_TMR   *)&my_tmr, //软件定时器对象
               (OS_ERR   *)err);    //返回错误类型
 					 
 	ts_start = OS_TS_GET();                       //获取定时前时间戳
@@ -259,7 +259,7 @@ static  void  AppTaskTmr ( void * p_arg )
 	while (DEF_TRUE) 
         {                            //任务体，通常写成一个死循环
 
-		OSTimeDly ( 1000, OS_OPT_TIME_DLY, & err ); //不断阻塞该任务
+            OSTimeDly ( 1000, OS_OPT_TIME_DLY, & err ); //不断阻塞该任务
 
         }
 	

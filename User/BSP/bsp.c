@@ -164,6 +164,7 @@ void  BSP_Init (void)
 	
 	USARTx_Config ();   //≥ı ºªØ USART1
 	
+	LCD_Init ();
 }
 
 

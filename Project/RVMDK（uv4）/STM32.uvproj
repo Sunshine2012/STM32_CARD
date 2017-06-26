@@ -351,7 +351,7 @@
               <MiscControls></MiscControls>
               <Define>STM32F10X_HD,USE_STDPERIPH_DRIVER</Define>
               <Undefine></Undefine>
-              <IncludePath>..\..\Libraries\CMSIS;..\..\Libraries\FWlib\inc;..\..\User;..\..\User\APP;..\..\User\BSP;..\..\User\BSP\led;..\..\User\uC-CPU;..\..\User\uC-CPU\ARM-Cortex-M3\RealView;..\..\User\uC-LIB;..\..\User\uCOS-III\Source;..\..\User\uCOS-III\Ports\ARM-Cortex-M3\Generic\RealView;..\..\User\BSP\usart</IncludePath>
+              <IncludePath>..\..\Libraries\CMSIS;..\..\Libraries\FWlib\inc;..\..\User;..\..\User\APP;..\..\User\BSP;..\..\User\BSP\led;..\..\User\BSP\usart;..\..\User\uC-CPU;..\..\User\uC-CPU\ARM-Cortex-M3\RealView;..\..\User\uC-LIB;..\..\User\uCOS-III\Source;..\..\User\uCOS-III\Ports\ARM-Cortex-M3\Generic\RealView;..\..\User\BSP\lcd</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -586,6 +586,31 @@
               <FileName>bsp_usart1.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\..\User\BSP\usart\bsp_usart1.c</FilePath>
+            </File>
+            <File>
+              <FileName>bsp_LCD_I2C.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\User\BSP\lcd\bsp_LCD_I2C.c</FilePath>
+            </File>
+            <File>
+              <FileName>bsp_LCD_I2C.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\..\User\BSP\lcd\bsp_LCD_I2C.h</FilePath>
+            </File>
+            <File>
+              <FileName>codetab.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\..\User\BSP\lcd\codetab.h</FilePath>
+            </File>
+            <File>
+              <FileName>delay.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\User\BSP\lcd\delay.c</FilePath>
+            </File>
+            <File>
+              <FileName>delay.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\..\User\BSP\lcd\delay.h</FilePath>
             </File>
           </Files>
         </Group>
