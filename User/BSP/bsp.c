@@ -162,9 +162,10 @@ void  BSP_Init (void)
 {
 	LED_Init ();        //初始化 LED
 	
-	USARTx_Config ();   //初始化 USART1
+	USARTx_Config ();   //初始化 USART
 	
-	LCD_Init ();
+    I2C_Configuration();    // 初始化IIC
+
 }
 
 

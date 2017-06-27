@@ -33,7 +33,7 @@
 
 
 
-
+#include <includes.h>
 #include "bsp_LCD_I2C.h"
 #include "delay.h"
 #include "codetab.h"
@@ -52,7 +52,13 @@ void I2C_Configuration(void)
 	RCC_APB1PeriphClockCmd(RCC_APB1Periph_I2C1,ENABLE);
 	RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOB,ENABLE);
 
-	/*STM32F103C8T6芯片的硬件I2C: PB6 -- SCL; PB7 -- SDA */
+    /* 配置 RESET 引脚 */
+	GPIO_InitStructure.GPIO_Pin = macOLED_RESET_GPIO_PIN;
+	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;
+	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+	GPIO_Init ( macOLED_RESET_GPIO_PORT, & GPIO_InitStructure );
+
+    /*STM32F103RET6芯片的硬件I2C: PB6 -- SCL; PB7 -- SDA */
 	GPIO_InitStructure.GPIO_Pin =  GPIO_Pin_6 | GPIO_Pin_7;
 	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
 	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF_OD;//I2C必须开漏输出
@@ -68,6 +74,7 @@ void I2C_Configuration(void)
 
 	I2C_Cmd(I2C1, ENABLE);
 	I2C_Init(I2C1, &I2C_InitStructure);
+    I2C_AcknowledgeConfig(I2C1, ENABLE);
 }
 
 
@@ -79,7 +86,7 @@ void I2C_Configuration(void)
   */
 void I2C_WriteByte(uint8_t addr,uint8_t data)
 {
-  while(I2C_GetFlagStatus(I2C1, I2C_FLAG_BUSY));
+    while(I2C_GetFlagStatus(I2C1, I2C_FLAG_BUSY));
 	
 	I2C_GenerateSTART(I2C1, ENABLE);//开启I2C1
 	while(!I2C_CheckEvent(I2C1, I2C_EVENT_MASTER_MODE_SELECT));/*EV5,主模式*/
@@ -126,36 +133,23 @@ void WriteDat(unsigned char I2C_Data)//写数据
   */
 void OLED_Init(void)
 {
-	DelayMs(100); //这里的延时很重要
-	
-	WriteCmd(0xAE); //display off
-	WriteCmd(0x20);	//Set Memory Addressing Mode	
-	WriteCmd(0x10);	//00,Horizontal Addressing Mode;01,Vertical Addressing Mode;10,Page Addressing Mode (RESET);11,Invalid
-	WriteCmd(0xb0);	//Set Page Start Address for Page Addressing Mode,0-7
-	WriteCmd(0xc8);	//Set COM Output Scan Direction
-	WriteCmd(0x00); //---set low column address
-	WriteCmd(0x10); //---set high column address
-	WriteCmd(0x40); //--set start line address
-	WriteCmd(0x81); //--set contrast control register
-	WriteCmd(0xff); //亮度调节 0x00~0xff
-	WriteCmd(0xa1); //--set segment re-map 0 to 127
-	WriteCmd(0xa6); //--set normal display
-	WriteCmd(0xa8); //--set multiplex ratio(1 to 64)
-	WriteCmd(0x3F); //
-	WriteCmd(0xa4); //0xa4,Output follows RAM content;0xa5,Output ignores RAM content
-	WriteCmd(0xd3); //-set display offset
-	WriteCmd(0x00); //-not offset
-	WriteCmd(0xd5); //--set display clock divide ratio/oscillator frequency
-	WriteCmd(0xf0); //--set divide ratio
-	WriteCmd(0xd9); //--set pre-charge period
-	WriteCmd(0x22); //
-	WriteCmd(0xda); //--set com pins hardware configuration
-	WriteCmd(0x12);
-	WriteCmd(0xdb); //--set vcomh
-	WriteCmd(0x20); //0x20,0.77xVcc
-	WriteCmd(0x8d); //--set DC-DC enable
-	WriteCmd(0x14); //
-	WriteCmd(0xaf); //--turn on oled panel
+    OS_ERR      err;
+    macOLED_RESET_ON();
+    OSTimeDly ( 1000, OS_OPT_TIME_DLY, & err ); // 延时
+	macOLED_RESET_OFF();
+    OSTimeDly ( 1000, OS_OPT_TIME_DLY, & err ); // 延时
+
+    WriteCmd(0x3b); //
+    WriteCmd(0x03); //
+
+    WriteCmd(0x38); //
+    WriteCmd(0x05); //
+    WriteCmd(0x0c); //
+
+    WriteCmd(0x39); //
+    WriteCmd(0x08); //
+    WriteCmd(0x10); //
+    WriteCmd(0xff); //
 }
 
 
@@ -167,9 +161,12 @@ void OLED_Init(void)
   */
 void OLED_SetPos(unsigned char x, unsigned char y) //设置起始点坐标
 { 
-	WriteCmd(0xb0+y);
-	WriteCmd(((x&0xf0)>>4)|0x10);
-	WriteCmd((x&0x0f)|0x01);
+    WriteCmd(0x38);
+    WriteCmd(0x40 + y);
+    x = x + 4;
+    WriteCmd(( x & 0x0f ) | 0xe0 );
+    WriteCmd((( x & 0xf0 ) >> 4 )| 0xf0 );
+
 }
 
  /**
@@ -182,10 +179,10 @@ void OLED_Fill(unsigned char fill_Data)//全屏填充
 	unsigned char m,n;
 	for(m=0;m<8;m++)
 	{
-		WriteCmd(0xb0+m);		//page0-page1
-		WriteCmd(0x00);		//low column start address
-		WriteCmd(0x10);		//high column start address
-		for(n=0;n<128;n++)
+		WriteCmd(0x40+m);		//page0-page1
+		WriteCmd(0xe0 | 0x03);		//low column start address
+		WriteCmd(0xf0);		//high column start address
+		for(n=0;n<129;n++)
 			{
 				WriteDat(fill_Data);
 			}
@@ -318,16 +315,16 @@ void OLED_DrawBMP(unsigned char x0,unsigned char y0,unsigned char x1,unsigned ch
 	unsigned int j=0;
 	unsigned char x,y;
 
-  if(y1%8==0)
-		y = y1/8;
-  else
-		y = y1/8 + 1;
-	for(y=y0;y<y1;y++)
-	{
-		OLED_SetPos(x0,y);
-    for(x=x0;x<x1;x++)
-		{
-			WriteDat(BMP[j++]);
-		}
-	}
+    if(y1%8==0)
+        y = y1/8;
+    else
+        y = y1/8 + 1;
+    for(y=y0;y<y1;y++)
+    {
+        OLED_SetPos(x0,y);
+        for(x=x0;x<x1;x++)
+            {
+                WriteDat(BMP[j++]);
+            }
+    }
 }

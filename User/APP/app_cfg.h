@@ -51,7 +51,7 @@
 
 #define  APP_TASK_TMR_PRIO                          3
 
-
+#define  APP_TASK_OLED_PRIO                         4            // OLED任务优先级   
 /*
 *********************************************************************************************************
 *                                            TASK STACK SIZES
@@ -63,7 +63,7 @@
 
 #define  APP_TASK_TMR_STK_SIZE                      512   
 
-
+#define  APP_TASK_OLED_STK_SIZE                      512        
 /*
 *********************************************************************************************************
 *                                    BSP CONFIGURATION: RS-232
