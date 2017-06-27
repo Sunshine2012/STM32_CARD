@@ -25,7 +25,7 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "stm32f10x_it.h"
-
+#include "includes.h"
 /** @addtogroup STM32F10x_StdPeriph_Template
   * @{
   */
@@ -144,6 +144,60 @@ void SysTick_Handler(void)
 /*  available peripheral interrupt handler's name please refer to the startup */
 /*  file (startup_stm32f10x_xx.s).                                            */
 /******************************************************************************/
+uint16_t rx_buf[1024];
+uint16_t num = 0;
+
+// 串口中断服务函数
+// 把接收到的数据存在一个数组缓冲区里面，当接收到的的值等于0XFF时，把值返回
+void macUSART1_IRQHandler(void)
+{
+    CPU_SR_ALLOC();      //使用到临界段（在关/开中断时）时必需该宏，该宏声明和定义一个局部变
+                                             //量，用于保存关中断前的 CPU 状态寄存器 SR（临界段关中断只需保存SR）
+                                             //，开中断时将该值还原。
+    OS_CRITICAL_ENTER();                 //进入临界段，不希望下面串口打印遭到中断
+    if(USART_GetITStatus(macUSART1,USART_IT_RXNE)!=RESET)
+    {
+        rx_buf[num] = USART_ReceiveData(macUSART1);
+
+        // 当接收到的值等于0XFF时，把值发送回去
+        //if( rx_buf[num] == 0xff )
+        {
+            USART_SendData(macUSART1,rx_buf[num]);
+        }
+        // 当值不等时候，则继续接收下一个
+        //else
+        //{
+            //num ++;
+        //}
+    }
+    OS_CRITICAL_EXIT();
+}
+
+// 串口中断服务函数
+// 把接收到的数据存在一个数组缓冲区里面，当接收到的的值等于0XFF时，把值返回
+void mac4USART_IRQHandler(void)
+{
+    CPU_SR_ALLOC();      //使用到临界段（在关/开中断时）时必需该宏，该宏声明和定义一个局部变
+                                             //量，用于保存关中断前的 CPU 状态寄存器 SR（临界段关中断只需保存SR）
+                                             //，开中断时将该值还原。
+    OS_CRITICAL_ENTER();                 //进入临界段，不希望下面串口打印遭到中断
+    if(USART_GetITStatus(mac4USART,USART_IT_RXNE)!=RESET)
+    {
+        rx_buf[num] = USART_ReceiveData(mac4USART);
+
+        // 当接收到的值等于0XFF时，把值发送回去
+        if( rx_buf[num] != 0xff )
+        {
+            USART4_SendByte(mac4USART,rx_buf[num]);
+        }
+        // 当值不等时候，则继续接收下一个
+        else
+        {
+            num ++;
+        }
+    }
+    OS_CRITICAL_EXIT();
+}
 
 /**
   * @brief  This function handles PPP interrupt request.

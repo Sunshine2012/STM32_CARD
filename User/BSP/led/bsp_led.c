@@ -44,11 +44,11 @@ static void LED_GPIO_Config ( void )
   */
 void LED_Init ( void )
 {
-  LED_GPIO_Config ();
+    LED_GPIO_Config ();
 	
 	macLED1_OFF();
-	macLED2_OFF();
-	macLED3_OFF();
+	//macLED2_OFF();
+	//macLED3_OFF();
 	
 }
 

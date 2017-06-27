@@ -59,6 +59,12 @@ static  OS_TCB   AppTaskStartTCB;                                //任务控制块
 
 static  OS_TCB   AppTaskTmrTCB;
 
+static  OS_TCB   AppTaskOledTCB;
+
+static  OS_TCB   AppTaskWriteFrameTCB;
+
+static  OS_TCB   AppTaskReadFrameTCB;
+
 
 /*
 *********************************************************************************************************
@@ -66,11 +72,15 @@ static  OS_TCB   AppTaskTmrTCB;
 *********************************************************************************************************
 */
 
-static  CPU_STK  AppTaskStartStk[APP_TASK_START_STK_SIZE];       //任务堆栈
+static  CPU_STK  AppTaskStartStk [ APP_TASK_START_STK_SIZE ];       //任务堆栈
 
 static  CPU_STK  AppTaskTmrStk [ APP_TASK_TMR_STK_SIZE ];
 
+static  CPU_STK  AppTaskOLEDStk [ APP_TASK_OLED_STK_SIZE ];
 
+static  CPU_STK  AppTaskWriteFrameStk [ APP_TASK_WRITE_FRAME_STK_SIZE ];
+
+static  CPU_STK  AppTaskReadFrameStk [ APP_TASK_READ_FRAME_STK_SIZE ];
 /*
 *********************************************************************************************************
 *                                         FUNCTION PROTOTYPES
@@ -81,7 +91,9 @@ static  void  AppTaskStart  (void *p_arg);                       //任务函数声明
 
 static  void  AppTaskTmr  ( void * p_arg );
 
+static  void  AppTaskOLED  ( void * p_arg );
 
+extern unsigned char BMP1[];
 /*
 *********************************************************************************************************
 *                                                main()
@@ -164,7 +176,7 @@ static  void  AppTaskStart (void *p_arg)
     CPU_IntDisMeasMaxCurReset();                                //复位（清零）当前最大关中断时间
 
     
-		/* 创建 AppTaskTmr 任务 */
+    /* 创建 AppTaskTmr 任务 */
     OSTaskCreate((OS_TCB     *)&AppTaskTmrTCB,                             //任务控制块地址
                  (CPU_CHAR   *)"App Task Tmr",                             //任务名称
                  (OS_TASK_PTR ) AppTaskTmr,                                //任务函数
@@ -178,10 +190,53 @@ static  void  AppTaskStart (void *p_arg)
                  (void       *) 0,                                          //任务扩展（0表不扩展）
                  (OS_OPT      )(OS_OPT_TASK_STK_CHK | OS_OPT_TASK_STK_CLR), //任务选项
                  (OS_ERR     *)&err);                                       //返回错误类型
-					
+    
+    /* 创建 AppTaskOLED 任务 */
+    OSTaskCreate((OS_TCB     *)&AppTaskOledTCB,                             //任务控制块地址
+                 (CPU_CHAR   *)"OLED_APP",                                  //任务名称
+                 (OS_TASK_PTR ) AppTaskOLED,                                //任务函数
+                 (void       *) 0,                                          //传递给任务函数（形参p_arg）的实参
+                 (OS_PRIO     ) APP_TASK_OLED_PRIO,                         //任务的优先级
+                 (CPU_STK    *)&AppTaskOLEDStk[0],                          //任务堆栈的基地址
+                 (CPU_STK_SIZE) APP_TASK_OLED_STK_SIZE / 10,                //任务堆栈空间剩下1/10时限制其增长
+                 (CPU_STK_SIZE) APP_TASK_OLED_STK_SIZE,                     //任务堆栈空间（单位：sizeof(CPU_STK)）
+                 (OS_MSG_QTY  ) 5u,                                         //任务可接收的最大消息数
+                 (OS_TICK     ) 0u,                                         //任务的时间片节拍数（0表默认值OSCfg_TickRate_Hz/10）
+                 (void       *) 0,                                          //任务扩展（0表不扩展）
+                 (OS_OPT      )(OS_OPT_TASK_STK_CHK | OS_OPT_TASK_STK_CLR), //任务选项
+                 (OS_ERR     *)&err); 				
+    
+    /* 创建 AppTaskWriteFRAME 任务 */
+    OSTaskCreate((OS_TCB     *)&AppTaskWriteFrameTCB,                       //任务控制块地址
+                 (CPU_CHAR   *)"FRAME_APP",                                 //任务名称
+                 (OS_TASK_PTR ) AppTaskWriteFrame,                          //任务函数
+                 (void       *) 0,                                          //传递给任务函数（形参p_arg）的实参
+                 (OS_PRIO     ) APP_TASK_WRITE_FRAME_PRIO,                  //任务的优先级
+                 (CPU_STK    *)&AppTaskWriteFrameStk[0],                    //任务堆栈的基地址
+                 (CPU_STK_SIZE) APP_TASK_WRITE_FRAME_STK_SIZE / 10,         //任务堆栈空间剩下1/10时限制其增长
+                 (CPU_STK_SIZE) APP_TASK_WRITE_FRAME_STK_SIZE,              //任务堆栈空间（单位：sizeof(CPU_STK)）
+                 (OS_MSG_QTY  ) 5u,                                         //任务可接收的最大消息数
+                 (OS_TICK     ) 0u,                                         //任务的时间片节拍数（0表默认值OSCfg_TickRate_Hz/10）
+                 (void       *) 0,                                          //任务扩展（0表不扩展）
+                 (OS_OPT      )(OS_OPT_TASK_STK_CHK | OS_OPT_TASK_STK_CLR), //任务选项
+                 (OS_ERR     *)&err);
+                 
+    /* 创建 AppTaskReadFRAME 任务 */
+    OSTaskCreate((OS_TCB     *)&AppTaskReadFrameTCB,                        //任务控制块地址
+                 (CPU_CHAR   *)"FRAME_APP",                                 //任务名称
+                 (OS_TASK_PTR ) AppTaskReadFrame,                           //任务函数
+                 (void       *) 0,                                          //传递给任务函数（形参p_arg）的实参
+                 (OS_PRIO     ) APP_TASK_READ_FRAME_PRIO,                   //任务的优先级
+                 (CPU_STK    *)&AppTaskReadFrameStk[0],                    //任务堆栈的基地址
+                 (CPU_STK_SIZE) APP_TASK_READ_FRAME_STK_SIZE / 10,         //任务堆栈空间剩下1/10时限制其增长
+                 (CPU_STK_SIZE) APP_TASK_READ_FRAME_STK_SIZE,              //任务堆栈空间（单位：sizeof(CPU_STK)）
+                 (OS_MSG_QTY  ) 5u,                                         //任务可接收的最大消息数
+                 (OS_TICK     ) 0u,                                         //任务的时间片节拍数（0表默认值OSCfg_TickRate_Hz/10）
+                 (void       *) 0,                                          //任务扩展（0表不扩展）
+                 (OS_OPT      )(OS_OPT_TASK_STK_CHK | OS_OPT_TASK_STK_CLR), //任务选项
+                 (OS_ERR     *)&err);
 
-
-		OSTaskDel ( & AppTaskStartTCB, & err );                     //删除起始任务本身，该任务不再运行
+    OSTaskDel ( & AppTaskStartTCB, & err );                     //删除起始任务本身，该任务不再运行
 		
 		
 }
@@ -208,7 +263,7 @@ void TmrCallback (OS_TMR *p_tmr, void *p_arg) //软件定时器MyTmr的回调函数
 
     cpu_clk_freq = BSP_CPU_ClkFreq();                   //获取CPU时钟，时间戳是以该时钟计数
 
-    macLED2_TOGGLE (); 
+    //macLED2_TOGGLE (); 
 
     ts_end = OS_TS_GET() - ts_start;     //获取定时后的时间戳（以CPU时钟进行计数的一个计数值）
                                          //，并计算定时时间。
@@ -236,7 +291,7 @@ static  void  AppTaskTmr ( void * p_arg )
                                          //，开中断时将该值还原.
 	(void)p_arg;
 
-    macLED1_ON();
+    
     /* 创建软件定时器 */
     OSTmrCreate ((OS_TMR              *)&my_tmr,             //软件定时器对象
                (CPU_CHAR            *)"MySoftTimer",       //命名软件定时器
@@ -252,21 +307,48 @@ static  void  AppTaskTmr ( void * p_arg )
               (OS_ERR   *)err);    //返回错误类型
 					 
 	ts_start = OS_TS_GET();                       //获取定时前时间戳
-	OS_CRITICAL_ENTER();                 //进入临界段，不希望下面串口打印遭到中断	
+	
+    /*
+    OS_CRITICAL_ENTER();                 //进入临界段，不希望下面串口打印遭到中断	
     printf ( "%s\n", ( char * ) para ); 
     OS_CRITICAL_EXIT();      
+    */
     
+
 	while (DEF_TRUE) 
-        {                            //任务体，通常写成一个死循环
+    {                            //任务体，通常写成一个死循环
 
-            OSTimeDly ( 1000, OS_OPT_TIME_DLY, & err ); //不断阻塞该任务
+        OSTimeDly ( 1000, OS_OPT_TIME_DLY, & err ); //不断阻塞该任务
 
-        }
+    }
 	
 }
 
 
+static  void AppTaskOLED ( void * p_arg )
+{    
+    OS_ERR      err;
+ #ifdef OLED
+    //u8 arr[]
+    macLED1_ON();
+    //macLED3_ON();
+    OLED_Init ();
+    OSTimeDly ( 1000, OS_OPT_TIME_DLY, & err ); //不断阻塞该任务
+    OLED_SetPos(0,0);
+    OLED_CLS();
+    OLED_ShowCN(0,0,2);
+    OLED_ShowCN(16,0,3);
+    //OLED_Fill(0xff);
+    //OLED_DrawBMP(0,0,128,8,BMP1);
+#endif    
+    //OLED_CLS();
+    while (DEF_TRUE) 
+    {                            //任务体，通常写成一个死循环
 
+        OSTimeDly ( 1000, OS_OPT_TIME_DLY, & err ); //不断阻塞该任务
+
+    }
+}
 
 
 
