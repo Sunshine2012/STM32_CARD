@@ -25,7 +25,7 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "stm32f10x_it.h"
-#include "includes.h"
+#include <includes.h>
 /** @addtogroup STM32F10x_StdPeriph_Template
   * @{
   */
@@ -144,31 +144,34 @@ void SysTick_Handler(void)
 /*  available peripheral interrupt handler's name please refer to the startup */
 /*  file (startup_stm32f10x_xx.s).                                            */
 /******************************************************************************/
-uint16_t rx_buf[1024];
-uint16_t num = 0;
+
+CPU_INT08U g_rx_buf[1024];
+CPU_INT16U g_num = 0;
 
 // 串口中断服务函数
 // 把接收到的数据存在一个数组缓冲区里面，当接收到的的值等于0XFF时，把值返回
 void macUSART1_IRQHandler(void)
 {
+    //CPU_INT08U g_rx_buf[1024];
+    //CPU_INT16U g_num = 0;
     CPU_SR_ALLOC();      //使用到临界段（在关/开中断时）时必需该宏，该宏声明和定义一个局部变
                                              //量，用于保存关中断前的 CPU 状态寄存器 SR（临界段关中断只需保存SR）
                                              //，开中断时将该值还原。
     OS_CRITICAL_ENTER();                 //进入临界段，不希望下面串口打印遭到中断
     if(USART_GetITStatus(macUSART1,USART_IT_RXNE)!=RESET)
     {
-        rx_buf[num] = USART_ReceiveData(macUSART1);
+        g_rx_buf[g_num] = USART_ReceiveData(macUSART1);
 
         // 当接收到的值等于0XFF时，把值发送回去
-        //if( rx_buf[num] == 0xff )
+        if( g_rx_buf[g_num] == 0xff )
         {
-            USART_SendData(macUSART1,rx_buf[num]);
+            USART_SendData(macUSART1,g_rx_buf[g_num]);
         }
         // 当值不等时候，则继续接收下一个
-        //else
-        //{
-            //num ++;
-        //}
+        else
+        {
+            //g_num ++;
+        }
     }
     OS_CRITICAL_EXIT();
 }
@@ -177,23 +180,41 @@ void macUSART1_IRQHandler(void)
 // 把接收到的数据存在一个数组缓冲区里面，当接收到的的值等于0XFF时，把值返回
 void mac4USART_IRQHandler(void)
 {
+    OS_ERR      err;
     CPU_SR_ALLOC();      //使用到临界段（在关/开中断时）时必需该宏，该宏声明和定义一个局部变
                                              //量，用于保存关中断前的 CPU 状态寄存器 SR（临界段关中断只需保存SR）
                                              //，开中断时将该值还原。
     OS_CRITICAL_ENTER();                 //进入临界段，不希望下面串口打印遭到中断
     if(USART_GetITStatus(mac4USART,USART_IT_RXNE)!=RESET)
     {
-        rx_buf[num] = USART_ReceiveData(mac4USART);
-
-        // 当接收到的值等于0XFF时，把值发送回去
-        if( rx_buf[num] != 0xff )
+        g_rx_buf[g_num] = USART_ReceiveData(mac4USART);
+        //USART4_SendByte(mac4USART,g_rx_buf[g_num]);
+        if(g_rx_buf[g_num] == FRAME_START)
         {
-            USART4_SendByte(mac4USART,rx_buf[num]);
+            g_rx_buf[0] = g_rx_buf[g_num];
+            g_num = 0;
+            g_num++;
+        }
+        // 当接收到的值等于0XFF时，把值发送回去
+        else if( g_rx_buf[g_num] == FRAME_END)
+        {
+            g_rx_buf[g_num + 1] = 0;
+            /* 发布消息到消息队列 queue */
+            OSQPost ((OS_Q        *)&queue_uart1,                           //消息变量指针
+                     (void        *)g_rx_buf,                               //要发送的数据的指针，将内存块首地址通过队列"发送出去"
+                     (OS_MSG_SIZE  )strlen ( (const char*)g_rx_buf ),       //数据字节大小
+                     (OS_OPT       )OS_OPT_POST_FIFO | OS_OPT_POST_ALL,     //先进先出和发布给全部任务的形式
+                     (OS_ERR      *)&err);                                  //返回错误类型
+
         }
         // 当值不等时候，则继续接收下一个
         else
         {
-            num ++;
+            g_num++;
+            if (g_num > 1024) // 
+            {
+                g_num = 0;    
+            }
         }
     }
     OS_CRITICAL_EXIT();

@@ -903,6 +903,11 @@
           <GroupName>USER</GroupName>
           <Files>
             <File>
+              <FileName>app.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\..\User\APP\app.h</FilePath>
+            </File>
+            <File>
               <FileName>app.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\..\User\APP\app.c</FilePath>

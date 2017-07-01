@@ -14,8 +14,8 @@
 #define             macLED1_GPIO_PIN                        GPIO_Pin_8
 
 #define             macLED2_GPIO_APBxClock_FUN              RCC_APB2PeriphClockCmd
-#define             macLED2_GPIO_CLK                        RCC_APB2Periph_GPIOB
-#define             macLED2_GPIO_PORT                       GPIOB
+#define             macLED2_GPIO_CLK                        RCC_APB2Periph_GPIOC
+#define             macLED2_GPIO_PORT                       GPIOC
 #define             macLED2_GPIO_PIN                        GPIO_Pin_1
 
 #define             macLED3_GPIO_APBxClock_FUN              RCC_APB2PeriphClockCmd

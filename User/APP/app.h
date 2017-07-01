@@ -22,24 +22,29 @@
 *                                     Micrium uC-Eval-STM32F107
 *                                        Evaluation Board
 *
-* Filename      : bsp.h
+* Filename      : app.h
 * Version       : V1.00
 * Programmer(s) : EHS
 *********************************************************************************************************
 */
 
-/*
-*********************************************************************************************************
-*                                                 MODULE
-*
-* Note(s) : (1) This header file is protected from multiple pre-processor inclusion through use of the
-*               BSP present pre-processor macro definition.
-*********************************************************************************************************
-*/
+#ifndef  __APP_H__
+#define  __APP_H__
 
-#ifndef  BSP_PRESENT
-#define  BSP_PRESENT
 
+#define __DEBUG__
+
+#ifdef __DEBUG__
+#define DEBUG(format,...) printf("File: "__FILE__", Line: %05d: "format"\n", __LINE__, ##__VA_ARGS__)
+#else
+#define DEBUG(format,...)
+#endif
+
+#ifdef __DEBUG__
+#define DEBUG_printf(format,...) printf(format,##__VA_ARGS__)
+#else
+#define DEBUG_printf(format,...) do{}while(0)
+#endif
 
 /*
 *********************************************************************************************************
@@ -47,42 +52,12 @@
 *********************************************************************************************************
 */
 
-#ifdef   BSP_MODULE
-#define  BSP_EXT
-#else
-#define  BSP_EXT  extern
-#endif
-
-
 /*
 *********************************************************************************************************
 *                                              INCLUDE FILES
 *********************************************************************************************************
 */
-
-#include  <stdarg.h>
-#include  <stdio.h>
-#include  <string.h>
-
-#include  <cpu.h>
-#include  <cpu_core.h>
-
-#include  <lib_ascii.h>
-#include  <lib_def.h>
-#include  <lib_mem.h>
-#include  <lib_str.h>
-
-#include "stm32f10x.h"          // Modified by fire (原是 #include  <stm32f10x_lib.h>)  
-
-#include  <app_cfg.h>
-
-#include "app.h"
-#include "bsp_led.h"
-#include "bsp_usart1.h"
-#include "bsp_usart4.h"
-#include "bsp_lcd_I2C.h"
-#include "frame.h"
-
+#include <os.h>
 /*
 *********************************************************************************************************
 *                                          GPIO PIN DEFINITIONS
@@ -120,7 +95,16 @@
 *********************************************************************************************************
 */
 
+extern OS_TCB   AppTaskOledTCB;				// OLED更新任务控制块
 
+extern OS_TCB   AppTaskWriteFrameTCB;			// 发送数据任务控制块
+
+extern OS_TCB   AppTaskReadFrameTCB;			// 读取解析数据任务控制块
+
+extern OS_Q queue_uart1;     // 消息队列
+extern OS_Q queue_task_write;    // 消息队列
+
+extern CPU_INT08U g_ucSerNum;
 /*
 *********************************************************************************************************
 *                                                 MACRO'S
@@ -133,11 +117,6 @@
 *                                           FUNCTION PROTOTYPES
 *********************************************************************************************************
 */
-
-void         BSP_Init                    (void);
-
-CPU_INT32U   BSP_CPU_ClkFreq             (void);
-
 
 /*
 *********************************************************************************************************
@@ -177,7 +156,7 @@ CPU_INT32U   BSP_CPU_ClkFreq             (void);
 */
 
 
-#endif                                                          /* End of module include.                               */
+#endif
 
 
 

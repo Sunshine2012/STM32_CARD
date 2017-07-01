@@ -14,9 +14,9 @@
 *
 * LICENSING TERMS:
 * ---------------
-*               uC/OS-III is provided in source form to registered licensees ONLY.  It is 
-*               illegal to distribute this source code to any third party unless you receive 
-*               written permission by an authorized Micrium representative.  Knowledge of 
+*               uC/OS-III is provided in source form to registered licensees ONLY.  It is
+*               illegal to distribute this source code to any third party unless you receive
+*               written permission by an authorized Micrium representative.  Knowledge of
 *               the source code may NOT be used to develop a similar product.
 *
 *               Please help us continue to provide the Embedded community with the finest
@@ -57,7 +57,7 @@
 
 
                                                             /* ------------------------ TICKS ----------------------- */
-#define  OS_CFG_TICK_RATE_HZ            1000u               // 时钟节拍频率 (10 to 1000 Hz)                    
+#define  OS_CFG_TICK_RATE_HZ            1000u               // 时钟节拍频率 (10 to 1000 Hz)
 #define  OS_CFG_TICK_TASK_PRIO            10u               // 时钟节拍任务 OS_TickTask() 的优先级
 #define  OS_CFG_TICK_TASK_STK_SIZE       128u               // 时钟节拍任务 OS_TickTask() 的栈空间大小（单位：CPU_STK）
 #define  OS_CFG_TICK_WHEEL_SIZE           17u               // OSCfg_TickWheel 数组的大小，推荐使用任务总数/4，且为质数
@@ -65,7 +65,7 @@
 
                                                             /* ----------------------- TIMERS ----------------------- */
 #define  OS_CFG_TMR_TASK_PRIO             11u               //定时器任务的优先级
-#define  OS_CFG_TMR_TASK_RATE_HZ          10u               //定时器的时基 (一般不能大于 OS_CFG_TICK_RATE_HZ )  
+#define  OS_CFG_TMR_TASK_RATE_HZ          10u               //定时器的时基 (一般不能大于 OS_CFG_TICK_RATE_HZ )
 #define  OS_CFG_TMR_TASK_STK_SIZE        128u               //定时器任务的栈空间大小（单位：CPU_STK）
 #define  OS_CFG_TMR_WHEEL_SIZE            17u               // OSCfg_TmrWheel 数组的大小，推荐使用任务总数/4，且为质数
 

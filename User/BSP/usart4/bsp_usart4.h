@@ -119,6 +119,7 @@
 
 void USART4_Config(void);
 void USART4_SendByte( USART_TypeDef * pUSARTx, uint8_t ch);
+void USART4_nSendString( USART_TypeDef * pUSARTx, char *str,int n);
 void USART4_SendString( USART_TypeDef * pUSARTx, char *str);
 void USART4_SendHalfWord( USART_TypeDef * pUSARTx, uint16_t ch);
 

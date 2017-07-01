@@ -141,6 +141,21 @@ void Usart4_SendHalfWord( USART_TypeDef * pUSARTx, uint16_t ch)
 	while (USART_GetFlagStatus(pUSARTx, USART_FLAG_TXE) == RESET);	
 }
 
+/*****************  发送字符串 **********************/
+void USART4_nSendString(USART_TypeDef * pUSARTx,char *str,int n)
+{
+    unsigned int k=0;
+    do 
+    {
+        /* 发送一个字节数据到USART */
+        USART_SendData(pUSARTx,str[k]);
+
+        /* 等待发送数据寄存器为空 */
+        while (USART_GetFlagStatus(pUSARTx, USART_FLAG_TXE) == RESET);	
+        k++;
+    } while(k < n);
+}
+
 #ifdef uart4
 ///重定向c库函数printf到串口，重定向后可使用printf函数
 int fputc(int ch, FILE *f)

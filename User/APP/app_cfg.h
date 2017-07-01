@@ -66,7 +66,7 @@
 
 #define  APP_TASK_START_STK_SIZE                        128          //任务堆栈空间（单位：sizeof(CPU_STK)）
 
-#define  APP_TASK_TMR_STK_SIZE                          512   
+#define  APP_TASK_TMR_STK_SIZE                          512
 
 #define  APP_TASK_OLED_STK_SIZE                         512
 
