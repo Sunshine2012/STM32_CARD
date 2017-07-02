@@ -1,42 +1,63 @@
 #include <includes.h>
 #include "frame.h"
 
-RSCTL_FREME gt_P_RsctlFrame = {'<','0','0','>'};        // 正应答帧
-RSCTL_FREME gt_N_sctlFrame =  {'<','1','0','>'};        // 负应答帧
-PC_TO_CARD_INIT_FREME t_PcToCardInitFrame;
+RSCTL_FREME g_tP_RsctlFrame = {'<','0','0','>'};        // 正应答帧
+RSCTL_FREME g_tN_sctlFrame =  {'<','1','0','>'};        // 负应答帧
+
+CARD_MACHINE_POWER_ON_FREME      g_tCardMechinePowerOnFrame;         /* 卡机上电信息(41H)帧          4字节 */
+CARD_MACHINE_STATUES_FRAME       g_tCardMechineStatusFrame;          /* 状态信息(42H)帧             30字节 */
+CARD_MECHINE_TO_PC_FRAME         g_tCardSpitOutFrame;                /* 已出卡信息(43H)帧            6字节 */
+CARD_MECHINE_TO_PC_FRAME         g_tCardKeyPressFrame;               /* 按钮取卡信息(44H)帧          6字节 */
+CARD_MECHINE_TO_PC_FRAME         g_tCardTakeAwayFrame;               /* 卡被取走信息(45H)帧          6字节 */
+CARD_REPORT_SPIT_STATUES_FRAME   g_tCardReportSpitStatusFrame;       /* 上报卡夹号编号信息(46H)帧   36字节 */
+
+PC_TO_CARD_INIT_FREME            g_tPcToCardInitFrame;               /* 初始化卡机信息(61H)帧       20字节 */
+PC_TO_CARD_MECHINE_FRAME         g_tPcSpitOutCardFrame;              /* 出卡信息(62H)帧              5字节 */
+PC_TO_CARD_MECHINE_FRAME         g_tPcSpitOutCardFrame;              /* 坏卡信息(63H)帧              5字节 */
+PC_TO_CARD_MECHINE_FRAME         g_tPcQuetyCardMechineFrame;         /* 查询卡机状态(65H)帧          5字节 */
+PC_TO_CARD_MECHINE_FRAME         g_tPcQuetyCardCpipFrame;            /* 查询卡夹(66H)帧              5字节 */
+PC_SET_CARD_NUM_FRAME            g_tPcSetCardNumFrame;               /* 设置卡夹卡数(67H)帧          8字节*/
 
 //#pragma  diag_suppress 870          // 不显示警告
 
-Print_msg gta_pri_msg[16] = {
-                            {'<',                           "/* 无效信息*/"},
-                            {CARD_MACHINE_POWER_ON,         "/* 卡机上电信息(41H)帧        4字节 */"},
-                            {CARD_MACHINE_STATUES,          "/* 状态信息(42H)帧           30字节 */"},
-                            {CARD_SPIT_OUT_CARD,            "/* 已出卡信息(43H)帧          6字节 */"},
-                            {CARD_KEY_PRESS,                "/* 按钮取卡信息(44H)帧        6字节 */"},
-                            {CARD_TAKE_AWAY,                "/* 卡被取走信息(45H)帧        6字节 */"},
-                            {CARD_REPORT_STATUES,           "/* 上报卡夹号信息(46H)帧     29字节 */"},
+Print_msg g_taPri_msg[16] = {
+                            {'$',                           "/* 无效信息 */"},
+                            {CARD_MACHINE_POWER_ON,         "/* 卡机上电信息(41H)帧          4字节 */"},
+                            {CARD_MACHINE_STATUES,          "/* 状态信息(42H)帧             30字节 */"},
+                            {CARD_SPIT_OUT,                 "/* 已出卡信息(43H)帧            6字节 */"},
+                            {CARD_KEY_PRESS,                "/* 按钮取卡信息(44H)帧          6字节 */"},
+                            {CARD_TAKE_AWAY,                "/* 卡被取走信息(45H)帧          6字节 */"},
+                            {CARD_REPORT_SPIT_STATUES,      "/* 上报卡夹号编号信息(46H)帧   36字节 */"},
 
-                            {PC_INIT_MECHINE,               "/* 初始化卡机信息(61H)帧     20字节 */"},
-                            {PC_SPIT_OUT_CARD,              "/* 出卡信息(62H)帧            5字节 */"},
-                            {PC_CARD_FALSE,                 "/* 坏卡信息(63H)帧            5字节 */"},
-                            {PC_QUERY_CARD_MECHINE,         "/* 查询卡机状态(65H)帧        5字节 */"},
-                            {PC_QUERY_CARD_CLIP,            "/* 查询卡夹(66H)帧            5字节 */"},
-                            {PC_SET_CARD_NUM,               "/* 设置卡夹卡数(67H)帧        8字节 */"},
+                            {PC_INIT_MECHINE,               "/* 初始化卡机信息(61H)帧       20字节 */"},
+                            {PC_SPIT_OUT_CARD,              "/* 出卡信息(62H)帧              5字节 */"},
+                            {PC_CARD_FALSE,                 "/* 坏卡信息(63H)帧              5字节 */"},
+                            {PC_QUERY_CARD_MECHINE,         "/* 查询卡机状态(65H)帧          5字节 */"},
+                            {PC_QUERY_CARD_CLIP,            "/* 查询卡夹(66H)帧              5字节 */"},
+                            {PC_SET_CARD_NUM,               "/* 设置卡夹卡数(67H)帧          8字节 */"},
                             {'0',NULL}
                         };
+
+
+
+
+
+
+
+
 
 // 找到打印的字符串，并返回其首地址
 char * check_msg(CPU_INT08U ch)
 {
     CPU_INT08U i = 0;
-    for (i = 0; i < (sizeof (gta_pri_msg) / sizeof (gta_pri_msg[0])); i++)
+    for (i = 0; i < (sizeof (g_taPri_msg) / sizeof (g_taPri_msg[0])); i++)
     {
-        if(gta_pri_msg[i].CTL == ch)
+        if(g_taPri_msg[i].CTL == ch)
         {
-            return (char *)gta_pri_msg[i].Msg;
+            return g_taPri_msg[i].Msg;
         }
     }
-    return (char *)gta_pri_msg[0].Msg;
+    return g_taPri_msg[0].Msg;
 }
 
 
@@ -71,9 +92,9 @@ CPU_INT08U  AnalyzeUartFrame ( CPU_INT08U * p_arg )
     }
     else if (PC_INIT_MECHINE <= type_frame <= PC_SET_CARD_NUM)  // 检测数据合法性
     {
-        gt_P_RsctlFrame.RSCTL = ucNum;
+        g_tP_RsctlFrame.RSCTL = ucNum;
         OS_CRITICAL_ENTER();                 //进入临界段，不希望下面串口打印遭到中断
-        USART4_SendString(mac4USART,(char *)&gt_P_RsctlFrame);   //发送正应答帧
+        USART4_SendString(mac4USART,(char *)&g_tP_RsctlFrame);   //发送正应答帧
         DEBUG_printf ("%s\r\n",(char *)check_msg(type_frame));
         //printf ("%s\r\n","收到信息");
         OS_CRITICAL_EXIT();
