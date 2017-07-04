@@ -367,6 +367,8 @@ void  AppTaskWriteFrame ( void * p_arg )
 
     OSTimeDly ( 2000, OS_OPT_TIME_DLY, & err ); //不断阻塞该任务
 
+    CAN_init ();  // 初始化CAN
+
     while (DEF_TRUE)
     {                            //任务体，通常写成一个死循环
         /* 阻塞任务，等待任务消息
