@@ -30,7 +30,7 @@ static void UART4_NVIC_Configuration(void)
   NVIC_PriorityGroupConfig(NVIC_PriorityGroup_2);
   
   /* 配置USART为中断源 */
-  NVIC_InitStructure.NVIC_IRQChannel = mac4USART_IRQ;
+  NVIC_InitStructure.NVIC_IRQChannel = macUSART4_IRQ;
   /* 抢断优先级*/
   NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 1;
   /* 子优先级 */
@@ -42,7 +42,7 @@ static void UART4_NVIC_Configuration(void)
 }
 
  /**
-  * @brief  USART GPIO 配置,工作参数配置
+  * @brief  USARTx GPIO 配置,工作模式配置。115200 8-N-1
   * @param  无
   * @retval 无
   */
@@ -52,25 +52,25 @@ void USART4_Config(void)
 	USART_InitTypeDef USART_InitStructure;
 
 	// 打开串口GPIO的时钟
-	mac4USART_GPIO_APBxClock_FUN(mac4USART_GPIO_CLK, ENABLE);
+	macUSART4_GPIO_APBxClock_FUN(macUSART4_GPIO_CLK, ENABLE);
 	
 	// 打开串口外设的时钟
-	mac4USART_APBxClock_FUN(mac4USART_CLK, ENABLE);
+	macUSART4_APBxClock_FUN(macUSART4_CLK, ENABLE);
 
 	// 将USART Tx的GPIO配置为推挽复用模式
-	GPIO_InitStructure.GPIO_Pin = mac4USART_TX_PIN;
+	GPIO_InitStructure.GPIO_Pin = macUSART4_TX_PIN;
 	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF_PP;
 	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
-	GPIO_Init(mac4USART_TX_PORT, &GPIO_InitStructure);
+	GPIO_Init(macUSART4_TX_PORT, &GPIO_InitStructure);
 
     // 将USART Rx的GPIO配置为浮空输入模式
-	GPIO_InitStructure.GPIO_Pin = mac4USART_RX_PIN;
+	GPIO_InitStructure.GPIO_Pin = macUSART4_RX_PIN;
 	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN_FLOATING;
-	GPIO_Init(mac4USART_RX_PORT, &GPIO_InitStructure);
+	GPIO_Init(macUSART4_RX_PORT, &GPIO_InitStructure);
 	
 	// 配置串口的工作参数
 	// 配置波特率
-	USART_InitStructure.USART_BaudRate = mac4USART_BAUD_RATE;
+	USART_InitStructure.USART_BaudRate = macUSART4_BAUD_RATE;
 	// 配置 针数据字长
 	USART_InitStructure.USART_WordLength = USART_WordLength_8b;
 	// 配置停止位
@@ -82,16 +82,16 @@ void USART4_Config(void)
 	// 配置工作模式，收发一起
 	USART_InitStructure.USART_Mode = USART_Mode_Rx | USART_Mode_Tx;
 	// 完成串口的初始化配置
-	USART_Init(mac4USART, &USART_InitStructure);
+	USART_Init(macUSART4, &USART_InitStructure);
 	
 	// 串口中断优先级配置
 	UART4_NVIC_Configuration();
 	
 	// 使能串口接收中断
-	USART_ITConfig(mac4USART, USART_IT_RXNE, ENABLE);	
+	USART_ITConfig(macUSART4, USART_IT_RXNE, ENABLE);	
 	
 	// 使能串口
-	USART_Cmd(mac4USART, ENABLE);		
+	USART_Cmd(macUSART4, ENABLE);		
 
   // 清除发送完成标志
 	//USART_ClearFlag(USART1, USART_FLAG_TC);     
@@ -161,10 +161,10 @@ void USART4_nSendString(USART_TypeDef * pUSARTx,char *str,int n)
 int fputc(int ch, FILE *f)
 {
 		/* 发送一个字节数据到串口 */
-		USART_SendData(mac4USART, (uint8_t) ch);
+		USART_SendData(macUSART4, (uint8_t) ch);
 		
 		/* 等待发送完毕 */
-		while (USART_GetFlagStatus(mac4USART, USART_FLAG_TXE) == RESET);		
+		while (USART_GetFlagStatus(macUSART4, USART_FLAG_TXE) == RESET);		
 	
 		return (ch);
 }
@@ -173,9 +173,10 @@ int fputc(int ch, FILE *f)
 int fgetc(FILE *f)
 {
 		/* 等待串口输入数据 */
-		while (USART_GetFlagStatus(mac4USART, USART_FLAG_RXNE) == RESET);
+		while (USART_GetFlagStatus(macUSART4, USART_FLAG_RXNE) == RESET);
 
-		return (int)USART_ReceiveData(mac4USART);
+		return (int)USART_ReceiveData(macUSART4);
 }
+/*********************************************END OF FILE**********************/
 #endif
 

@@ -95,14 +95,14 @@
 *********************************************************************************************************
 */
 
-extern OS_TCB   AppTaskOledTCB;				// OLED更新任务控制块
+extern OS_TCB   AppTaskOledTCB;             // OLED更新任务控制块
 
-extern OS_TCB   AppTaskWriteFrameTCB;			// 发送数据任务控制块
+extern OS_TCB   AppTaskCanFrameTCB;         // 发送数据任务控制块
 
-extern OS_TCB   AppTaskReadFrameTCB;			// 读取解析数据任务控制块
+extern OS_TCB   AppTaskUartFrameTCB;        // 读取解析数据任务控制块
 
-extern OS_Q queue_uart1;     // 消息队列
-extern OS_Q queue_task_write;    // 消息队列
+extern OS_Q queue_uart;     // 消息队列
+extern OS_Q queue_can;      // 消息队列
 
 extern CPU_INT08U g_ucSerNum;
 /*

@@ -51,9 +51,9 @@
 
 #define  APP_TASK_TMR_PRIO                          3
 
-#define  APP_TASK_WRITE_FRAME_PRIO                  4            // 发送帧任务优先级
+#define  APP_TASK_CAN_FRAME_PRIO                    4            // 发送帧任务优先级
 
-#define  APP_TASK_READ_FRAME_PRIO                   5            // 解析帧任务优先级
+#define  APP_TASK_UART_FRAME_PRIO                   5            // 解析帧任务优先级
 
 #define  APP_TASK_OLED_PRIO                         10           // OLED任务优先级
 
@@ -66,13 +66,13 @@
 
 #define  APP_TASK_START_STK_SIZE                        128          //任务堆栈空间（单位：sizeof(CPU_STK)）
 
-#define  APP_TASK_TMR_STK_SIZE                          512
+#define  APP_TASK_TMR_STK_SIZE                          128
 
-#define  APP_TASK_OLED_STK_SIZE                         512
+#define  APP_TASK_OLED_STK_SIZE                         128
 
-#define  APP_TASK_WRITE_FRAME_STK_SIZE                  512
+#define  APP_TASK_CAN_FRAME_STK_SIZE                    128
 
-#define  APP_TASK_READ_FRAME_STK_SIZE                   512
+#define  APP_TASK_UART_FRAME_STK_SIZE                   128
 /*
 *********************************************************************************************************
 *                                    BSP CONFIGURATION: RS-232

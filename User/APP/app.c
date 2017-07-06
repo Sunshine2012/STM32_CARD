@@ -55,19 +55,19 @@ CPU_TS             ts_end;
 *********************************************************************************************************
 */
 
-static  OS_TCB   AppTaskStartTCB;                                //任务控制块
+OS_TCB   AppTaskStartTCB;                                //任务控制块
 
-static  OS_TCB   AppTaskTmrTCB;
+OS_TCB   AppTaskTmrTCB;
 
 OS_TCB   AppTaskOledTCB;                // OLED更新任务控制块
 
-OS_TCB   AppTaskWriteFrameTCB;          // 发送数据任务控制块
+OS_TCB   AppTaskCanFrameTCB;            // 发送数据任务控制块
 
-OS_TCB   AppTaskReadFrameTCB;           // 读取解析数据任务控制块
+OS_TCB   AppTaskUartFrameTCB;           // 读取解析数据任务控制块
 
-OS_Q queue_uart1;     // 消息队列
+OS_Q queue_uart;     // 消息队列
 
-OS_Q queue_task_write;     // 消息队列
+OS_Q queue_can;      // 消息队列
 
 CPU_INT08U g_ucSerNum = 0;
 
@@ -83,9 +83,9 @@ static  CPU_STK  AppTaskTmrStk [ APP_TASK_TMR_STK_SIZE ];
 
 static  CPU_STK  AppTaskOLEDStk [ APP_TASK_OLED_STK_SIZE ];
 
-static  CPU_STK  AppTaskWriteFrameStk [ APP_TASK_WRITE_FRAME_STK_SIZE ];
+static  CPU_STK  AppTaskCanFrameStk [ APP_TASK_CAN_FRAME_STK_SIZE ];
 
-static  CPU_STK  AppTaskReadFrameStk [ APP_TASK_READ_FRAME_STK_SIZE ];
+static  CPU_STK  AppTaskUartFrameStk [ APP_TASK_UART_FRAME_STK_SIZE ];
 /*
 *********************************************************************************************************
 *                                         FUNCTION PROTOTYPES
@@ -98,9 +98,9 @@ static  void  AppTaskTmr  ( void * p_arg );
 
 static  void  AppTaskOLED  ( void * p_arg );
 
-static void  AppTaskWriteFrame ( void * p_arg );
+static void  AppTaskCanFrame ( void * p_arg );
 
-static void  AppTaskReadFrame ( void * p_arg );
+static void  AppTaskUartFrame ( void * p_arg );
 
 extern unsigned char BMP1[];
 /*
@@ -183,15 +183,15 @@ static  void  AppTaskStart (void *p_arg)
     CPU_IntDisMeasMaxCurReset();                                //复位（清零）当前最大关中断时间
 
     /* 创建消息队列 queue */
-    OSQCreate     ((OS_Q       *)&queue_uart1,      //指向消息队列的指针
-                (CPU_CHAR    *)"Queue Frame",       //队列的名字
+    OSQCreate   ((OS_Q       *)&queue_uart,         //指向消息队列的指针
+                (CPU_CHAR    *)"uart Frame",        //队列的名字
                 (OS_MSG_QTY   )30,                  //最多可存放消息的数目
                 (OS_ERR      *)&err);               //返回错误类型
 
     /* 创建消息队列 queue */
-    OSQCreate     ((OS_Q       *)&queue_task_write,      //指向消息队列的指针
-                (CPU_CHAR    *)"Queue Frame",       //队列的名字
-                (OS_MSG_QTY   )5,                  //最多可存放消息的数目
+    OSQCreate   ((OS_Q       *)&queue_can,          //指向消息队列的指针
+                (CPU_CHAR    *)"can Frame",         //队列的名字
+                (OS_MSG_QTY   )5,                   //最多可存放消息的数目
                 (OS_ERR      *)&err);               //返回错误类型
 
     /* 创建 AppTaskTmr 任务 */
@@ -224,30 +224,30 @@ static  void  AppTaskStart (void *p_arg)
                  (OS_OPT      )(OS_OPT_TASK_STK_CHK | OS_OPT_TASK_STK_CLR), //任务选项
                  (OS_ERR     *)&err);
 
-    /* 创建 AppTaskWriteFRAME 任务 */
-    OSTaskCreate((OS_TCB     *)&AppTaskWriteFrameTCB,                       //任务控制块地址
-                 (CPU_CHAR   *)"WRITE_FRAME_APP",                           //任务名称
-                 (OS_TASK_PTR ) AppTaskWriteFrame,                          //任务函数
+    /* 创建 AppTaskCanFRAME 任务 */
+    OSTaskCreate((OS_TCB     *)&AppTaskCanFrameTCB,                         //任务控制块地址
+                 (CPU_CHAR   *)"READ_CAN_FRAME_APP",                        //任务名称
+                 (OS_TASK_PTR ) AppTaskCanFrame,                            //任务函数
                  (void       *) 0,                                          //传递给任务函数（形参p_arg）的实参
-                 (OS_PRIO     ) APP_TASK_WRITE_FRAME_PRIO,                  //任务的优先级
-                 (CPU_STK    *)&AppTaskWriteFrameStk[0],                    //任务堆栈的基地址
-                 (CPU_STK_SIZE) APP_TASK_WRITE_FRAME_STK_SIZE / 10,         //任务堆栈空间剩下1/10时限制其增长
-                 (CPU_STK_SIZE) APP_TASK_WRITE_FRAME_STK_SIZE,              //任务堆栈空间（单位：sizeof(CPU_STK)）
+                 (OS_PRIO     ) APP_TASK_CAN_FRAME_PRIO,                    //任务的优先级
+                 (CPU_STK    *)&AppTaskCanFrameStk[0],                      //任务堆栈的基地址
+                 (CPU_STK_SIZE) APP_TASK_CAN_FRAME_STK_SIZE / 10,           //任务堆栈空间剩下1/10时限制其增长
+                 (CPU_STK_SIZE) APP_TASK_CAN_FRAME_STK_SIZE,                //任务堆栈空间（单位：sizeof(CPU_STK)）
                  (OS_MSG_QTY  ) 5u,                                         //任务可接收的最大消息数
                  (OS_TICK     ) 0u,                                         //任务的时间片节拍数（0表默认值OSCfg_TickRate_Hz/10）
                  (void       *) 0,                                          //任务扩展（0表不扩展）
                  (OS_OPT      )(OS_OPT_TASK_STK_CHK | OS_OPT_TASK_STK_CLR), //任务选项
                  (OS_ERR     *)&err);
 
-    /* 创建 AppTaskReadFRAME 任务 */
-    OSTaskCreate((OS_TCB     *)&AppTaskReadFrameTCB,                        //任务控制块地址
-                 (CPU_CHAR   *)"READ_FRAME_APP",                                 //任务名称
-                 (OS_TASK_PTR ) AppTaskReadFrame,                           //任务函数
+    /* 创建 AppTaskUartFRAME 任务 */
+    OSTaskCreate((OS_TCB     *)&AppTaskUartFrameTCB,                        //任务控制块地址
+                 (CPU_CHAR   *)"READ_UART_FRAME_APP",                       //任务名称
+                 (OS_TASK_PTR ) AppTaskUartFrame,                           //任务函数
                  (void       *) 0,                                          //传递给任务函数（形参p_arg）的实参
-                 (OS_PRIO     ) APP_TASK_READ_FRAME_PRIO,                   //任务的优先级
-                 (CPU_STK    *)&AppTaskReadFrameStk[0],                     //任务堆栈的基地址
-                 (CPU_STK_SIZE) APP_TASK_READ_FRAME_STK_SIZE / 10,          //任务堆栈空间剩下1/10时限制其增长
-                 (CPU_STK_SIZE) APP_TASK_READ_FRAME_STK_SIZE,               //任务堆栈空间（单位：sizeof(CPU_STK)）
+                 (OS_PRIO     ) APP_TASK_UART_FRAME_PRIO,                   //任务的优先级
+                 (CPU_STK    *)&AppTaskUartFrameStk[0],                     //任务堆栈的基地址
+                 (CPU_STK_SIZE) APP_TASK_UART_FRAME_STK_SIZE / 10,          //任务堆栈空间剩下1/10时限制其增长
+                 (CPU_STK_SIZE) APP_TASK_UART_FRAME_STK_SIZE,               //任务堆栈空间（单位：sizeof(CPU_STK)）
                  (OS_MSG_QTY  ) 5u,                                         //任务可接收的最大消息数
                  (OS_TICK     ) 0u,                                         //任务的时间片节拍数（0表默认值OSCfg_TickRate_Hz/10）
                  (void       *) 0,                                          //任务扩展（0表不扩展）
@@ -289,7 +289,7 @@ void TmrCallback (OS_TMR *p_tmr, void *p_arg) //软件定时器MyTmr的回调函数
                                          //，并计算定时时间。
     OS_CRITICAL_ENTER();                 //进入临界段，不希望下面串口打印遭到中断
 
-    //printf ( "\r\n定时1s，通过时间戳测得定时 %07d us，即 %04d ms。\r\n",
+    //printf ( "\r\n定时2s，通过时间戳测得定时 %07d us，即 %04d ms。\r\n",
     //                    ts_end / ( cpu_clk_freq / 1000000 ),     //将定时时间折算成 us
     //                    ts_end / ( cpu_clk_freq / 1000 ) );      //将定时时间折算成 ms
 
@@ -358,7 +358,7 @@ static  void AppTaskOLED ( void * p_arg )
 
 
 
-void  AppTaskWriteFrame ( void * p_arg )
+void  AppTaskCanFrame ( void * p_arg )
 {
     OS_ERR      err;
     OS_MSG_SIZE    msg_size;
@@ -398,7 +398,7 @@ void  AppTaskWriteFrame ( void * p_arg )
     }
 }
 
-void  AppTaskReadFrame ( void * p_arg )
+void  AppTaskUartFrame ( void * p_arg )
 {
     CPU_SR_ALLOC();      //使用到临界段（在关/开中断时）时必需该宏，该宏声明和定义一个局部变
                                      //量，用于保存关中断前的 CPU 状态寄存器 SR（临界段关中断只需保存SR）
@@ -417,34 +417,12 @@ void  AppTaskReadFrame ( void * p_arg )
     OS_CRITICAL_ENTER();                 //进入临界段，不希望下面串口打印遭到中断
     DEBUG_printf ("%s","你好");
     //printf ("%s\r\n","你好");
-    USART4_SendString(mac4USART, (char *)&t_PowerOnFrame);
+    printf("%s\n", (char *)&t_PowerOnFrame);
     OS_CRITICAL_EXIT();
 
-    //OSTimeDly ( 2000, OS_OPT_TIME_DLY, & err ); //不断阻塞该任务
     while (DEF_TRUE)
     {                            //任务体，通常写成一个死循环
-        //macLED2_TOGGLE ();
-
-        /* 发布消息到任务 AppTaskPend
-        OSTaskQPost ((OS_TCB      *)&AppTaskWriteFrameTCB,          //目标任务的控制块
-                    (void        *)"Binghuo uC/OS-III",             //消息内容
-                    (OS_MSG_SIZE  )sizeof ( "Binghuo uC/OS-III" ),  //消息长度
-                    (OS_OPT       )OS_OPT_POST_FIFO,                //发布到任务消息队列的入口端
-                    (OS_ERR      *)&err);                           //返回错误类型
-        */
-
-
-
-        //strcat((char *)ucaMsg,(const char *)ucaUCOS);
-        /* 发布消息到消息队列 queue
-        OSQPost ((OS_Q        *)&queue,                             //消息变量指针
-                 (void        *)ucaMsg,                             //要发送的数据的指针，将内存块首地址通过队列"发送出去"
-                 (OS_MSG_SIZE  )sizeof ( ucaMsg ),                  //数据字节大小
-                 (OS_OPT       )OS_OPT_POST_FIFO | OS_OPT_POST_ALL, //先进先出和发布给全部任务的形式
-                 (OS_ERR      *)&err);                                //返回错误类型
-        ucSerNum++;*/
-
-        pMsg = OSQPend ((OS_Q         *)&queue_uart1,           //消息变量指针
+        pMsg = OSQPend ((OS_Q         *)&queue_uart,            //消息变量指针
                         (OS_TICK       )10,                     //等待时长为无限
                         (OS_OPT        )OS_OPT_PEND_BLOCKING,   //如果没有获取到信号量就等待
                         (OS_MSG_SIZE  *)&msg_size,              //获取消息的字节大小

@@ -234,6 +234,10 @@ void OLED_OFF(void)
   */
 void OLED_ShowStr(unsigned char x, unsigned char y, unsigned char ch[], unsigned char TextSize)
 {
+    CPU_SR_ALLOC();      //使用到临界段（在关/开中断时）时必需该宏，该宏声明和定义一个局部变
+                                 //量，用于保存关中断前的 CPU 状态寄存器 SR（临界段关中断只需保存SR）
+                                 //，开中断时将该值还原.
+#ifdef OLED 
     unsigned char c = 0,i = 0,j = 0;
     OLED_Fill(0);
     switch(TextSize)
@@ -276,6 +280,11 @@ void OLED_ShowStr(unsigned char x, unsigned char y, unsigned char ch[], unsigned
             }
         }break;
     }
+#else
+    OS_CRITICAL_ENTER();                 //进入临界段，不希望下面串口打印遭到中断
+    printf ("%s",ch);
+    OS_CRITICAL_EXIT();
+#endif
 }
 
  /**

@@ -84,19 +84,19 @@
 
 
 /**************************USART参数定义********************************/
-#define             mac4USART_BAUD_RATE                       9600
+#define             macUSART4_BAUD_RATE                       9600
 
-#define             mac4USART                                 UART4
-#define             mac4USART_APBxClock_FUN                   RCC_APB1PeriphClockCmd
-#define             mac4USART_CLK                             RCC_APB1Periph_UART4
-#define             mac4USART_GPIO_APBxClock_FUN              RCC_APB2PeriphClockCmd
-#define             mac4USART_GPIO_CLK                        RCC_APB2Periph_GPIOC
-#define             mac4USART_TX_PORT                         GPIOC
-#define             mac4USART_TX_PIN                          GPIO_Pin_10
-#define             mac4USART_RX_PORT                         GPIOC
-#define             mac4USART_RX_PIN                          GPIO_Pin_11
-#define             mac4USART_IRQ                             UART4_IRQn
-#define             mac4USART_IRQHandler                      UART4_IRQHandler
+#define             macUSART4                                 UART4
+#define             macUSART4_APBxClock_FUN                   RCC_APB1PeriphClockCmd
+#define             macUSART4_CLK                             RCC_APB1Periph_UART4
+#define             macUSART4_GPIO_APBxClock_FUN              RCC_APB2PeriphClockCmd
+#define             macUSART4_GPIO_CLK                        RCC_APB2Periph_GPIOC
+#define             macUSART4_TX_PORT                         GPIOC
+#define             macUSART4_TX_PIN                          GPIO_Pin_10
+#define             macUSART4_RX_PORT                         GPIOC
+#define             macUSART4_RX_PIN                          GPIO_Pin_11
+#define             macUSART4_IRQ                             UART4_IRQn
+#define             macUSART4_IRQHandler                      UART4_IRQHandler
 
 // 串口5-UART5
 //#define  DEBUG_USARTx                   UART5

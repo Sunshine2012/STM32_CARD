@@ -3,7 +3,7 @@
 
 #include "stm32f10x.h"
 
-#define OLED_ADDRESS	0x7e //通过调整0R电阻,屏可以0x78和0x7A两个地址 -- 默认0x78
+#define OLED_ADDRESS	0x7e // 屏的默认地址0x7e
 
 
 
@@ -19,7 +19,7 @@
 #define             macOLED_RESET_ON()                            GPIO_ResetBits ( macOLED_RESET_GPIO_PORT, macOLED_RESET_GPIO_PIN )
 #define             macOLED_RESET_OFF()                           GPIO_SetBits ( macOLED_RESET_GPIO_PORT, macOLED_RESET_GPIO_PIN )
 #define             macOLED_RESET_TOGGLE()                        GPIO_ReadOutputDataBit ( macOLED_RESET_GPIO_PORT, macLED1_GPIO_PIN ) ? \
-                                                            GPIO_ResetBits ( macOLED_RESET_GPIO_PORT, macOLED_RESET_GPIO_PIN ) : GPIO_SetBits ( macOLED_RESET_GPIO_PORT, macOLED_RESET_GPIO_PIN )
+                                                                  GPIO_ResetBits ( macOLED_RESET_GPIO_PORT, macOLED_RESET_GPIO_PIN ) : GPIO_SetBits ( macOLED_RESET_GPIO_PORT, macOLED_RESET_GPIO_PIN )
 
 
 void I2C_Configuration(void);

@@ -94,7 +94,7 @@ CPU_INT08U  AnalyzeUartFrame ( CPU_INT08U * p_arg )
     {
         g_tP_RsctlFrame.RSCTL = ucNum;
         OS_CRITICAL_ENTER();                 //进入临界段，不希望下面串口打印遭到中断
-        USART4_SendString(mac4USART,(char *)&g_tP_RsctlFrame);   //发送正应答帧
+        printf("%s",(char *)&g_tP_RsctlFrame);   //发送正应答帧
         DEBUG_printf ("%s\r\n",(char *)check_msg(type_frame));
         //printf ("%s\r\n","收到信息");
         OS_CRITICAL_EXIT();
@@ -113,10 +113,10 @@ CPU_INT08U  AnalyzeUartFrame ( CPU_INT08U * p_arg )
                 OLED_ShowStr(0,0,p_arg,1);
             break;
             case PC_QUERY_CARD_CLIP:
-                OLED_ShowStr(0,0,p_arg,1);      /* 查询卡夹(66H)帧 */
+                OLED_ShowStr(0,0,p_arg,1);   /* 查询卡夹(66H)帧 */
             break;
             case PC_SET_CARD_NUM:
-                OLED_ShowStr(0,0,p_arg,1);      /* 设置卡夹卡数(67H)帧 */
+                OLED_ShowStr(0,0,p_arg,1);   /* 设置卡夹卡数(67H)帧 */
             break;
             default:
             break;
