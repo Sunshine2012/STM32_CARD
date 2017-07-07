@@ -14,23 +14,31 @@
 #define SPI_FLASH_PerWritePageSize      256
 
 /*命令定义-开头*******************************/
-#define AT26XX_WriteEnable		        0x06
-#define AT26XX_WriteDisable		        0x04
-#define AT26XX_ReadStatusReg		    0x05
-#define AT26XX_WriteStatusReg		    0x01
-#define AT26XX_ReadData			        0x03
-#define AT26XX_FastReadData		        0x0B
-#define AT26XX_FastReadDual		        0x3B
-#define AT26XX_ByteProgram		        0x02
-#define AT26XX_PageProgram		        0xAF
-#define AT26XX_BlockErase			    0xD8
-#define AT26XX_SectorErase		        0x20
-#define AT26XX_ChipErase			    0xC7
-#define AT26XX_PowerDown			    0xB9
+
+#define AT26XX_FastReadData             0x0B
+#define AT26XX_ReadData                 0x03
+
+#define AT26XX_BlockErase4K             0x20
+#define AT26XX_BlockErase32K            0x52
+#define AT26XX_BlockErase64K            0xD8
+#define AT26XX_ChipEraseFirst           0x60
+#define AT26XX_ChipEraseSecend          0xc7
+
+#define AT26XX_ByteProgram              0x02
+#define AT26XX_SequentialByteProgram    0xAF
+
+#define AT26XX_WriteEnable              0x06
+#define AT26XX_WriteDisable             0x04
+#define AT26XX_ProtectSector            0x36
+#define AT26XX_UnprotectSector          0x39
+#define AT26XX_ReadSectorProtection     0x3c
+
+#define AT26XX_ReadStatusReg            0x05
+#define AT26XX_WriteStatusReg           0x01
+
+#define AT26XX_DeviceID                 0x9F
+#define AT26XX_PowerDown                0xB9
 #define AT26XX_ReleasePowerDown	        0xAB
-#define AT26XX_DeviceID			        0xAB
-//#define AT26XX_ManufactDeviceID   	    0x90
-#define AT26XX_JedecDeviceID		    0x9F
 
 /* WIP(busy)标志，FLASH内部正在写入 */
 #define WIP_Flag                  0x01
@@ -85,8 +93,10 @@
                                             }while(0)
 
 void SPI_FLASH_Init(void);
+void SPI_FLASH_UnprotectSector(u32 SectorAddr);
 void SPI_FLASH_SectorErase(u32 SectorAddr);
-void SPI_FLASH_BulkErase(void);
+void SPI_FLASH_ChipErase(void);
+void SPI_FLASH_ByteWrite(u32 WriteAddr, u8 ch);
 void SPI_FLASH_PageWrite(u8* pBuffer, u32 WriteAddr, u16 NumByteToWrite);
 void SPI_FLASH_BufferWrite(u8* pBuffer, u32 WriteAddr, u16 NumByteToWrite);
 void SPI_FLASH_BufferRead(u8* pBuffer, u32 ReadAddr, u16 NumByteToRead);
@@ -100,6 +110,7 @@ void SPI_Flash_WAKEUP(void);
 u8 SPI_FLASH_ReadByte(void);
 u8 SPI_FLASH_SendByte(u8 byte);
 u16 SPI_FLASH_SendHalfWord(u16 HalfWord);
+void SPI_FLASH_WriteDisnable(void);
 void SPI_FLASH_WriteEnable(void);
 void SPI_FLASH_WaitForWriteEnd(void);
 

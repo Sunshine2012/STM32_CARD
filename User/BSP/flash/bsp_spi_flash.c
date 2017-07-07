@@ -8,7 +8,7 @@
  ******************************************************************************
  * @attention
  *
- * 实验平台:秉火 F103-指南者 STM32 开发板
+ * 实验平台:
  * 论坛
  * 淘宝
  *
@@ -16,10 +16,10 @@
  */
 
 #include "bsp_spi_flash.h"
-
+#include "includes.h"
 static __IO uint32_t  SPITimeout = SPIT_LONG_TIMEOUT;
 static uint16_t SPI_TIMEOUT_UserCallback(uint8_t errorCode);
-
+OS_ERR      err;
 /**
   * @brief  SPI_FLASH初始化
   * @param  无
@@ -67,7 +67,7 @@ void SPI_FLASH_Init(void)
     SPI_InitStructure.SPI_CPOL = SPI_CPOL_High;
     SPI_InitStructure.SPI_CPHA = SPI_CPHA_2Edge;
     SPI_InitStructure.SPI_NSS = SPI_NSS_Soft;
-    SPI_InitStructure.SPI_BaudRatePrescaler = SPI_BaudRatePrescaler_4;
+    SPI_InitStructure.SPI_BaudRatePrescaler = SPI_BaudRatePrescaler_2;
     SPI_InitStructure.SPI_FirstBit = SPI_FirstBit_MSB;
     SPI_InitStructure.SPI_CRCPolynomial = 7;
     SPI_Init(FLASH_SPIx , &SPI_InitStructure);
@@ -76,6 +76,34 @@ void SPI_FLASH_Init(void)
     SPI_Cmd(FLASH_SPIx , ENABLE);
 
 }
+
+/**
+ * @brief  去FLASH扇区写保护
+ * @param  Unprotect Sector    去写保护
+ * @retval 无
+ */
+void SPI_FLASH_UnprotectSector(u32 SectorAddr)
+{
+    /* 发送FLASH写使能命令 */
+    SPI_FLASH_WriteEnable();
+    SPI_FLASH_WaitForWriteEnd();
+    /* 擦除扇区 */
+    /* 选择FLASH: CS低电平 */
+    SPI_FLASH_CS_LOW();
+    /* 发送扇区擦除指令*/
+    SPI_FLASH_SendByte(AT26XX_UnprotectSector);
+    /*发送擦除扇区地址的高位*/
+    SPI_FLASH_SendByte((SectorAddr & 0xFF0000) >> 16);
+    /* 发送擦除扇区地址的中位 */
+    SPI_FLASH_SendByte((SectorAddr & 0xFF00) >> 8);
+    /* 发送擦除扇区地址的低位 */
+    SPI_FLASH_SendByte(SectorAddr & 0xFF);
+    /* 停止信号 FLASH: CS 高电平 */
+    SPI_FLASH_CS_HIGH();
+    /* 等待擦除完毕*/
+    SPI_FLASH_WaitForWriteEnd();
+}
+
 /**
  * @brief  擦除FLASH扇区
  * @param  SectorAddr：要擦除的扇区地址
@@ -85,12 +113,12 @@ void SPI_FLASH_SectorErase(u32 SectorAddr)
 {
     /* 发送FLASH写使能命令 */
     SPI_FLASH_WriteEnable();
-    SPI_FLASH_WaitForWriteEnd();
+    //SPI_FLASH_WaitForWriteEnd();
     /* 擦除扇区 */
     /* 选择FLASH: CS低电平 */
     SPI_FLASH_CS_LOW();
     /* 发送扇区擦除指令*/
-    SPI_FLASH_SendByte(AT26XX_SectorErase);
+    SPI_FLASH_SendByte(AT26XX_BlockErase4K);
     /*发送擦除扇区地址的高位*/
     SPI_FLASH_SendByte((SectorAddr & 0xFF0000) >> 16);
     /* 发送擦除扇区地址的中位 */
@@ -108,16 +136,17 @@ void SPI_FLASH_SectorErase(u32 SectorAddr)
  * @param  无
  * @retval 无
  */
-void SPI_FLASH_BulkErase(void)
+void SPI_FLASH_ChipErase(void)
 {
     /* 发送FLASH写使能命令 */
     SPI_FLASH_WriteEnable();
-
+    SPI_FLASH_WaitForWriteEnd();
     /* 整块 Erase */
     /* 选择FLASH: CS低电平 */
     SPI_FLASH_CS_LOW();
     /* 发送整块擦除指令*/
-    SPI_FLASH_SendByte(AT26XX_ChipErase);
+    SPI_FLASH_SendByte(AT26XX_ChipEraseFirst);
+    SPI_FLASH_SendByte(AT26XX_ChipEraseSecend);
     /* 停止信号 FLASH: CS 高电平 */
     SPI_FLASH_CS_HIGH();
 
@@ -132,21 +161,82 @@ void SPI_FLASH_BulkErase(void)
  * @param  NumByteToWrite，写入数据长度，必须小于等于SPI_FLASH_PerWritePageSize
  * @retval 无
  */
-void SPI_FLASH_PageWrite(u8* pBuffer, u32 WriteAddr, u16 NumByteToWrite)
+void SPI_FLASH_ByteWrite(u32 WriteAddr, u8 ch)
 {
     /* 发送FLASH写使能命令 */
     SPI_FLASH_WriteEnable();
-
+    //SPI_FLASH_WaitForWriteEnd();
     /* 选择FLASH: CS低电平 */
     SPI_FLASH_CS_LOW();
+
     /* 写页写指令*/
-    SPI_FLASH_SendByte(AT26XX_PageProgram);
+    SPI_FLASH_SendByte(AT26XX_ByteProgram);
     /*发送写地址的高位*/
     SPI_FLASH_SendByte((WriteAddr & 0xFF0000) >> 16);
     /*发送写地址的中位*/
     SPI_FLASH_SendByte((WriteAddr & 0xFF00) >> 8);
     /*发送写地址的低位*/
     SPI_FLASH_SendByte(WriteAddr & 0xFF);
+    //写一个字节
+    SPI_FLASH_SendByte(ch);
+    //OSTimeDly ( 1, OS_OPT_TIME_DLY, & err ); // 延时
+    SPI_FLASH_CS_HIGH();
+    SPI_FLASH_WaitForWriteEnd();
+}
+
+
+/**
+ * @brief  对FLASH按页写入数据，调用本函数写入数据前需要先擦除扇区
+ * @param	pBuffer，要写入数据的指针
+ * @param WriteAddr，写入地址
+ * @param  NumByteToWrite，写入数据长度，必须小于等于SPI_FLASH_PerWritePageSize
+ * @retval 无
+ */
+void SPI_ByteWrite(u8 ch)
+{
+    /* 选择FLASH: CS低电平 */
+    SPI_FLASH_CS_LOW();
+
+    SPI_FLASH_SendByte(ch);
+    OSTimeDly ( 1, OS_OPT_TIME_DLY, & err ); // 延时
+    SPI_FLASH_CS_HIGH();
+}
+/**
+ * @brief  对FLASH按页写入数据，调用本函数写入数据前需要先擦除扇区
+ * @param	pBuffer，要写入数据的指针
+ * @param WriteAddr，写入地址
+ * @param  NumByteToWrite，写入数据长度，必须小于等于SPI_FLASH_PerWritePageSize
+ * @retval 无
+ */
+unsigned char udata = 0;
+void SPI_FLASH_PageWrite(u8* pBuffer, u32 WriteAddr, u16 NumByteToWrite)
+{
+    /* 发送FLASH写使能命令 */
+    SPI_FLASH_WriteEnable();
+    //SPI_FLASH_WaitForWriteEnd();
+    /* 选择FLASH: CS低电平 */
+    SPI_FLASH_CS_LOW();
+
+    /* 写页写指令*/
+    SPI_FLASH_SendByte(AT26XX_SequentialByteProgram);
+    //SPI_FLASH_SendByte(AT26XX_ByteProgram);
+    /*发送写地址的高位*/
+    SPI_FLASH_SendByte((WriteAddr & 0xFF0000) >> 16);
+    /*发送写地址的中位*/
+    SPI_FLASH_SendByte((WriteAddr & 0xFF00) >> 8);
+    /*发送写地址的低位*/
+    SPI_FLASH_SendByte(WriteAddr & 0xFF);
+    //写第一个字节
+    SPI_FLASH_SendByte(*pBuffer);
+
+    pBuffer++;
+    //要写字节数据的个数减一
+    NumByteToWrite--;
+
+    /* 停止信号 FLASH: CS 高电平 */
+    SPI_FLASH_CS_HIGH();
+
+    SPI_FLASH_WaitForWriteEnd();
 
     if (NumByteToWrite > SPI_FLASH_PerWritePageSize)
     {
@@ -157,10 +247,17 @@ void SPI_FLASH_PageWrite(u8* pBuffer, u32 WriteAddr, u16 NumByteToWrite)
     /* 写入数据*/
     while (NumByteToWrite--)
     {
-        /* 发送当前要写入的字节数据 */
+
+        SPI_FLASH_CS_LOW();
+        /* Send "sequtial Write to Memory " instruction */
+        SPI_FLASH_SendByte(AT26XX_SequentialByteProgram);
+        /* Send the current byte */
         SPI_FLASH_SendByte(*pBuffer);
         /* 指向下一字节数据 */
+        /* Point on the next byte to be written */
         pBuffer++;
+        SPI_FLASH_CS_HIGH();
+        SPI_FLASH_WaitForWriteEnd();
     }
 
     /* 停止信号 FLASH: CS 高电平 */
@@ -168,6 +265,8 @@ void SPI_FLASH_PageWrite(u8* pBuffer, u32 WriteAddr, u16 NumByteToWrite)
 
     /* 等待写入完毕*/
     SPI_FLASH_WaitForWriteEnd();
+    /* 关闭写使能 */
+    SPI_FLASH_WriteDisnable();      // 必须加上此语句
 }
 
 /**
@@ -277,14 +376,15 @@ void SPI_FLASH_BufferRead(u8* pBuffer, u32 ReadAddr, u16 NumByteToRead)
     SPI_FLASH_CS_LOW();
 
     /* 发送 读 指令 */
-    SPI_FLASH_SendByte(AT26XX_ReadData);
-
+    SPI_FLASH_SendByte(AT26XX_FastReadData);
     /* 发送 读 地址高位 */
     SPI_FLASH_SendByte((ReadAddr & 0xFF0000) >> 16);
     /* 发送 读 地址中位 */
     SPI_FLASH_SendByte((ReadAddr& 0xFF00) >> 8);
     /* 发送 读 地址低位 */
     SPI_FLASH_SendByte(ReadAddr & 0xFF);
+
+    SPI_FLASH_SendByte(Dummy_Byte);
 
     /* 读取数据 */
     while (NumByteToRead--) /* while there is data to be read */
@@ -312,7 +412,7 @@ u32 SPI_FLASH_ReadID(void)
     SPI_FLASH_CS_LOW();
 
     /* 发送JEDEC指令，读取ID */
-    SPI_FLASH_SendByte(AT26XX_JedecDeviceID);
+    SPI_FLASH_SendByte(AT26XX_DeviceID);
 
     /* 读取一个字节数据 */
     Temp0 = SPI_FLASH_SendByte(Dummy_Byte);
@@ -469,6 +569,22 @@ void SPI_FLASH_WriteEnable(void)
     SPI_FLASH_CS_HIGH();
 }
 
+/**
+ * @brief  向FLASH发送 不可写使能 命令
+ * @param  none
+ * @retval none
+ */
+void SPI_FLASH_WriteDisnable(void)
+{
+    /* 通讯开始：CS低 */
+    SPI_FLASH_CS_LOW();
+
+    /* 发送写使能命令*/
+    SPI_FLASH_SendByte(AT26XX_WriteDisable);
+
+    /*通讯结束：CS高 */
+    SPI_FLASH_CS_HIGH();
+}
 /* WIP(busy)标志，FLASH内部正在写入 */
 #define WIP_Flag                  0x01
 
