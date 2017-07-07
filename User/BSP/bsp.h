@@ -83,6 +83,7 @@
 #include "bsp_lcd_I2C.h"
 #include "bsp_can.h"
 #include "frame.h"
+#include "bsp_spi_flash.h"
 
 
 /*

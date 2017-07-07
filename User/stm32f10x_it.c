@@ -194,7 +194,7 @@ void macUSART1_IRQHandler(void)
 
 // 串口中断服务函数
 // 把接收到的数据存在一个数组缓冲区里面，当接收到的的值等于0XFF时，把值返回
-void mac4USART_IRQHandler(void)
+void macUSART4_IRQHandler(void)
 {
     OS_ERR      err;
     CPU_SR_ALLOC();      //使用到临界段（在关/开中断时）时必需该宏，该宏声明和定义一个局部变

@@ -8,9 +8,9 @@
   ******************************************************************************
   * @attention
   *
-  * 实验平台:野火 ISO STM32 开发板
-  * 论坛    :http://www.firebbs.cn
-  * 淘宝    :https://fire-stm32.taobao.com
+  * 实验平台:
+  * 论坛
+  * 淘宝
 
     * Function List:
     *    1. void I2C_Configuration(void) -- 配置CPU的硬件I2C
@@ -135,9 +135,7 @@ void OLED_Init(void)
 {
     OS_ERR      err;
     macOLED_RESET_ON();
-    OSTimeDly ( 1000, OS_OPT_TIME_DLY, & err ); // 延时
     macOLED_RESET_OFF();
-    OSTimeDly ( 1000, OS_OPT_TIME_DLY, & err ); // 延时
 
     WriteCmd(0x3b); //
     WriteCmd(0x03); //

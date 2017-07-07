@@ -68,7 +68,7 @@
 
 #define  APP_TASK_TMR_STK_SIZE                          128
 
-#define  APP_TASK_OLED_STK_SIZE                         128
+#define  APP_TASK_OLED_STK_SIZE                         1024
 
 #define  APP_TASK_CAN_FRAME_STK_SIZE                    128
 

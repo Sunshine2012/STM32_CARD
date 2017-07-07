@@ -331,9 +331,56 @@ static  void  AppTaskTmr ( void * p_arg )
     }
 }
 
+TestStatus Buffercmp(uint8_t* pBuffer1,uint8_t* pBuffer2, uint16_t BufferLength);
 
+/*
+ * 函数名：Buffercmp
+ * 描述  ：比较两个缓冲区中的数据是否相等
+ * 输入  ：-pBuffer1     src缓冲区指针
+ *         -pBuffer2     dst缓冲区指针
+ *         -BufferLength 缓冲区长度
+ * 输出  ：无
+ * 返回  ：-PASSED pBuffer1 等于   pBuffer2
+ *         -FAILED pBuffer1 不同于 pBuffer2
+ */
+TestStatus Buffercmp(uint8_t* pBuffer1, uint8_t* pBuffer2, uint16_t BufferLength)
+{
+  while(BufferLength--)
+  {
+    if(*pBuffer1 != *pBuffer2)
+    {
+      return FAILED;
+    }
+
+    pBuffer1++;
+    pBuffer2++;
+  }
+  return PASSED;
+}
 static  void AppTaskOLED ( void * p_arg )
 {
+    CPU_SR_ALLOC();      //使用到临界段（在关/开中断时）时必需该宏，该宏声明和定义一个局部变
+                                 //量，用于保存关中断前的 CPU 状态寄存器 SR（临界段关中断只需保存SR）
+                                 //，开中断时将该值还原.
+    /* 发送缓冲区初始化 */
+    uint8_t Tx_Buffer[] = "111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111222222222222222222222222222222221111111111111111111111111111111111111111111111111111111111111111111111111111222222222222222222222222222222221111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111122222222222222222222222222222222111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111222222222222222222222222222222221111111111111111111111111111111111111111111111111111111111111111111111111111222222222222222222222222222222221111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111122222222222222222222222222222222111111111111111111111111111111111111111111111111111111111111111111111111111122222222222222222222222222222222111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111112222222222222222222222222222222211111111111111111111111111111111111111111111111111111111111111122222222222222222222222222222222111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111222222222222222222222222222222221111111111111111111111111111111111111111111111111111111111111111111111111111222222222222222222222222222222221111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111122222222222222222222222222222222\r\n";
+    typedef enum { FAILED = 0, PASSED = !FAILED} TestStatus;
+    #define countof(a)      (sizeof(a) / sizeof(*(a)))
+    /* 获取缓冲区的长度 */
+    #define TxBufferSize1   (countof(TxBuffer1) - 1)
+    #define RxBufferSize1   (countof(TxBuffer1) - 1)
+
+    #define  BufferSize (countof(Tx_Buffer)-1)
+
+    #define  FLASH_WriteAddress     0x00000
+    #define  FLASH_ReadAddress      FLASH_WriteAddress
+    #define  FLASH_SectorToErase    FLASH_WriteAddress
+    __IO uint32_t DeviceID = 0;
+    __IO uint32_t FlashID = 0;
+    __IO TestStatus TransferStatus1 = FAILED;
+
+    uint8_t Rx_Buffer[BufferSize] = "";
+
     OS_ERR      err;
 #ifdef OLED
     //u8 arr[]
@@ -348,6 +395,50 @@ static  void AppTaskOLED ( void * p_arg )
     //OLED_Fill(0xff);
     //OLED_DrawBMP(0,0,128,8,BMP1);
 #endif
+
+    SPI_FLASH_Init();
+
+    //OSTimeDly ( 10, OS_OPT_TIME_DLY, & err ); // 延时
+    /* 获取 SPI Flash ID */
+    OS_CRITICAL_ENTER();                 //进入临界段，不希望下面串口打印遭到中断
+    FlashID = SPI_FLASH_ReadID();
+    printf("FlashID is 0x%X\r\n", FlashID);
+
+    /* 检验 SPI Flash ID */
+    if (FlashID == sFLASH_ID)
+    {
+        SPI_FLASH_UnprotectSector(FLASH_SectorToErase);  // 可以不需要此行
+        printf("检测到串行flash AT26F004 !\r\n");
+
+        /* 擦除将要写入的 SPI FLASH 扇区，FLASH写入前要先擦除 */
+        // 这里擦除4K，即一个扇区，擦除的最小单位是扇区
+        SPI_FLASH_SectorErase(FLASH_SectorToErase);
+        //SPI_FLASH_ChipErase();
+
+        /* 将发送缓冲区的数据写到flash中 */
+        // 这里写一页，一页的大小为256个字节
+
+        SPI_FLASH_BufferWrite(Tx_Buffer, FLASH_WriteAddress, BufferSize);
+
+        printf("写入的数据为:%s\r\n", Tx_Buffer);
+        //OSTimeDly ( 10, OS_OPT_TIME_DLY, & err ); // 延时
+        /* 将刚刚写入的数据读出来放到接收缓冲区中 */
+        SPI_FLASH_BufferRead(Rx_Buffer, FLASH_ReadAddress, BufferSize);
+        printf("读出的数据为:%s\r\n", Rx_Buffer);
+        /* 检查写入的数据与读出的数据是否相等 */
+        TransferStatus1 = Buffercmp(Tx_Buffer, Rx_Buffer, BufferSize);
+
+        if( PASSED == TransferStatus1 )
+        {
+            printf("8M flash(AT26F004)ok!\r\n");
+        }
+        else
+        {
+            printf("8M flash(AT26F004)fail!\r\n");
+        }
+    }
+    OS_CRITICAL_EXIT();
+
     while (DEF_TRUE)
     {                            //任务体，通常写成一个死循环
         //macLED2_TOGGLE ();

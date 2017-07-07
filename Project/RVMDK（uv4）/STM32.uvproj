@@ -349,9 +349,9 @@
             <uSurpInc>0</uSurpInc>
             <VariousControls>
               <MiscControls></MiscControls>
-              <Define>STM32F10X_HD,USE_STDPERIPH_DRIVER,uart1</Define>
+              <Define>STM32F10X_HD,USE_STDPERIPH_DRIVER,OLED,uart4</Define>
               <Undefine></Undefine>
-              <IncludePath>..\..\Libraries\CMSIS;..\..\Libraries\FWlib\inc;..\..\User;..\..\User\APP;..\..\User\BSP;..\..\User\BSP\led;..\..\User\BSP\usart1;..\..\User\uC-CPU;..\..\User\uC-CPU\ARM-Cortex-M3\RealView;..\..\User\uC-LIB;..\..\User\uCOS-III\Source;..\..\User\uCOS-III\Ports\ARM-Cortex-M3\Generic\RealView;..\..\User\BSP\lcd;..\..\User\BSP\frame;..\..\User\BSP\usart4;..\..\User\BSP\can</IncludePath>
+              <IncludePath>..\..\Libraries\CMSIS;..\..\Libraries\FWlib\inc;..\..\User;..\..\User\APP;..\..\User\BSP;..\..\User\BSP\led;..\..\User\BSP\usart1;..\..\User\uC-CPU;..\..\User\uC-CPU\ARM-Cortex-M3\RealView;..\..\User\uC-LIB;..\..\User\uCOS-III\Source;..\..\User\uCOS-III\Ports\ARM-Cortex-M3\Generic\RealView;..\..\User\BSP\lcd;..\..\User\BSP\frame;..\..\User\BSP\usart4;..\..\User\BSP\can;..\..\User\BSP\flash</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -906,6 +906,16 @@
               <FileName>bsp_can.h</FileName>
               <FileType>5</FileType>
               <FilePath>..\..\User\BSP\can\bsp_can.h</FilePath>
+            </File>
+            <File>
+              <FileName>bsp_spi_flash.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\User\BSP\flash\bsp_spi_flash.c</FilePath>
+            </File>
+            <File>
+              <FileName>bsp_spi_flash.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\..\User\BSP\flash\bsp_spi_flash.h</FilePath>
             </File>
           </Files>
         </Group>
