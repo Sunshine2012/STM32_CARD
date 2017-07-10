@@ -20,6 +20,7 @@ static void CAN_NVIC_Config(void);
 void CAN_init( void );
 void CAN_Interrupt(void);
 void CAN_Polling(void);
+void CANTransmit (void * p_Msg);
 
 void USB_LP_CAN1_RX0_IRQHandler(void);
 #endif

@@ -7,7 +7,18 @@ RSCTL_FREME g_tN_sctlFrame =  {'<','1','0','>'};        // 负应答帧
 CARD_MACHINE_POWER_ON_FREME      g_tCardMechinePowerOnFrame;         /* 卡机上电信息(41H)帧          4字节 */
 CARD_MACHINE_STATUES_FRAME       g_tCardMechineStatusFrame;          /* 状态信息(42H)帧             30字节 */
 CARD_MECHINE_TO_PC_FRAME         g_tCardSpitOutFrame;                /* 已出卡信息(43H)帧            6字节 */
-CARD_MECHINE_TO_PC_FRAME         g_tCardKeyPressFrame;               /* 按钮取卡信息(44H)帧          6字节 */
+/* 按钮取卡信息(44H)帧          6字节 */
+/*
+CARD_MECHINE_TO_PC_FRAME        g_tCardKeyPressFrame = {
+                                                        .STX = '<',
+                                                        .RSCTL = '0',
+                                                        .CTL= CARD_KEY_PRESS,
+                                                        .CARD_MECHINE = '1',
+                                                        .MECHINE_ID = '1',
+                                                        .ETX = '>',};
+*/
+CARD_MECHINE_TO_PC_FRAME        g_tCardKeyPressFrame = {'<', '0', CARD_KEY_PRESS, '1', '1', '>',};
+
 CARD_MECHINE_TO_PC_FRAME         g_tCardTakeAwayFrame;               /* 卡被取走信息(45H)帧          6字节 */
 CARD_REPORT_SPIT_STATUES_FRAME   g_tCardReportSpitStatusFrame;       /* 上报卡夹号编号信息(46H)帧   36字节 */
 
@@ -17,6 +28,10 @@ PC_TO_CARD_MECHINE_FRAME         g_tPcSpitOutCardFrame;              /* 坏卡信息
 PC_TO_CARD_MECHINE_FRAME         g_tPcQuetyCardMechineFrame;         /* 查询卡机状态(65H)帧          5字节 */
 PC_TO_CARD_MECHINE_FRAME         g_tPcQuetyCardCpipFrame;            /* 查询卡夹(66H)帧              5字节 */
 PC_SET_CARD_NUM_FRAME            g_tPcSetCardNumFrame;               /* 设置卡夹卡数(67H)帧          8字节*/
+
+
+
+
 
 //#pragma  diag_suppress 870          // 不显示警告
 
@@ -62,25 +77,52 @@ char * check_msg(CPU_INT08U ch)
 
 
 
-CPU_INT08U  AnalyzeCANFrame ( CPU_INT08U * p_arg )
+CPU_INT08U  AnalyzeCANFrame ( void * p_arg )
 {
     //OS_ERR      err;
     //OS_MSG_SIZE    msg_size;
     //CPU_TS         ts;
     //char * pMsg = NULL;
     //USART4_SendString();
+    CanRxMsg *pRxMessage = (CanRxMsg *)p_arg;                // can数据接收缓存
+    printf ("%s",(char *)pRxMessage->Data);
+    switch(pRxMessage->Data[3])
+    {
+        case 0:
+            //OLED_ShowStr(0,0,p_arg,1);
+        break;
+        case 1:
+            //OLED_ShowStr(0,0,p_arg,1);
+        break;
+        case 2:
+            OLED_ShowStr(0,0,p_arg,1);
+            printf ("%s",(char *)&g_tCardKeyPressFrame);
+        break;
+        case 3:
+            //OLED_ShowStr(0,0,p_arg,1);
+        break;
+        case PC_QUERY_CARD_CLIP:
+            //OLED_ShowStr(0,0,p_arg,1);   /* 查询卡夹(66H)帧 */
+        break;
+        case PC_SET_CARD_NUM:
+            //OLED_ShowStr(0,0,p_arg,1);   /* 设置卡夹卡数(67H)帧 */
+        break;
+        default:
+            OLED_ShowStr(0,0,p_arg,1);
+        break;
+    }
     return 0;
 }
 
-CPU_INT08U  AnalyzeUartFrame ( CPU_INT08U * p_arg )
+CPU_INT08U  AnalyzeUartFrame ( void * p_arg )
 {
     CPU_SR_ALLOC();      //使用到临界段（在关/开中断时）时必需该宏，该宏声明和定义一个局部变
                                      //量，用于保存关中断前的 CPU 状态寄存器 SR（临界段关中断只需保存SR）
                                      //，开中断时将该值还原.
     //OS_ERR      err;
     CPU_INT08U ucSerNum = 0;
-    CPU_INT08U ucNum = *(p_arg + 1);
-    CPU_INT08U type_frame = *(p_arg + 2);
+    CPU_INT08U ucNum = *((CPU_INT08U *)p_arg + 1);
+    CPU_INT08U type_frame = *((CPU_INT08U *)p_arg + 2);
 
     if (POSITIVE_ACK == type_frame)    // 正应答帧
     {

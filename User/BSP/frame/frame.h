@@ -173,8 +173,8 @@ extern PC_TO_CARD_MECHINE_FRAME         g_tPcQuetyCardMechineFrame;         /* ²
 extern PC_TO_CARD_MECHINE_FRAME         g_tPcQuetyCardCpipFrame;            /* ²éÑ¯¿¨¼Ð(66H)Ö¡              5×Ö½Ú */
 extern PC_SET_CARD_NUM_FRAME            g_tPcSetCardNumFrame;               /* ÉèÖÃ¿¨¼Ð¿¨Êý(67H)Ö¡          8×Ö½Ú */
 
-CPU_INT08U  AnalyzeCANFrame( CPU_INT08U * p_arg );
-CPU_INT08U  AnalyzeUartFrame ( CPU_INT08U * p_arg );
+CPU_INT08U  AnalyzeCANFrame ( void * p_arg );
+CPU_INT08U  AnalyzeUartFrame ( void * p_arg );
 
 
 #endif /* __FRAME_H */

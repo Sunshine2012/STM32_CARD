@@ -116,6 +116,29 @@ void MyCANTransmit (void)
 }
 
 
+void CANTransmit (void * p_Msg)
+{
+    u32 i = 0;
+    u8 TransmitMailbox;
+    CanTxMsg *p_TxMessage = (CanTxMsg *)p_Msg;
+    //CanRxMsg RxMessage;
+
+    /* transmit */
+    TransmitMailbox = CAN_Transmit(CAN1,p_TxMessage);
+    i = 0;
+    while((CAN_TransmitStatus(CAN1,TransmitMailbox) != CANTXOK) && (i != 0xFF))
+    {
+        i++;
+    }
+
+    i = 0;
+    while((CAN_MessagePending(CAN1,CAN_FIFO0) < 1) && (i != 0xFF))
+    {
+        i++;
+    }
+}
+
+
 /*******************************************************************************
 * Function Name  : CAN_Polling
 * Description    : Configures the CAN and transmit and receive by polling
@@ -173,8 +196,6 @@ void CAN_Interrupt(void)
 {
   CAN_InitTypeDef        CAN_InitStructure;
   CAN_FilterInitTypeDef  CAN_FilterInitStructure;
-  CanTxMsg TxMessage;
-  u32 i = 0;
 
   /* CAN register init */
   CAN_DeInit(CAN1);
@@ -223,30 +244,35 @@ void CAN_Interrupt(void)
 *******************************************************************************/
 void USB_LP_CAN1_RX0_IRQHandler(void)
 {
-    CanRxMsg RxMessage;
+    CPU_SR_ALLOC();      //使用到临界段（在关/开中断时）时必需该宏，该宏声明和定义一个局部变
+                                             //量，用于保存关中断前的 CPU 状态寄存器 SR（临界段关中断只需保存SR）
+                                             //，开中断时将该值还原。
+    OS_ERR      err;
+    CanRxMsg RxMessage = {0};
+    OS_MSG_SIZE usNum = 20;
+    //MyCANTransmit ();
 
-    MyCANTransmit ();
-
-    RxMessage.StdId=0x00;
-    RxMessage.ExtId=0x00;
-    RxMessage.IDE=0;
-    RxMessage.DLC=0;
-    RxMessage.FMI=0;
-    RxMessage.Data[0]=0x00;
-    RxMessage.Data[1]=0x00;
-
+    OS_CRITICAL_ENTER();                 //进入临界段，不希望下面串口打印遭到中断
     CAN_Receive(CAN1,CAN_FIFO0, &RxMessage);
-
-    if((RxMessage.ExtId == 0x7800) && (RxMessage.IDE == CAN_ID_EXT)
-     && (RxMessage.DLC ==2 ) && ((RxMessage.Data[1] | RxMessage.Data[0]<<8) == 0xDECA))
+    CANTransmit (&RxMessage);
+    if(((0x0000ffff & RxMessage.ExtId) == 0x00007800) && (RxMessage.IDE == CAN_ID_EXT))
     {
-
-        //GPIO_SetBits (GPIOD, GPIO_Pin_8);
+        /* 发布消息到消息队列 queue */
+        OSQPost ((OS_Q        *)&queue_can,                             //消息变量指针
+                (void        *)&RxMessage,                              //要发送的数据的指针，将内存块首地址通过队列"发送出去"
+                (OS_MSG_SIZE  )usNum,              //数据字节大小
+                (OS_OPT       )OS_OPT_POST_FIFO | OS_OPT_POST_ALL,      //先进先出和发布给全部任务的形式
+                (OS_ERR      *)&err);
+        if(RxMessage.Data[3] == 0x02)
+        {
+            printf ("%s\r\n","<1D11>");
+        }
     }
     else
     {
 
     }
+    OS_CRITICAL_EXIT();
 }
 
 
