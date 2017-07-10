@@ -93,26 +93,13 @@
                                             }while(0)
 
 void FONT_SPI_FLASH_Init(void);
-void FONT_SPI_FLASH_UnprotectSector(u32 SectorAddr);
-void FONT_SPI_FLASH_SectorErase(u32 SectorAddr);
-void FONT_SPI_FLASH_ChipErase(void);
-void FONT_SPI_FLASH_ByteWrite(u32 WriteAddr, u8 ch);
-void FONT_SPI_FLASH_PageWrite(u8* pBuffer, u32 WriteAddr, u16 NumByteToWrite);
-void FONT_SPI_FLASH_BufferWrite(u8* pBuffer, u32 WriteAddr, u16 NumByteToWrite);
+
 void FONT_SPI_FLASH_BufferRead(u8* pBuffer, u32 ReadAddr, u16 NumByteToRead);
-u32 FONT_SPI_FLASH_ReadID(void);
-u32 FONT_SPI_FLASH_ReadDeviceID(void);
-void FONT_SPI_FLASH_StartReadSequence(u32 ReadAddr);
-void FONT_SPI_FLASH_PowerDown(void);
-void FONT_SPI_FLASH_WAKEUP(void);
 
 
 u8 FONT_SPI_FLASH_ReadByte(void);
 u8 FONT_SPI_FLASH_SendByte(u8 byte);
-u16 FONT_SPI_FLASH_SendHalfWord(u16 HalfWord);
-void FONT_SPI_FLASH_WriteDisnable(void);
-void FONT_SPI_FLASH_WriteEnable(void);
-void FONT_SPI_FLASH_WaitForWriteEnd(void);
+void display_GB2312_string(u8 x, u8 y, u8 *text);
 
 
 #endif /* __FONT_SPI_FLASH_H */

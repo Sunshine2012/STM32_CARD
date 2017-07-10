@@ -235,7 +235,7 @@ void OLED_ShowStr(unsigned char x, unsigned char y, unsigned char ch[], unsigned
     CPU_SR_ALLOC();      //使用到临界段（在关/开中断时）时必需该宏，该宏声明和定义一个局部变
                                  //量，用于保存关中断前的 CPU 状态寄存器 SR（临界段关中断只需保存SR）
                                  //，开中断时将该值还原.
-#ifdef OLED 
+#ifdef OLED
     unsigned char c = 0,i = 0,j = 0;
     OLED_Fill(0);
     switch(TextSize)
@@ -309,7 +309,47 @@ void OLED_ShowCN(unsigned char x, unsigned char y, unsigned char N)
     }
 }
 
+ /**
+  * @brief  OLED_xShowCN，字符串
+  * @param  x,y: 起始点坐标(x:0~127, y:0~7);
+    *
+    * @retval 无
+  */
+void OLED_xShowCN(unsigned char x, unsigned char y, unsigned char * pFontbuf)
+{
+    unsigned char wm=0;
+    OLED_SetPos( x , y );
+    for( wm = 0; wm < 16; wm++ )
+    {
+        WriteDat( *pFontbuf++ );
+    }
+    OLED_SetPos( x,y + 1 );
+    for(wm = 0; wm < 16; wm++)
+    {
+        WriteDat( *pFontbuf++ );
+    }
+}
 
+ /**
+  * @brief  OLED_xShowEN，字符串
+  * @param  x,y: 起始点坐标(x:0~127, y:0~7);
+    *
+    * @retval 无
+  */
+void OLED_xShowEN(unsigned char x, unsigned char y, unsigned char * pFontbuf)
+{
+    unsigned char wm=0;
+    OLED_SetPos( x , y );
+    for( wm = 0; wm < 8; wm++ )
+    {
+        WriteDat( *pFontbuf++ );
+    }
+    OLED_SetPos( x,y + 1 );
+    for(wm = 0; wm < 8; wm++)
+    {
+        WriteDat( *pFontbuf++ );
+    }
+}
 
  /**
   * @brief  OLED_DrawBMP，显示BMP位图
