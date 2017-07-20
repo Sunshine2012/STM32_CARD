@@ -234,6 +234,7 @@ void CAN_Interrupt(void)
 
 }
 
+CanRxMsg RxMessage = {0};   // 发布消息，应该使用全局的变量，否则出错    20170720
 /*******************************************************************************
 * Function Name  : USB_LP_CAN_RX0_IRQHandler
 * Description    : This function handles USB Low Priority or CAN RX0 interrupts
@@ -248,8 +249,7 @@ void USB_LP_CAN1_RX0_IRQHandler(void)
                                              //量，用于保存关中断前的 CPU 状态寄存器 SR（临界段关中断只需保存SR）
                                              //，开中断时将该值还原。
     OS_ERR      err;
-    CanRxMsg RxMessage = {0};
-    OS_MSG_SIZE usNum = 20;
+
     //MyCANTransmit ();
 
     OS_CRITICAL_ENTER();                 //进入临界段，不希望下面串口打印遭到中断
@@ -260,13 +260,9 @@ void USB_LP_CAN1_RX0_IRQHandler(void)
         /* 发布消息到消息队列 queue */
         OSQPost ((OS_Q        *)&queue_can,                             //消息变量指针
                 (void        *)&RxMessage,                              //要发送的数据的指针，将内存块首地址通过队列"发送出去"
-                (OS_MSG_SIZE  )usNum,              //数据字节大小
+                (OS_MSG_SIZE  )sizeof (RxMessage) ,                     //数据字节大小
                 (OS_OPT       )OS_OPT_POST_FIFO | OS_OPT_POST_ALL,      //先进先出和发布给全部任务的形式
                 (OS_ERR      *)&err);
-        if(RxMessage.Data[3] == 0x02)
-        {
-            printf ("%s\r\n","<1D11>");
-        }
     }
     else
     {

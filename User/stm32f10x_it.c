@@ -145,7 +145,7 @@ void SysTick_Handler(void)
 /*  file (startup_stm32f10x_xx.s).                                            */
 /******************************************************************************/
 
-CPU_INT08U g_rx_buf[1024];
+CPU_INT08U g_rx_buf[1024];    // 使用全局的数据缓存
 CPU_INT16U g_num = 0;
 
 // 串口中断服务函数

@@ -265,10 +265,11 @@ static  void  AppTaskStart (void *p_arg)
 */
 void TmrCallback (OS_TMR *p_tmr, void *p_arg) //软件定时器MyTmr的回调函数
 {
-    CPU_INT32U       cpu_clk_freq;
+
     CPU_SR_ALLOC();      //使用到临界段（在关/开中断时）时必需该宏，该宏声明和定义一个局部变
                                              //量，用于保存关中断前的 CPU 状态寄存器 SR（临界段关中断只需保存SR）
                                              //，开中断时将该值还原。
+    CPU_INT32U       cpu_clk_freq;
     static CPU_INT08U ucNum = 0;                // 发送数据的序号
 
 
@@ -461,7 +462,7 @@ void  AppTaskCanFrame ( void * p_arg )
     OS_ERR      err;
     OS_MSG_SIZE    msg_size;
     CPU_INT08U * pMsg = NULL;
-    CanRxMsg tRxMessage = {0};                // can数据接收缓存
+    CanRxMsg *ptRxMessage = NULL;                // can数据接收缓存
 
     while (DEF_TRUE)
     {                            //任务体，通常写成一个死循环
@@ -474,19 +475,17 @@ void  AppTaskCanFrame ( void * p_arg )
         */
         //OS_CRITICAL_ENTER();                 //进入临界段，不希望下面串口打印遭到中断
         /* 请求消息队列 queue 的消息 */
-        tRxMessage = *(CanRxMsg*)OSQPend ((OS_Q         *)&queue_can,            //消息变量指针
-                        (OS_TICK       )0,                     //等待时长为无限
+        ptRxMessage = OSQPend ((OS_Q         *)&queue_can,            //消息变量指针
+                        (OS_TICK       )10,                    //等待时长
                         (OS_OPT        )OS_OPT_PEND_BLOCKING,  //如果没有获取到信号量就等待
                         (OS_MSG_SIZE  *)&msg_size,             //获取消息的字节大小
                         (CPU_TS       *)0,                     //获取任务发送时的时间戳
                         (OS_ERR       *)&err);                 //返回错误
         //OS_CRITICAL_EXIT();
-        //if(pMsg != NULL)
+        if(ptRxMessage != NULL)
         {
-            //tRxMessage = *((CanRxMsg *)pMsg);
-            //AnalyzeCANFrame((void *)&tRxMessage);
-            //printf ("%s",(char *)&tRxMessage);
-            //printf ("msg_size = %d\n",msg_size);
+            AnalyzeCANFrame((void *)ptRxMessage);
+            // printf ("%s",(char *)ptRxMessage);
         }
         OSTimeDly ( 100, OS_OPT_TIME_DLY, & err ); //不断阻塞该任务
     }
@@ -501,7 +500,7 @@ void  AppTaskUartFrame ( void * p_arg )
     OS_MSG_SIZE    msg_size;
     CPU_INT08U * pMsg = NULL;
     //CPU_INT08U ucaMsg[30] = "0aiwesky uC/OS-III";
-    CPU_INT08U ucPowerOnPara[4] =   {FRAME_START,
+    CPU_INT08U ucPowerOnPara[5] =   {FRAME_START,
                                     '0',
                                     CARD_MACHINE_POWER_ON,
                                     FRAME_END};
@@ -517,7 +516,7 @@ void  AppTaskUartFrame ( void * p_arg )
     while (DEF_TRUE)
     {                            //任务体，通常写成一个死循环
         pMsg = OSQPend ((OS_Q         *)&queue_uart,            //消息变量指针
-                        (OS_TICK       )10,                     //等待时长为无限
+                        (OS_TICK       )10,                     //等待时长
                         (OS_OPT        )OS_OPT_PEND_BLOCKING,   //如果没有获取到信号量就等待
                         (OS_MSG_SIZE  *)&msg_size,              //获取消息的字节大小
                         (CPU_TS       *)0,                      //获取任务发送时的时间戳
