@@ -92,7 +92,7 @@
                                             printf("<<-FLASH-DEBUG->> [%d]"fmt"\n",__LINE__, ##arg);\
                                             }while(0)
 
-void SPI_FLASH_Init(void);
+void SPI_FLASH_init(void);
 void SPI_FLASH_UnprotectSector(u32 SectorAddr);
 void SPI_FLASH_SectorErase(u32 SectorAddr);
 void SPI_FLASH_ChipErase(void);

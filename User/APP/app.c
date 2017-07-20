@@ -36,7 +36,8 @@
 */
 
 #include <includes.h>
-
+#include "WAV_C_xiexie.h"
+#include "WAV_C_anjianquka.h"
 
 /*
 *********************************************************************************************************
@@ -103,6 +104,7 @@ static void  AppTaskCanFrame ( void * p_arg );
 static void  AppTaskUartFrame ( void * p_arg );
 
 extern unsigned char BMP1[];
+
 /*
 *********************************************************************************************************
 *                                                main()
@@ -332,7 +334,7 @@ static  void  AppTaskTmr ( void * p_arg )
     }
 }
 
-TestStatus Buffercmp(uint8_t* pBuffer1,uint8_t* pBuffer2, uint16_t BufferLength);
+TestStatus Buffercmp(u8* pBuffer1,u8* pBuffer2, uint16_t BufferLength);
 
 /*
  * 函数名：Buffercmp
@@ -344,7 +346,7 @@ TestStatus Buffercmp(uint8_t* pBuffer1,uint8_t* pBuffer2, uint16_t BufferLength)
  * 返回  ：-PASSED pBuffer1 等于   pBuffer2
  *         -FAILED pBuffer1 不同于 pBuffer2
  */
-TestStatus Buffercmp(uint8_t* pBuffer1, uint8_t* pBuffer2, uint16_t BufferLength)
+TestStatus Buffercmp(u8* pBuffer1, u8* pBuffer2, uint16_t BufferLength)
 {
   while(BufferLength--)
   {
@@ -364,7 +366,7 @@ static  void AppTaskOLED ( void * p_arg )
                                  //量，用于保存关中断前的 CPU 状态寄存器 SR（临界段关中断只需保存SR）
                                  //，开中断时将该值还原.
     /* 发送缓冲区初始化 */
-    uint8_t Tx_Buffer[] = "11\r\n";
+    u8 Tx_Buffer[] = "11\r\n";
     typedef enum { FAILED = 0, PASSED = !FAILED} TestStatus;
     #define countof(a)      (sizeof(a) / sizeof(*(a)))
     /* 获取缓冲区的长度 */
@@ -380,7 +382,7 @@ static  void AppTaskOLED ( void * p_arg )
     __IO uint32_t FlashID = 0;
     __IO TestStatus TransferStatus1 = FAILED;
 
-    uint8_t Rx_Buffer[BufferSize] = "";
+    u8 Rx_Buffer[BufferSize] = "";
 
     OS_ERR      err;
 #ifdef OLED
@@ -443,12 +445,16 @@ static  void AppTaskOLED ( void * p_arg )
         }
     }
     OS_CRITICAL_EXIT();
-
     while (DEF_TRUE)
     {                            //任务体，通常写成一个死循环
         //macLED2_TOGGLE ();
         OSTimeDly ( 1000, OS_OPT_TIME_DLY, & err ); //不断阻塞该任务
 
+        dacSet(DATA_anjianquka,SOUND_LENGTH_anjianquka);
+        OSTimeDly ( 2000, OS_OPT_TIME_DLY, & err );
+
+        dacSet(DATA_xiexie,SOUND_LENGTH_xiexie);
+        OSTimeDly ( 2500, OS_OPT_TIME_DLY, & err );
     }
 }
 

@@ -25,7 +25,7 @@ static uint16_t SPI_TIMEOUT_UserCallback(uint8_t errorCode);
   * @param  нч
   * @retval нч
   */
-void SPI_FLASH_Init(void)
+void SPI_FLASH_init(void)
 {
     SPI_InitTypeDef  SPI_InitStructure;
     GPIO_InitTypeDef GPIO_InitStructure;
