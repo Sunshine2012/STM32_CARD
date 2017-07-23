@@ -120,7 +120,7 @@ void FONT_SPI_FLASH_BufferRead(u8* pBuffer, u32 ReadAddr, u16 NumByteToRead)
 
 
 /******************************************************************/
-void display_GB2312_string(u8 x, u8 y, u8 *text)
+void display_GB2312_string(u8 x, u8 y, unsigned char *text)
 {
     u8 i = 0;
     u8 fontbuf[32] = {0};

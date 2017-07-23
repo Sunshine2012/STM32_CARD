@@ -103,8 +103,6 @@ extern OS_TCB   AppTaskUartFrameTCB;        // 读取解析数据任务控制块
 extern OS_Q queue_uart;     // 消息队列
 extern OS_Q queue_can;      // 消息队列
 
-extern CPU_INT08U g_ucSerNum;
-
 /*
 *********************************************************************************************************
 *                                                 MACRO'S

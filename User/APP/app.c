@@ -70,7 +70,6 @@ OS_Q queue_uart;     // 消息队列
 
 OS_Q queue_can;      // 消息队列
 
-CPU_INT08U g_ucSerNum = 0;
 
 /*
 *********************************************************************************************************
@@ -272,17 +271,8 @@ void TmrCallback (OS_TMR *p_tmr, void *p_arg) //软件定时器MyTmr的回调函数
                                              //量，用于保存关中断前的 CPU 状态寄存器 SR（临界段关中断只需保存SR）
                                              //，开中断时将该值还原。
     CPU_INT32U       cpu_clk_freq;
-    static CPU_INT08U ucNum = 0;                // 发送数据的序号
 
-
-    u8 para[] = { '<', '0', 'B', '1','3',
-                    '0', '0', '5', '0', '0', '1',
-                    '0', '0', '5', '0', '0', '1',
-                    '0', '0', '5', '0', '0', '1',
-                    '0', '0', '5', '0', '0', '1',
-                    '>',0};
-    para[1] = (ucNum++ % 10) + '0';
-    //DEBUG_printf ( "%s", ( char * ) p_arg );
+    g_tCardMechineStatusFrame.RSCTL = (g_ucSerNum++ % 10) + '0';
 
     cpu_clk_freq = BSP_CPU_ClkFreq();                   //获取CPU时钟，时间戳是以该时钟计数
 
@@ -296,7 +286,7 @@ void TmrCallback (OS_TMR *p_tmr, void *p_arg) //软件定时器MyTmr的回调函数
     //                    ts_end / ( cpu_clk_freq / 1000000 ),     //将定时时间折算成 us
     //                    ts_end / ( cpu_clk_freq / 1000 ) );      //将定时时间折算成 ms
 
-    printf ( "%s\n", ( char * ) para );
+    printf ( "%s\n", ( char * ) &g_tCardMechineStatusFrame );
     OS_CRITICAL_EXIT();
 
     ts_start = OS_TS_GET();                            //获取定时前时间戳
@@ -493,7 +483,7 @@ void  AppTaskCanFrame ( void * p_arg )
             AnalyzeCANFrame((void *)ptRxMessage);
             // printf ("%s",(char *)ptRxMessage);
         }
-        OSTimeDly ( 100, OS_OPT_TIME_DLY, & err ); //不断阻塞该任务
+        OSTimeDly ( 10, OS_OPT_TIME_DLY, & err ); //不断阻塞该任务
     }
 }
 
@@ -506,17 +496,13 @@ void  AppTaskUartFrame ( void * p_arg )
     OS_MSG_SIZE    msg_size;
     CPU_INT08U * pMsg = NULL;
     //CPU_INT08U ucaMsg[30] = "0aiwesky uC/OS-III";
-    CPU_INT08U ucPowerOnPara[5] =   {FRAME_START,
-                                    '0',
-                                    CARD_MACHINE_POWER_ON,
-                                    FRAME_END};
-    RSCTL_FREME t_PowerOnFrame =  {FRAME_START,'0',CARD_MACHINE_POWER_ON,FRAME_END};        // 上电数据
 
     OSTimeDly ( 1000, OS_OPT_TIME_DLY, & err ); //等待1S
     OS_CRITICAL_ENTER();                 //进入临界段，不希望下面串口打印遭到中断
-    DEBUG_printf ("%s","你好");
-    //printf ("%s\r\n","你好");
-    printf("%s\n", (char *)&t_PowerOnFrame);
+    DEBUG_printf ("%s\r\n","你好,欢迎使用乐为电子板卡系统");
+
+    printf("%s", (char *)&g_tCardMechinePowerOnFrame);      // 上电信息
+
     OS_CRITICAL_EXIT();
 
     while (DEF_TRUE)
@@ -537,7 +523,7 @@ void  AppTaskUartFrame ( void * p_arg )
         {
             //OLED_ShowStr(0,0,pMsg,1);
         }
-        OSTimeDly ( 1000, OS_OPT_TIME_DLY, & err );     //不断阻塞该任务
+        OSTimeDly ( 10, OS_OPT_TIME_DLY, & err );     //不断阻塞该任务
     }
 }
 
