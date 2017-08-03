@@ -34,14 +34,14 @@
 #define OS_CFG_APP_HOOKS_EN             1u   //使能/禁用钩子函数
 #define OS_CFG_ARG_CHK_EN               1u   //使能/禁用参数检测
 #define OS_CFG_CALLED_FROM_ISR_CHK_EN   1u   //使能/禁用检测中断中非法调用功能
-#define OS_CFG_DBG_EN                   1u   //使能/禁用调试代码和变量
+#define OS_CFG_DBG_EN                   0u   //使能/禁用调试代码和变量
 #define OS_CFG_ISR_POST_DEFERRED_EN     1u   //使能/禁用中断延迟发布
 #define OS_CFG_OBJ_TYPE_CHK_EN          1u   //使能/禁用对象类型检测
 #define OS_CFG_TS_EN                    1u   //使能/禁用时间戳
 
 #define OS_CFG_PEND_MULTI_EN            1u   //使能/禁用等待多个内核对象
 
-#define OS_CFG_PRIO_MAX                32u   //定义任务优先级的最大数目
+#define OS_CFG_PRIO_MAX                15u   //定义任务优先级的最大数目
 
 #define OS_CFG_SCHED_LOCK_TIME_MEAS_EN  1u   //使能/禁用测量锁调度器时间功能
 #define OS_CFG_SCHED_ROUND_ROBIN_EN     1u   //使能/禁用时间片轮转调度
@@ -56,7 +56,7 @@
 
 
                                              /* -------------------------- MEMORY MANAGEMENT ------------------------ */
-#define OS_CFG_MEM_EN                   1u   //使能/禁用内存管理
+#define OS_CFG_MEM_EN                   0u   //使能/禁用内存管理
 
 
                                              /* --------------------- MUTUAL EXCLUSION SEMAPHORES ------------------- */

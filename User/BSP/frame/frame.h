@@ -258,7 +258,19 @@ typedef enum FAULT_CODE
 }FAULT_CODE;
 
 
-extern const Print_msg                    g_taPri_msg[16];                    /**/
+// 界面结构体
+typedef struct Dlg
+{
+   CPU_INT08U ID;                 /* 类型：正(30H), 负(31H) */
+   char MsgRow0[35];
+   char MsgRow1[35];
+   char MsgRow2[35];
+   char MsgRow3[35];
+}Dlg;
+
+
+extern Dlg                              g_dlg[];
+extern const Print_msg                  g_taPri_msg[];                      /**/
 
 extern RSCTL_FREME                  g_tP_RsctlFrame;                    /* 正应答信息(30H)帧            4字节 */
 extern RSCTL_FREME                  g_tN_RsctlFrame;                    /* 负应答信息(31H)帧            4字节 */

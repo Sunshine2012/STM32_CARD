@@ -66,6 +66,8 @@ OS_TCB   AppTaskCanFrameTCB;            // 发送数据任务控制块
 
 OS_TCB   AppTaskUartFrameTCB;           // 读取解析数据任务控制块
 
+OS_TCB   AppTaskKeyScanTCB;             // 按键扫描
+
 OS_Q queue_uart;     // 消息队列
 
 OS_Q queue_can;      // 消息队列
@@ -86,6 +88,8 @@ static  CPU_STK  AppTaskOLEDStk [ APP_TASK_OLED_STK_SIZE ];
 static  CPU_STK  AppTaskCanFrameStk [ APP_TASK_CAN_FRAME_STK_SIZE ];
 
 static  CPU_STK  AppTaskUartFrameStk [ APP_TASK_UART_FRAME_STK_SIZE ];
+
+static  CPU_STK  AppTaskKeyScanStk [ APP_TASK_KEY_SCAN_STK_SIZE ];
 /*
 *********************************************************************************************************
 *                                         FUNCTION PROTOTYPES
@@ -101,6 +105,8 @@ static  void  AppTaskOLED  ( void * p_arg );
 static void  AppTaskCanFrame ( void * p_arg );
 
 static void  AppTaskUartFrame ( void * p_arg );
+
+static void  AppTaskKeyScan ( void * p_arg );
 
 extern unsigned char BMP1[];
 
@@ -255,6 +261,21 @@ static  void  AppTaskStart (void *p_arg)
                  (OS_OPT      )(OS_OPT_TASK_STK_CHK | OS_OPT_TASK_STK_CLR), //任务选项
                  (OS_ERR     *)&err);
 
+        /* 创建 AppTaskKeyScan 任务 */
+    OSTaskCreate((OS_TCB     *)&AppTaskKeyScanTCB,                          //任务控制块地址
+                 (CPU_CHAR   *)"Key_Scan",                                  //任务名称
+                 (OS_TASK_PTR ) AppTaskKeyScan,                             //任务函数
+                 (void       *) 0,                                          //传递给任务函数（形参p_arg）的实参
+                 (OS_PRIO     ) APP_TASK_KEY_SCAN_PRIO,                     //任务的优先级
+                 (CPU_STK    *)&AppTaskKeyScanStk[0],                       //任务堆栈的基地址
+                 (CPU_STK_SIZE) APP_TASK_KEY_SCAN_STK_SIZE / 10,            //任务堆栈空间剩下1/10时限制其增长
+                 (CPU_STK_SIZE) APP_TASK_KEY_SCAN_STK_SIZE,                 //任务堆栈空间（单位：sizeof(CPU_STK)）
+                 (OS_MSG_QTY  ) 5u,                                         //任务可接收的最大消息数
+                 (OS_TICK     ) 0u,                                         //任务的时间片节拍数（0表默认值OSCfg_TickRate_Hz/10）
+                 (void       *) 0,                                          //任务扩展（0表不扩展）
+                 (OS_OPT      )(OS_OPT_TASK_STK_CHK | OS_OPT_TASK_STK_CLR), //任务选项
+                 (OS_ERR     *)&err);
+                 
     OSTaskDel ( & AppTaskStartTCB, & err );                     //删除起始任务本身，该任务不再运行
 }
 
@@ -387,10 +408,10 @@ static  void AppTaskOLED ( void * p_arg )
     //OLED_ShowCN(16,0,3);
     //OLED_Fill(0xff);
     //OLED_DrawBMP(0,0,128,8,BMP1);
-    display_GB2312_string (0,0,"乐为电子");
-    display_GB2312_string (0,2,"www.eleaw.com");
-    display_GB2312_string (0,4,"我爱你中国");
-    display_GB2312_string (0,6,"哈哈 aiwesky");
+    display_GB2312_string (0,0,g_dlg[0].MsgRow0);
+    display_GB2312_string (0,2,g_dlg[0].MsgRow1);
+    display_GB2312_string (0,4,g_dlg[0].MsgRow2);
+    display_GB2312_string (0,6,g_dlg[0].MsgRow3);
 #endif
 
     //SPI_FLASH_Init();
@@ -528,3 +549,24 @@ void  AppTaskUartFrame ( void * p_arg )
 }
 
 
+void  AppTaskKeyScan ( void * p_arg )
+{
+    CPU_SR_ALLOC();      //使用到临界段（在关/开中断时）时必需该宏，该宏声明和定义一个局部变
+                                     //量，用于保存关中断前的 CPU 状态寄存器 SR（临界段关中断只需保存SR）
+                                     //，开中断时将该值还原.
+    OS_ERR      err;
+    OS_MSG_SIZE    msg_size;
+    //OSTimeDly ( 1000, OS_OPT_TIME_DLY, & err ); //等待1S
+    //OS_CRITICAL_ENTER();                 //进入临界段，不希望下面串口打印遭到中断
+	//macLED1_TOGGLE ();
+    //OS_CRITICAL_EXIT();
+
+    while (DEF_TRUE)
+    {                            //任务体，通常写成一个死循环
+        macLED1_TOGGLE ();
+        //macLED2_TOGGLE ();
+        //macLED3_TOGGLE ();
+        //OSTimeDly ( 1000, OS_OPT_TIME_DLY, & err );     //不断阻塞该任务
+        OSTimeDlyHMSM ( 0 , 0 ,1 ,0, OS_OPT_TIME_DLY, & err );
+    }
+}

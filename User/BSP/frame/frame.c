@@ -59,7 +59,7 @@ PC_SET_CARD_NUM_FRAME            g_tPcSetCardNumFrame = {'<', '0', PC_SET_CARD_N
 
 //#pragma  diag_suppress 870          // 不显示警告
 
-const Print_msg g_taPri_msg[16] = {
+const Print_msg g_taPri_msg[] = {
                             {'$',                           "/* 无效信息 */"},
                             {CARD_MACHINE_POWER_ON,         "/* 卡机上电信息(41H)帧          4字节 */"},
                             {CARD_MACHINE_STATUES,          "/* 状态信息(42H)帧             30字节 */"},
@@ -76,6 +76,18 @@ const Print_msg g_taPri_msg[16] = {
                             {PC_SET_CARD_NUM,               "/* 设置卡夹卡数(67H)帧          8字节 */"},
                             {'0',NULL}
                         };
+
+Dlg g_dlg[] = {
+                        {0, "    乐为电子    ", " www.eleaw.com  ", "   高速发卡机   ", "   版本: V1.0  "},
+                        {1, "1号卡机:", "2号卡机:", "3号卡机:", "4号卡机:"},
+                        {2, "1号卡机", "2号卡机", "3号卡机", "4号卡机"},
+                        {3, "1号卡机", "2号卡机", "3号卡机", "4号卡机"},
+                        {4, "1号卡机", "2号卡机", "3号卡机", "4号卡机"},
+                     };
+
+
+
+
 
 // 找到打印的字符串，并返回其首地址
 CPU_INT08U * check_msg(CPU_INT08U ch)

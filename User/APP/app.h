@@ -36,7 +36,7 @@
 #ifdef __DEBUG__
 #define DEBUG(format,...) printf("File: "__FILE__", Line: %05d: "format"\n", __LINE__, ##__VA_ARGS__)
 #else
-#define DEBUG(format,...)
+#define DEBUG(format,...) do{}while(0)
 #endif
 
 #ifdef __DEBUG__
