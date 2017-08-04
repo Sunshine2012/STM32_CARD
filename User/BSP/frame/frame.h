@@ -258,22 +258,41 @@ typedef enum FAULT_CODE
 }FAULT_CODE;
 
 
+
+// dlg ID
+typedef enum DLG_ID
+{
+    LOGO_ID                     = 0x00,                 /*  */
+    STATUS_ID                   = 0x01,                 /*  */
+    MAIN_ID                     = 0x02,                 /*  */
+    PASS_ID                     = 0x03,                 /*  */
+    CARD_NUM_ID                 = 0x04,                 /*  */
+
+    CARD_MIAN_ID                = 0x10,                 /*  */
+    MECHINE_STATUS_ID           = 0x11,                 /*  */
+
+    DEBUG_MANI_ID               = 0x20,                 /*  */
+    DEBUG_ONE_ID                = 0x21,                 /*  */
+    DEBUG_TWO_ID                = 0x22,                 /*  */
+    DEBUG_THREE_ID              = 0x23,                 /*  */
+}DLG_ID;                                                /*  */
+
 // 界面结构体
 typedef struct Dlg
 {
    CPU_INT08U ID;                 /* 类型：正(30H), 负(31H) */
-   char MsgRow0[35];
-   char MsgRow1[35];
-   char MsgRow2[35];
-   char MsgRow3[35];
+   char MsgRow0[36];
+   char MsgRow1[36];
+   char MsgRow2[36];
+   char MsgRow3[36];
 }Dlg;
 
 
 extern Dlg                              g_dlg[];
 extern const Print_msg                  g_taPri_msg[];                      /**/
 
-extern RSCTL_FREME                  g_tP_RsctlFrame;                    /* 正应答信息(30H)帧            4字节 */
-extern RSCTL_FREME                  g_tN_RsctlFrame;                    /* 负应答信息(31H)帧            4字节 */
+extern RSCTL_FREME                      g_tP_RsctlFrame;                    /* 正应答信息(30H)帧            4字节 */
+extern RSCTL_FREME                      g_tN_RsctlFrame;                    /* 负应答信息(31H)帧            4字节 */
 
 extern CARD_MACHINE_POWER_ON_FREME      g_tCardMechinePowerOnFrame;         /* 卡机上电信息(41H)帧          4字节 */
 extern CARD_MACHINE_STATUES_FRAME       g_tCardMechineStatusFrame;          /* 状态信息(42H)帧             30字节 */

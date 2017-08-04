@@ -275,7 +275,7 @@ static  void  AppTaskStart (void *p_arg)
                  (void       *) 0,                                          //任务扩展（0表不扩展）
                  (OS_OPT      )(OS_OPT_TASK_STK_CHK | OS_OPT_TASK_STK_CLR), //任务选项
                  (OS_ERR     *)&err);
-                 
+
     OSTaskDel ( & AppTaskStartTCB, & err );                     //删除起始任务本身，该任务不再运行
 }
 
@@ -376,7 +376,11 @@ static  void AppTaskOLED ( void * p_arg )
     CPU_SR_ALLOC();      //使用到临界段（在关/开中断时）时必需该宏，该宏声明和定义一个局部变
                                  //量，用于保存关中断前的 CPU 状态寄存器 SR（临界段关中断只需保存SR）
                                  //，开中断时将该值还原.
-    /* 发送缓冲区初始化 */
+   char *pcMsg = NULL;
+   OS_MSG_SIZE    msg_size;
+   OS_ERR         err;
+   CPU_TS         ts;
+   /* 发送缓冲区初始化 */
     u8 Tx_Buffer[] = "11\r\n";
     typedef enum { FAILED = 0, PASSED = !FAILED} TestStatus;
     #define countof(a)      (sizeof(a) / sizeof(*(a)))
@@ -395,7 +399,6 @@ static  void AppTaskOLED ( void * p_arg )
 
     u8 Rx_Buffer[BufferSize] = "";
 
-    OS_ERR      err;
 #ifdef OLED
     //u8 arr[]
     macLED1_ON();
@@ -408,10 +411,10 @@ static  void AppTaskOLED ( void * p_arg )
     //OLED_ShowCN(16,0,3);
     //OLED_Fill(0xff);
     //OLED_DrawBMP(0,0,128,8,BMP1);
-    display_GB2312_string (0,0,g_dlg[0].MsgRow0);
-    display_GB2312_string (0,2,g_dlg[0].MsgRow1);
-    display_GB2312_string (0,4,g_dlg[0].MsgRow2);
-    display_GB2312_string (0,6,g_dlg[0].MsgRow3);
+    display_GB2312_string (0,0,g_dlg[1].MsgRow0);
+    display_GB2312_string (0,2,g_dlg[1].MsgRow1);
+    display_GB2312_string (0,4,g_dlg[1].MsgRow2);
+    display_GB2312_string (0,6,g_dlg[1].MsgRow3);
 #endif
 
     //SPI_FLASH_Init();
@@ -458,7 +461,8 @@ static  void AppTaskOLED ( void * p_arg )
     OS_CRITICAL_EXIT();
     while (DEF_TRUE)
     {                            //任务体，通常写成一个死循环
-        //macLED2_TOGGLE ();
+       //macLED2_TOGGLE ();
+       /*
         OSTimeDly ( 1000, OS_OPT_TIME_DLY, & err ); //不断阻塞该任务
 
         dacSet(DATA_anjianquka,SOUND_LENGTH_anjianquka);
@@ -466,6 +470,17 @@ static  void AppTaskOLED ( void * p_arg )
 
         dacSet(DATA_xiexie,SOUND_LENGTH_xiexie);
         OSTimeDly ( 2500, OS_OPT_TIME_DLY, & err );
+       */
+       /* 阻塞任务，等待任务消息 */
+       /*
+       pcMsg = OSTaskQPend ((OS_TICK        )0,                    //无期限等待
+                            (OS_OPT         )OS_OPT_PEND_BLOCKING, //没有消息就阻塞任务
+                            (OS_MSG_SIZE   *)&msg_size,            //返回消息长度
+                            (CPU_TS        *)&ts,                  //返回消息被发布的时间戳
+                            (OS_ERR        *)&err);                //返回错误类型
+       */
+       macLED1_TOGGLE ();
+       OSTimeDly ( 1000, OS_OPT_TIME_DLY, & err );
     }
 }
 
@@ -483,13 +498,7 @@ void  AppTaskCanFrame ( void * p_arg )
 
     while (DEF_TRUE)
     {                            //任务体，通常写成一个死循环
-        /* 阻塞任务，等待任务消息
-        pMsg = OSTaskQPend ((OS_TICK        )0,                    //无期限等待
-                            (OS_OPT         )OS_OPT_PEND_BLOCKING, //没有消息就阻塞任务
-                            (OS_MSG_SIZE   *)&msg_size,            //返回消息长度
-                            (CPU_TS        *)&ts,                  //返回消息被发布的时间戳
-                            (OS_ERR        *)&err);                //返回错误类型
-        */
+
         //OS_CRITICAL_ENTER();                 //进入临界段，不希望下面串口打印遭到中断
         /* 请求消息队列 queue 的消息 */
         ptRxMessage = OSQPend ((OS_Q         *)&queue_can,            //消息变量指针
@@ -557,16 +566,16 @@ void  AppTaskKeyScan ( void * p_arg )
     OS_ERR      err;
     OS_MSG_SIZE    msg_size;
     //OSTimeDly ( 1000, OS_OPT_TIME_DLY, & err ); //等待1S
-    //OS_CRITICAL_ENTER();                 //进入临界段，不希望下面串口打印遭到中断
-	//macLED1_TOGGLE ();
-    //OS_CRITICAL_EXIT();
+    //OS_CRITICAL_ENTER ();                 //进入临界段，不希望下面串口打印遭到中断
+	 //macLED1_TOGGLE ();
+    //OS_CRITICAL_EXIT ();
 
     while (DEF_TRUE)
     {                            //任务体，通常写成一个死循环
-        macLED1_TOGGLE ();
+
+
         //macLED2_TOGGLE ();
         //macLED3_TOGGLE ();
-        //OSTimeDly ( 1000, OS_OPT_TIME_DLY, & err );     //不断阻塞该任务
-        OSTimeDlyHMSM ( 0 , 0 ,1 ,0, OS_OPT_TIME_DLY, & err );
+        OSTimeDly ( 2000, OS_OPT_TIME_DLY, & err );     //不断阻塞该任务
     }
 }
