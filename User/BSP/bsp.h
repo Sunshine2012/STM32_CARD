@@ -86,6 +86,7 @@
 #include "bsp_spi_flash.h"
 #include "bsp_font_flash.h"
 #include "bsp_dac.h"
+#include "bsp_matrix_key.h"
 
 /*
 *********************************************************************************************************

@@ -472,15 +472,15 @@ static  void AppTaskOLED ( void * p_arg )
         OSTimeDly ( 2500, OS_OPT_TIME_DLY, & err );
        */
        /* 阻塞任务，等待任务消息 */
-       /*
+       
        pcMsg = OSTaskQPend ((OS_TICK        )0,                    //无期限等待
                             (OS_OPT         )OS_OPT_PEND_BLOCKING, //没有消息就阻塞任务
                             (OS_MSG_SIZE   *)&msg_size,            //返回消息长度
                             (CPU_TS        *)&ts,                  //返回消息被发布的时间戳
                             (OS_ERR        *)&err);                //返回错误类型
-       */
-       macLED1_TOGGLE ();
-       OSTimeDly ( 1000, OS_OPT_TIME_DLY, & err );
+       
+       //macLED1_TOGGLE ();
+       OSTimeDly ( 100, OS_OPT_TIME_DLY, & err );
     }
 }
 
@@ -576,6 +576,7 @@ void  AppTaskKeyScan ( void * p_arg )
 
         //macLED2_TOGGLE ();
         //macLED3_TOGGLE ();
-        OSTimeDly ( 2000, OS_OPT_TIME_DLY, & err );     //不断阻塞该任务
+         macLED1_TOGGLE ();
+         OSTimeDly ( 2000, OS_OPT_TIME_DLY, & err );     //不断阻塞该任务
     }
 }
