@@ -1,8 +1,8 @@
 #include "bsp_matrix_key.h"
 #include "includes.h"
 
-/**************çŸ©é˜µé”®ç›˜.cæ–‡ä»¶*****************************/
-//unsigned char matrix_key[4][4];
+/**************¾ØÕó¼üÅÌ.cÎÄ¼ş*****************************/
+unsigned char matrix_key[4][4];
 struct io_port
 {
     GPIO_TypeDef *GPIO_x;
@@ -10,31 +10,40 @@ struct io_port
 };
 static struct io_port matrix_key_output[4] =
 {
-    {GPIOD, GPIO_Pin_0}, {GPIOD, GPIO_Pin_1},
-    {GPIOD, GPIO_Pin_2}, {GPIOD, GPIO_Pin_3}
+    {GPIOB, GPIO_Pin_4 },   {GPIOA, GPIO_Pin_13},
+    {GPIOA, GPIO_Pin_14},   {GPIOA, GPIO_Pin_15}
 };
 static struct io_port matrix_key_input[4] =
 {
-    {GPIOD, GPIO_Pin_4}, {GPIOD, GPIO_Pin_5},
-    {GPIOD, GPIO_Pin_6}, {GPIOD, GPIO_Pin_7}
+    {GPIOB, GPIO_Pin_3}, {GPIOB, GPIO_Pin_2},
+    //{GPIOD, GPIO_Pin_6}, {GPIOD, GPIO_Pin_7}
 };
 
 void matrix_keyboard_init(void)
 {
     GPIO_InitTypeDef GPIO_InitStructure;
     unsigned char i;
+    RCC_APB2PeriphClockCmd (RCC_APB2Periph_GPIOA | RCC_APB2Periph_GPIOB | RCC_APB2Periph_AFIO, ENABLE );    // ´ò¿ªÊ±ÖÓ,²¢ÇÒ´ò¿ª¹Ü½Å¸´ÓÃ
+    GPIO_PinRemapConfig(GPIO_Remap_SWJ_Disable , ENABLE);           // ¹Ø±ÕJTAGºÍSWÄ£Ê½,¹Ü½Å¸´ÓÃ
 
-    /* é”®ç›˜è¡Œæ‰«æè¾“å‡ºçº¿ è¾“å‡ºé«˜ç”µå¹³ */
-    /* PA0 PA1 PA2 PA3 è¾“å‡º*/
-    GPIO_InitStructure.GPIO_Pin = GPIO_Pin_0 | GPIO_Pin_1 | GPIO_Pin_2 | GPIO_Pin_3;
-    GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;
+    /* ¼üÅÌĞĞÉ¨ÃèÊä³öÏß Êä³ö¸ßµçÆ½ */
+    /* PA0 PA1 PA2 PA3 Êä³ö*/
+    GPIO_InitStructure.GPIO_Pin = GPIO_Pin_13 | GPIO_Pin_14 | GPIO_Pin_15;
+    GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_OD;
     GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
-    GPIO_Init(GPIOD, &GPIO_InitStructure);
-    /* é”®ç›˜åˆ—æ‰«æè¾“å…¥çº¿ é”®è¢«æŒ‰æ—¶è¾“å…¥é«˜ç”µå¹³ æ”¾å¼€è¾“å…¥ä½ç”µå¹³ */
-    /* PA4 PA5 PA6 PA7 è¾“å…¥*/
-    GPIO_InitStructure.GPIO_Pin = GPIO_Pin_4 | GPIO_Pin_5 | GPIO_Pin_6 | GPIO_Pin_7;
+    GPIO_Init(GPIOA, &GPIO_InitStructure);
+
+
+    GPIO_InitStructure.GPIO_Pin = GPIO_Pin_4;
+    GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_OD;
+    GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+    GPIO_Init(GPIOB, &GPIO_InitStructure);
+
+    /* ¼üÅÌÁĞÉ¨ÃèÊäÈëÏß ¼ü±»°´Ê±ÊäÈë¸ßµçÆ½ ·Å¿ªÊäÈëµÍµçÆ½ */
+    /* PA4 PA5 PA6 PA7 ÊäÈë*/
+    GPIO_InitStructure.GPIO_Pin = GPIO_Pin_2 | GPIO_Pin_3;
     GPIO_InitStructure.GPIO_Mode =  GPIO_Mode_IPU;
-    GPIO_Init(GPIOD, &GPIO_InitStructure);
+    GPIO_Init(GPIOB, &GPIO_InitStructure);
 
     for(i = 0; i < 4; i++)
     {
@@ -46,17 +55,31 @@ void matrix_keyboard_init(void)
 u8 matrix_update_key(void)
 {
     unsigned char i, j;
-    for(i = 0; i < 4; i++)             //iæ˜¯è¾“å‡ºå£ï¼Œä¾æ¬¡ç½®ä½ç”µå¹³
+    OS_ERR      err;
+    for(i = 0; i < 4; i++)             //iÊÇÊä³ö¿Ú£¬ÒÀ´ÎÖÃµÍµçÆ½
     {
         GPIO_ResetBits(matrix_key_output[i].GPIO_x, matrix_key_output[i].GPIO_pin);
-        for(j = 0; j < 2; j++)            //jæ˜¯è¾“å…¥å£ï¼Œå½“é”®æŒ‰ä¸‹æ—¶å¯¼é€šè¢«ç½®ä¸ºä½ç”µå¹³
+        OSTimeDly ( 5, OS_OPT_TIME_DLY, & err );
+        for(j = 0; j < 2; j++)            //jÊÇÊäÈë¿Ú£¬µ±¼ü°´ÏÂÊ±µ¼Í¨±»ÖÃÎªµÍµçÆ½
         {
+            matrix_key[i][j] = 0;
             if(GPIO_ReadInputDataBit(matrix_key_input[j].GPIO_x, matrix_key_input[j].GPIO_pin) == 0)
             {
-                //key[i][j] = 1;
-               GPIO_SetBits(matrix_key_output[i].GPIO_x, matrix_key_output[i].GPIO_pin);
-               return 0;
+
+               //GPIO_SetBits(matrix_key_output[i].GPIO_x, matrix_key_output[i].GPIO_pin);
+               //return 0;
+                while(!GPIO_ReadInputDataBit(matrix_key_input[j].GPIO_x, matrix_key_input[j].GPIO_pin))
+                {
+                    OSTimeDly ( 20, OS_OPT_TIME_DLY, & err );
+                }
+                matrix_key[i][j] = 1;
+                macLED2_TOGGLE ();
             }
+            else
+            {
+                matrix_key[i][j] = 0;
+            }
+
         }
         GPIO_SetBits(matrix_key_output[i].GPIO_x, matrix_key_output[i].GPIO_pin);
     }

@@ -818,19 +818,9 @@
               <FilePath>..\..\User\BSP\led\bsp_led.c</FilePath>
             </File>
             <File>
-              <FileName>bsp_led.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>..\..\User\BSP\led\bsp_led.h</FilePath>
-            </File>
-            <File>
               <FileName>bsp.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\..\User\BSP\bsp.c</FilePath>
-            </File>
-            <File>
-              <FileName>bsp.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>..\..\User\BSP\bsp.h</FilePath>
             </File>
             <File>
               <FileName>bsp_LCD_I2C.c</FileName>
@@ -838,24 +828,9 @@
               <FilePath>..\..\User\BSP\lcd\bsp_LCD_I2C.c</FilePath>
             </File>
             <File>
-              <FileName>bsp_LCD_I2C.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>..\..\User\BSP\lcd\bsp_LCD_I2C.h</FilePath>
-            </File>
-            <File>
-              <FileName>codetab.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>..\..\User\BSP\lcd\codetab.h</FilePath>
-            </File>
-            <File>
               <FileName>delay.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\..\User\BSP\lcd\delay.c</FilePath>
-            </File>
-            <File>
-              <FileName>delay.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>..\..\User\BSP\lcd\delay.h</FilePath>
             </File>
             <File>
               <FileName>frame.c</FileName>
@@ -863,24 +838,9 @@
               <FilePath>..\..\User\BSP\frame\frame.c</FilePath>
             </File>
             <File>
-              <FileName>frame.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>..\..\User\BSP\frame\frame.h</FilePath>
-            </File>
-            <File>
-              <FileName>bsp_usart1.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>..\..\User\BSP\usart1\bsp_usart1.h</FilePath>
-            </File>
-            <File>
               <FileName>bsp_usart4.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\..\User\BSP\usart4\bsp_usart4.c</FilePath>
-            </File>
-            <File>
-              <FileName>bsp_usart4.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>..\..\User\BSP\usart4\bsp_usart4.h</FilePath>
             </File>
             <File>
               <FileName>bsp_usart1.c</FileName>
@@ -893,29 +853,14 @@
               <FilePath>..\..\User\BSP\can\bsp_can.c</FilePath>
             </File>
             <File>
-              <FileName>bsp_can.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>..\..\User\BSP\can\bsp_can.h</FilePath>
-            </File>
-            <File>
               <FileName>bsp_spi_flash.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\..\User\BSP\flash\bsp_spi_flash.c</FilePath>
             </File>
             <File>
-              <FileName>bsp_spi_flash.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>..\..\User\BSP\flash\bsp_spi_flash.h</FilePath>
-            </File>
-            <File>
               <FileName>bsp_font_flash.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\..\User\BSP\fontFlash\bsp_font_flash.c</FilePath>
-            </File>
-            <File>
-              <FileName>bsp_font_flash.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>..\..\User\BSP\fontFlash\bsp_font_flash.h</FilePath>
             </File>
             <File>
               <FileName>bsp_dac.c</FileName>
@@ -927,21 +872,11 @@
               <FileType>1</FileType>
               <FilePath>..\..\User\BSP\Key\bsp_matrix_key.c</FilePath>
             </File>
-            <File>
-              <FileName>bsp_matrix_key.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>..\..\User\BSP\Key\bsp_matrix_key.h</FilePath>
-            </File>
           </Files>
         </Group>
         <Group>
           <GroupName>USER</GroupName>
           <Files>
-            <File>
-              <FileName>app.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>..\..\User\APP\app.h</FilePath>
-            </File>
             <File>
               <FileName>app.c</FileName>
               <FileType>1</FileType>

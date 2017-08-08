@@ -194,6 +194,8 @@ void CAN_Polling(void)
 *******************************************************************************/
 void CAN_Interrupt(void)
 {
+  //http://blog.csdn.net/flydream0/article/details/8148791   设置来源为此网站
+  u32 ext_id =0x7810;    // 设置过滤ID的屏蔽位。
   CAN_InitTypeDef        CAN_InitStructure;
   CAN_FilterInitTypeDef  CAN_FilterInitStructure;
 
@@ -218,14 +220,15 @@ void CAN_Interrupt(void)
 
   /* CAN filter init */
   CAN_FilterInitStructure.CAN_FilterNumber=0;
-  CAN_FilterInitStructure.CAN_FilterMode=CAN_FilterMode_IdMask;
-  CAN_FilterInitStructure.CAN_FilterScale=CAN_FilterScale_32bit;
-  CAN_FilterInitStructure.CAN_FilterIdHigh=0x0000;
-  CAN_FilterInitStructure.CAN_FilterIdLow=0x0000;
-  CAN_FilterInitStructure.CAN_FilterMaskIdHigh=0x0000;
-  CAN_FilterInitStructure.CAN_FilterMaskIdLow=0x0000;
-  CAN_FilterInitStructure.CAN_FilterFIFOAssignment=CAN_FIFO0;
-  CAN_FilterInitStructure.CAN_FilterActivation=ENABLE;
+  CAN_FilterInitStructure.CAN_FilterMode=                CAN_FilterMode_IdList;   // 如果是过滤 '一组' 标识符(ID),则使用CAN_FilterMode_IdMask模式,如果是过滤 '一个'标识符(ID),则使用CAN_FilterMode_IdList
+  CAN_FilterInitStructure.CAN_FilterScale=               CAN_FilterScale_32bit;
+  CAN_FilterInitStructure.CAN_FilterIdHigh=              ((ext_id<<3)>>16) & 0xffff;
+  CAN_FilterInitStructure.CAN_FilterIdLow=               ((ext_id<<3)& 0xffff)  | CAN_ID_EXT;      //
+
+  //CAN_FilterInitStructure.CAN_FilterMaskIdHigh=          ((ext_id<<3)>>16) & 0xffff;
+  //CAN_FilterInitStructure.CAN_FilterMaskIdLow=           ((ext_id<<3)& 0xffff) | CAN_ID_EXT;     // 如果是列表模式,则不需要设置屏蔽位寄存器
+  CAN_FilterInitStructure.CAN_FilterFIFOAssignment=      CAN_FIFO0;
+  CAN_FilterInitStructure.CAN_FilterActivation=          ENABLE;
   CAN_FilterInit(&CAN_FilterInitStructure);
 
   /* CAN FIFO0 message pending interrupt enable */

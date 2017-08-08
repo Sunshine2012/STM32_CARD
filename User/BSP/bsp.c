@@ -170,6 +170,7 @@ void  BSP_Init (void)
     CAN_init();             // 初始化CAN通信
     SPI_FLASH_init();       // 初始化SPI1接口的flash
     DAC_init();
+    matrix_keyboard_init();
 }
 
 
