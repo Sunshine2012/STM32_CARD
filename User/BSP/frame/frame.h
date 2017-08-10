@@ -164,6 +164,7 @@ typedef enum CMD
     CYCLE_ACK               = 0x04,                 /* 定时回复 */
 
     // 10H--1FH：主机板发送至卡机板信息命令
+    SET_MECHINE_ID          = 0x10,                 /* 设置卡机的ID号 */
     CAR_IS_COMING           = 0x11,                 /* 已来车通知 */
     MACHINE_STATUES         = 0x12,                 /* 指定工位卡情况，内容在状态码内 */
     WRITE_CARD_STATUS       = 0x13,                 /* 写卡情况，内容在状态码内 */
@@ -179,11 +180,6 @@ typedef enum CMD
     DEBUG_ALL               = 0x30,
 
     /*
-    40H：连续循环出卡
-    41H：循环出一张卡
-    42H：翻一张好卡
-    43H：翻一张坏卡
-    43H：送一张卡
     44H：读取送卡传感器状态
     45H：读取卡盒传感器状态
     46H：读取取卡传感器状态
@@ -199,8 +195,10 @@ typedef enum CMD
     50H：初始化命令
     */
     // 40H--5FH：卡机调机命令信息
-    CYCLE_SPIT_CARD         = 0x41,                 /* 连续循环出卡 */
-    SPIT_ONE_CARD           = 0x42,                 /* */
+    CYCLE_SPIT_CARD         = 0x40,                 /* 连续循环出卡 */
+    CYCLE_SPIT_ONE_CARD     = 0x41,                 /* 循环出一张卡 */
+    SPIT_ONE_OK_CARD        = 0x42,                 /* 翻一张好卡 */
+    SPIT_ONE_BAD_CARD       = 0x43,                 /* 翻一张坏卡 */
 
 
 }CMD;
@@ -217,7 +215,7 @@ typedef enum CARD_AND_MECHINE_STATUS
     CARD_IS_OK                 = 0x12,                 /* 好卡 */
     CARD_IS_BAD                = 0x13,                 /* 坏卡 */
     HAS_CHECKED_CARD           = 0x14,                 /* 已判卡 */
-    HAS_WRITE_CARD             = 0x15,
+    HAS_WRITE_CARD             = 0x15,                 /* 已写卡 */
 
     // 20H--2FH：机状态
 
@@ -257,38 +255,6 @@ typedef enum FAULT_CODE
 
 }FAULT_CODE;
 
-
-
-// dlg ID
-typedef enum DLG_ID
-{
-    LOGO_ID                     = 0x00,                 /*  */
-    STATUS_ID                   = 0x01,                 /*  */
-    MAIN_ID                     = 0x02,                 /*  */
-    PASS_ID                     = 0x03,                 /*  */
-    CARD_NUM_ID                 = 0x04,                 /*  */
-
-    CARD_MIAN_ID                = 0x10,                 /*  */
-    MECHINE_STATUS_ID           = 0x11,                 /*  */
-
-    DEBUG_MANI_ID               = 0x20,                 /*  */
-    DEBUG_ONE_ID                = 0x21,                 /*  */
-    DEBUG_TWO_ID                = 0x22,                 /*  */
-    DEBUG_THREE_ID              = 0x23,                 /*  */
-}DLG_ID;                                                /*  */
-
-// 界面结构体
-typedef struct Dlg
-{
-   CPU_INT08U ID;                 /* 类型：正(30H), 负(31H) */
-   char MsgRow0[36];
-   char MsgRow1[36];
-   char MsgRow2[36];
-   char MsgRow3[36];
-}Dlg;
-
-
-extern Dlg                              g_dlg[];
 extern const Print_msg                  g_taPri_msg[];                      /**/
 
 extern RSCTL_FREME                      g_tP_RsctlFrame;                    /* 正应答信息(30H)帧            4字节 */

@@ -1,10 +1,11 @@
 #include <includes.h>
 #include "stm32f10x.h"
 
+CanTxMsg gt_TxMessage;      // CAN发送数据缓存
 
 static void CAN_GPIO_Config(void)
 {
-	GPIO_InitTypeDef GPIO_InitStructure;
+    GPIO_InitTypeDef GPIO_InitStructure;
 
 #if 0
     /* Configure CAN pin: RX */
@@ -17,7 +18,7 @@ static void CAN_GPIO_Config(void)
     GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF_PP;
     GPIO_Init(GPIOD, &GPIO_InitStructure);
 
-    GPIO_PinRemapConfig(GPIO_Remap2_CAN1, ENABLE );	   //重影射CAN IO脚到 PD0，PD1
+    GPIO_PinRemapConfig(GPIO_Remap2_CAN1, ENABLE );    //重影射CAN IO脚到 PD0，PD1
 
     /* Configure CAN pin: RX */
     GPIO_InitStructure.GPIO_Pin = GPIO_Pin_11;
@@ -29,7 +30,7 @@ static void CAN_GPIO_Config(void)
     GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF_PP;
     GPIO_Init(GPIOA, &GPIO_InitStructure);
 
-    GPIO_PinRemapConfig(GPIO_Remap2_CAN1, ENABLE );	   //重影射CAN IO脚到 PD0，PD1
+    GPIO_PinRemapConfig(GPIO_Remap2_CAN1, ENABLE );    //重影射CAN IO脚到 PD0，PD1
 #endif
 
     /* Configure CAN pin: RX */
@@ -42,7 +43,7 @@ static void CAN_GPIO_Config(void)
     GPIO_InitStructure.GPIO_Pin = GPIO_Pin_12;
     GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF_PP;
     GPIO_Init(GPIOA, &GPIO_InitStructure);
-    //GPIO_PinRemapConfig(GPIO_Remap2_CAN1, ENABLE );	   //重影射CAN IO脚到 PB8，PB9,    如果是使用PA12发送，PA11则不需要重映射
+    //GPIO_PinRemapConfig(GPIO_Remap2_CAN1, ENABLE );      //重影射CAN IO脚到 PB8，PB9,    如果是使用PA12发送，PA11则不需要重映射
 }
 
 //系统中断管理
@@ -79,29 +80,37 @@ void CAN_RCC_Config(void)
 
 
 
-void MyCANTransmit (void)
+unsigned char MyCANTransmit (void * p_Msg, unsigned char mechine_id, unsigned char boxNum, unsigned char cmd, unsigned char status,
+                      unsigned char data_H, unsigned char data_L, unsigned char errNum)
 {
     u32 i = 0;
+    static u8 uCount = 0;
     u8 TransmitMailbox;
+    CanTxMsg *p_TxMessage = (CanTxMsg *)p_Msg;
     CanTxMsg TxMessage;
     //CanRxMsg RxMessage;
-
+    memset(p_TxMessage,0,sizeof (CanTxMsg));
     /* transmit */
+    uCount++;
+    if (uCount % 10 == 0)
+    {
+        status = CARD_IS_BAD;
+    }
+    p_TxMessage->StdId = 0x00;
+    p_TxMessage->ExtId = 0x7810 | mechine_id;
+    p_TxMessage->RTR = CAN_RTR_DATA;
+    p_TxMessage->IDE = CAN_ID_EXT;;
+    p_TxMessage->DLC = 8;
+    p_TxMessage->Data[0] = uCount;
+    p_TxMessage->Data[1] = mechine_id;
+    p_TxMessage->Data[2] = boxNum;
+    p_TxMessage->Data[3] = cmd;
+    p_TxMessage->Data[4] = status;
+    p_TxMessage->Data[5] = data_H;
+    p_TxMessage->Data[6] = data_L;
+    p_TxMessage->Data[7] = errNum;
 
-    TxMessage.StdId = 0x00;
-    TxMessage.ExtId = 0x7800;
-    TxMessage.RTR = CAN_RTR_DATA;
-    TxMessage.IDE = CAN_ID_EXT;;
-    TxMessage.DLC = 8;
-    TxMessage.Data[0] = 0x55;
-    TxMessage.Data[1] = 0xA0;
-    TxMessage.Data[2] = 0x50;
-    TxMessage.Data[3] = 0xA0;
-    TxMessage.Data[4] = 0x50;
-    TxMessage.Data[5] = 0xA0;
-    TxMessage.Data[6] = 0x50;
-    TxMessage.Data[7] = 0xA0;
-    TransmitMailbox = CAN_Transmit(CAN1,&TxMessage);
+    TransmitMailbox = CAN_Transmit(CAN1,p_TxMessage);
     i = 0;
     while((CAN_TransmitStatus(CAN1,TransmitMailbox) != CANTXOK) && (i != 0xFF))
     {
@@ -113,6 +122,7 @@ void MyCANTransmit (void)
     {
         i++;
     }
+    return 0;
 }
 
 
@@ -195,7 +205,7 @@ void CAN_Polling(void)
 void CAN_Interrupt(void)
 {
   //http://blog.csdn.net/flydream0/article/details/8148791   设置来源为此网站
-  u32 ext_id =0x7810;    // 设置过滤ID的屏蔽位。
+  //u32 ext_id =0x7810;    // 设置过滤ID的屏蔽位。
   CAN_InitTypeDef        CAN_InitStructure;
   CAN_FilterInitTypeDef  CAN_FilterInitStructure;
 
@@ -220,10 +230,15 @@ void CAN_Interrupt(void)
 
   /* CAN filter init */
   CAN_FilterInitStructure.CAN_FilterNumber=0;
-  CAN_FilterInitStructure.CAN_FilterMode=                CAN_FilterMode_IdList;   // 如果是过滤 '一组' 标识符(ID),则使用CAN_FilterMode_IdMask模式,如果是过滤 '一个'标识符(ID),则使用CAN_FilterMode_IdList
+  CAN_FilterInitStructure.CAN_FilterMode=                CAN_FilterMode_IdMask;   // 如果是过滤 '一组' 标识符(ID),则使用CAN_FilterMode_IdMask模式,如果是过滤 '一个'标识符(ID),则使用CAN_FilterMode_IdList
   CAN_FilterInitStructure.CAN_FilterScale=               CAN_FilterScale_32bit;
-  CAN_FilterInitStructure.CAN_FilterIdHigh=              ((ext_id<<3)>>16) & 0xffff;
-  CAN_FilterInitStructure.CAN_FilterIdLow=               ((ext_id<<3)& 0xffff)  | CAN_ID_EXT;      //
+  CAN_FilterInitStructure.CAN_FilterIdHigh=0x0000;
+  CAN_FilterInitStructure.CAN_FilterIdLow=0x0000;
+  CAN_FilterInitStructure.CAN_FilterMaskIdHigh=0x0000;
+  CAN_FilterInitStructure.CAN_FilterMaskIdLow=0x0000;
+
+  //CAN_FilterInitStructure.CAN_FilterIdHigh=              ((ext_id<<3)>>16) & 0xffff;
+  //CAN_FilterInitStructure.CAN_FilterIdLow=               ((ext_id<<3)& 0xffff)  | CAN_ID_EXT;      //
 
   //CAN_FilterInitStructure.CAN_FilterMaskIdHigh=          ((ext_id<<3)>>16) & 0xffff;
   //CAN_FilterInitStructure.CAN_FilterMaskIdLow=           ((ext_id<<3)& 0xffff) | CAN_ID_EXT;     // 如果是列表模式,则不需要设置屏蔽位寄存器
@@ -237,7 +252,7 @@ void CAN_Interrupt(void)
 
 }
 
-CanRxMsg RxMessage = {0};   // 发布消息，应该使用全局的变量，否则出错    20170720
+CanRxMsg gt_RxMessage = {0};   // 发布消息，应该使用全局的变量，否则出错    20170720
 /*******************************************************************************
 * Function Name  : USB_LP_CAN_RX0_IRQHandler
 * Description    : This function handles USB Low Priority or CAN RX0 interrupts
@@ -253,17 +268,16 @@ void USB_LP_CAN1_RX0_IRQHandler(void)
                                              //，开中断时将该值还原。
     OS_ERR      err;
 
-    //MyCANTransmit ();
-
     OS_CRITICAL_ENTER();                 //进入临界段，不希望下面串口打印遭到中断
-    CAN_Receive(CAN1,CAN_FIFO0, &RxMessage);
-    CANTransmit (&RxMessage);
-    if(((0x0000ffff & RxMessage.ExtId) == 0x00007800) && (RxMessage.IDE == CAN_ID_EXT))
+    CAN_Receive(CAN1,CAN_FIFO0, &gt_RxMessage);
+    //CANTransmit (&gt_RxMessage);
+    macLED1_TOGGLE ();
+    if(((0x0000ff00 & gt_RxMessage.ExtId) == 0x00007800) && (gt_RxMessage.IDE == CAN_ID_EXT))
     {
         /* 发布消息到消息队列 queue */
         OSQPost ((OS_Q        *)&queue_can,                             //消息变量指针
-                (void        *)&RxMessage,                              //要发送的数据的指针，将内存块首地址通过队列"发送出去"
-                (OS_MSG_SIZE  )sizeof (RxMessage) ,                     //数据字节大小
+                (void        *)&gt_RxMessage,                           //要发送的数据的指针，将内存块首地址通过队列"发送出去"
+                (OS_MSG_SIZE  )sizeof (gt_RxMessage) ,                  //数据字节大小
                 (OS_OPT       )OS_OPT_POST_FIFO | OS_OPT_POST_ALL,      //先进先出和发布给全部任务的形式
                 (OS_ERR      *)&err);
     }
@@ -282,4 +296,17 @@ void CAN_init( void )
     CAN_GPIO_Config ();     // 初始化GPIO,需要用到TX:PA12 ,RX:PA11
     CAN_NVIC_Config ();     // 接收中断
     CAN_Interrupt();        // 设置波特率等其他参数
+    gt_TxMessage.StdId = 0x00;
+    gt_TxMessage.ExtId = 0x7800;
+    gt_TxMessage.RTR = CAN_RTR_DATA;
+    gt_TxMessage.IDE = CAN_ID_EXT;;
+    gt_TxMessage.DLC = 8;
+    gt_TxMessage.Data[0] = 0x55;
+    gt_TxMessage.Data[1] = 0xA0;
+    gt_TxMessage.Data[2] = 0x50;
+    gt_TxMessage.Data[3] = 0xA0;
+    gt_TxMessage.Data[4] = 0x50;
+    gt_TxMessage.Data[5] = 0xA0;
+    gt_TxMessage.Data[6] = 0x50;
+    gt_TxMessage.Data[7] = 0xA0;
 }

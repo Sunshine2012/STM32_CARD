@@ -3,6 +3,7 @@
 
 /**************矩阵键盘.c文件*****************************/
 unsigned char matrix_key[4][4];
+unsigned char g_ucKeyValues = KEY_NUL;      // 当前按键值,全局
 struct io_port
 {
     GPIO_TypeDef *GPIO_x;
@@ -56,10 +57,14 @@ u8 matrix_update_key(void)
 {
     unsigned char i, j;
     OS_ERR      err;
+    if (g_ucKeyValues != KEY_NUL)
+    {
+        return 0;
+    }
     for(i = 0; i < 4; i++)             //i是输出口，依次置低电平
     {
         GPIO_ResetBits(matrix_key_output[i].GPIO_x, matrix_key_output[i].GPIO_pin);
-        OSTimeDly ( 5, OS_OPT_TIME_DLY, & err );
+        OSTimeDly ( 2, OS_OPT_TIME_DLY, & err );
         for(j = 0; j < 2; j++)            //j是输入口，当键按下时导通被置为低电平
         {
             matrix_key[i][j] = 0;
@@ -73,7 +78,10 @@ u8 matrix_update_key(void)
                     OSTimeDly ( 20, OS_OPT_TIME_DLY, & err );
                 }
                 matrix_key[i][j] = 1;
-                macLED2_TOGGLE ();
+                //macLED2_TOGGLE ();
+                GPIO_SetBits(matrix_key_output[i].GPIO_x, matrix_key_output[i].GPIO_pin);
+                g_ucKeyValues = (i + 1) * 10 + (j + 1);
+                return 0;
             }
             else
             {
@@ -83,5 +91,5 @@ u8 matrix_update_key(void)
         }
         GPIO_SetBits(matrix_key_output[i].GPIO_x, matrix_key_output[i].GPIO_pin);
     }
-    return 0xff;
+    return 1;
 }

@@ -33,9 +33,9 @@ void OLED_CLS(void);
 void OLED_ON(void);
 void OLED_OFF(void);
 void OLED_ShowStr(unsigned char x, unsigned char y, unsigned char ch[], unsigned char TextSize);
-void OLED_ShowCN(unsigned char x, unsigned char y, unsigned char N);
+void OLED_ShowCN(unsigned char x, unsigned char y, unsigned char N, unsigned char isTurn);
 void OLED_DrawBMP(unsigned char x0,unsigned char y0,unsigned char x1,unsigned char y1,unsigned char BMP[]);
-void OLED_xShowCN(unsigned char x, unsigned char y, unsigned char * pFontbuf);
-void OLED_xShowEN(unsigned char x, unsigned char y, unsigned char * pFontbuf);
+void OLED_xShowCN(unsigned char x, unsigned char y, unsigned char * pFontbuf, unsigned char isTurn);
+void OLED_xShowEN(unsigned char x, unsigned char y, unsigned char * pFontbuf, unsigned char isTurn);
 
 #endif

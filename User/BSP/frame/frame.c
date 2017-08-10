@@ -1,6 +1,7 @@
 #include <includes.h>
 #include "frame.h"
-
+#include "WAV_C_xiexie.h"
+#include "WAV_C_anjianquka.h"
 
 CPU_INT08U g_ucSerNum = '0';  // 帧序号   全局
 
@@ -77,24 +78,6 @@ const Print_msg g_taPri_msg[] = {
                             {'0',NULL}
                         };
 
-Dlg g_dlg[] = {
-                        {LOGO_ID,           "    ****电子    ", " www.*****.com  ", "   ****发卡机   ", "   版本: V1.0   "},
-                        {STATUS_ID,         "1:              ", "2:              ", "3:              ", "4:              "},
-                        {MAIN_ID,           "    进入状态    ", "1.输入IC卡数量  ", "2.调看开机状态  ", "3.调机运行状态  "},
-                        {CARD_NUM_ID,       "卡数1:          ", "卡数2:          ", "卡数3:          ", "卡数4:          "},
-                        {CARD_MIAN_ID,      "卡机状态:1号卡机", "         2号卡机", "         3号卡机", "         4号卡机"},
-                        {MECHINE_STATUS_ID, "卡机状态:(     )", "出好卡数量:     ", "回收坏卡数:     ", "故障次数:       "},
-                        
-                        {DEBUG_MANI_ID,     "1:              ", "2:              ", "3:              ", "4:              "},
-                        {DEBUG_ONE_ID,      "                ", "1.连续循环出卡  ", "2.循环出一张卡  ", "3.翻一张好卡    "},
-                        {DEBUG_TWO_ID,      "                ", "4.读取送卡传感器", "5.读取卡盒传感器", "6.读取取卡传感器"},
-                        
-                        {255,               "                ", "                ", "                ", "                "},
-                     };
-
-
-
-
 
 // 找到打印的字符串，并返回其首地址
 CPU_INT08U * check_msg(CPU_INT08U ch)
@@ -115,30 +98,40 @@ CPU_INT08U * check_msg(CPU_INT08U ch)
 CPU_INT08U  AnalyzeCANFrame ( void * p_arg )
 {
     CanRxMsg *pRxMessage = (CanRxMsg *)p_arg;                // can数据接收缓存
+    OS_ERR      err;
 
     switch(pRxMessage->Data[3])
     {
         case 0x01:
-            //OLED_ShowStr(0,0,p_arg,1);
-        break;
-        case 0x02:
 
         break;
-        case 0x03:
+//        case MACHINE_CHECK_CARD:
+//            MyCANTransmit(&gt_TxMessage, pRxMessage->Data[1], 1, MACHINE_STATUES, CARD_IS_OK, NO_FAIL);
+//        break;
+        case KEY_PRESS:
             //OLED_ShowStr(0,0,p_arg,1);
             DEBUG_printf ("%s\r\n",(char *)check_msg(CARD_KEY_PRESS));
+            MyCANTransmit(&gt_TxMessage, pRxMessage->Data[1], pRxMessage->Data[1], WRITE_CARD_STATUS, CARD_IS_OK, 0, 0, NO_FAIL);
             printf ("%s\n",(char *)&g_tCardKeyPressFrame);
             //OLED_ShowStr(0,0,p_arg,1);
         break;
-        case 0x04:
-            //OLED_ShowStr(0,0,p_arg,1);   /* 查询卡夹(66H)帧 */
+        case MACHINE_CHECK_CARD:
+            DEBUG_printf ("%s\r\n",(char *)check_msg(CARD_KEY_PRESS));
+            MyCANTransmit(&gt_TxMessage, pRxMessage->Data[1], pRxMessage->Data[1], MACHINE_STATUES, CARD_IS_OK, 0, 0, NO_FAIL);
+            printf ("%s\n",(char *)&g_tCardKeyPressFrame);
         break;
 
-        case PC_SET_CARD_NUM:
+        case CARD_SPIT_NOTICE:
             //OLED_ShowStr(0,0,p_arg,1);   /* 设置卡夹卡数(67H)帧 */
+            dacSet(DATA_anjianquka,SOUND_LENGTH_anjianquka);
+            OSTimeDly ( 2000, OS_OPT_TIME_DLY, & err );
+        break;
+        case CARD_TAKE_AWAY_NOTICE:
+            dacSet(DATA_xiexie,SOUND_LENGTH_xiexie);
+            OSTimeDly ( 2500, OS_OPT_TIME_DLY, & err );
         break;
         default:
-            OLED_ShowStr(0,0,p_arg,1);
+            //OLED_ShowStr(0,0,p_arg,1);
         break;
     }
     return 0;
@@ -174,30 +167,30 @@ CPU_INT08U  AnalyzeUartFrame ( void * p_arg )
         {
             case PC_INIT_MECHINE:               /* 初始化卡机信息(61H)帧 */
                 OLED_ShowStr(0,0,p_arg,1);
-                display_GB2312_string (0, 2, "初始化");
+                display_GB2312_string (0, 2, "初始化", 0);
             break;
             case PC_SPIT_OUT_CARD:              /* 出卡信息(62H)帧 */
                 OLED_ShowStr(0,0,p_arg,1);
-                display_GB2312_string (0, 2, "出卡信息");
+                display_GB2312_string (0, 2, "出卡信息", 0);
             break;
             case PC_BAD_CARD:                  /* 坏卡信息(63H)帧 */
                 OLED_ShowStr(0,0,p_arg,1);
-                display_GB2312_string (0, 2, "坏卡");
+                display_GB2312_string (0, 2, "坏卡", 0);
             break;
             case PC_QUERY_CARD_MECHINE:         /* 查询卡机状态(65H)帧 */
                 OLED_ShowStr(0,0,p_arg,1);
-                display_GB2312_string (0, 2, "查询卡机");
+                display_GB2312_string (0, 2, "查询卡机", 0);
             break;
             case PC_QUERY_CARD_CLIP:
                 OLED_ShowStr(0,0,p_arg,1);   /* 查询卡夹(66H)帧 */
-                display_GB2312_string (0, 2, "查询卡夹");
+                display_GB2312_string (0, 2, "查询卡夹", 0);
             break;
             case PC_SET_CARD_NUM:
                 OLED_ShowStr(0,0,p_arg,1);   /* 设置卡夹卡数(67H)帧 */
-                display_GB2312_string (0, 2, "设置卡夹");
+                display_GB2312_string (0, 2, "设置卡夹", 0);
             break;
             default:
-                display_GB2312_string (0, 2, "无效信息");
+                display_GB2312_string (0, 2, "无效信息", 0);
                 printf("错误信息帧！\n");
             break;
         }

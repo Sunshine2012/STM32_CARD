@@ -77,6 +77,7 @@
 #include  <app_cfg.h>
 
 #include "app.h"
+#include "menu.h"
 #include "bsp_led.h"
 #include "bsp_usart1.h"
 #include "bsp_usart4.h"

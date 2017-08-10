@@ -120,7 +120,7 @@ void FONT_SPI_FLASH_BufferRead(u8* pBuffer, u32 ReadAddr, u16 NumByteToRead)
 
 
 /******************************************************************/
-void display_GB2312_string(u8 x, u8 y, unsigned char *text)
+void display_GB2312_string(u8 x, u8 y, unsigned char *text, unsigned char isTurn)
 {
     u8 i = 0;
     u8 fontbuf[32] = {0};
@@ -135,7 +135,7 @@ void display_GB2312_string(u8 x, u8 y, unsigned char *text)
             //get_n_bytes_data_from_ROM(addrHigh,addrMid,addrLow,fontbuf,32 );      /*取 32 个字节的数据，存到"fontbuf[32]"*/
             FONT_SPI_FLASH_BufferRead(fontbuf, fontaddr, sizeof (fontbuf) );        /*取 32 个字节的数据，存到"fontbuf[32]"*/
             //display_graphic_16x16(y,x,fontbuf);                                   /*显示汉字到 LCD 上，y 为页地址，x 为列地址，fontbuf[]为数据*/
-            OLED_xShowCN(x, y, fontbuf);
+            OLED_xShowCN(x, y, fontbuf, isTurn);
             i += 2;
             x += 16;
         }
@@ -145,7 +145,7 @@ void display_GB2312_string(u8 x, u8 y, unsigned char *text)
             /*Address = ((MSB - 0xa1) * 94 + (LSB - 0xA1))*32+ BaseAdd;BaseAdd=0*/
             fontaddr = (( text[i]- 0xa1 ) * 94 + ( text[i + 1] - 0xa1)) * 32;
             FONT_SPI_FLASH_BufferRead(fontbuf, fontaddr, sizeof (fontbuf) );        /*取 32 个字节的数据，存到"fontbuf[32]"*/
-            OLED_xShowCN(x, y, fontbuf);
+            OLED_xShowCN(x, y, fontbuf, isTurn);
             i += 2;
             x += 16;
         }
@@ -154,7 +154,7 @@ void display_GB2312_string(u8 x, u8 y, unsigned char *text)
             unsigned char fontbuf[16];
             fontaddr = (( text[i] - 0x20) * 16) + 0x3cf80;             //0x3b7c0
             FONT_SPI_FLASH_BufferRead( fontbuf, fontaddr, 16 );        /*取 16 个字节的数据，存到"fontbuf[32]"*/
-            OLED_xShowEN(x, y, fontbuf);
+            OLED_xShowEN(x, y, fontbuf , isTurn);
             i += 1;
             x += 8;
         }

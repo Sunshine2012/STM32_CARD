@@ -23,8 +23,8 @@
     * 8. void OLED_CLS(void) -- 清屏
     * 9. void OLED_ON(void) -- 唤醒
     * 10. void OLED_OFF(void) -- 睡眠
-    * 11. void OLED_ShowStr(unsigned char x, unsigned char y, unsigned char ch[], unsigned char TextSize) -- 显示字符串(字体大小有6*8和8*16两种)
-    * 12. void OLED_ShowCN(unsigned char x, unsigned char y, unsigned char N) -- 显示中文(中文需要先取模，然后放到codetab.h中)
+    * 11. void OLED_ShowStr(unsigned char x, unsigned char y, unsigned char ch[], unsigned char TextSize,unsigned char isTurn) -- 显示字符串(字体大小有6*8和8*16两种)
+    * 12. void OLED_ShowCN(unsigned char x, unsigned char y, unsigned char N,unsigned char isTurn) -- 显示中文(中文需要先取模，然后放到codetab.h中)
     * 13. void OLED_DrawBMP(unsigned char x0,unsigned char y0,unsigned char x1,unsigned char y1,unsigned char BMP[]) -- BMP图片
     *
   *
@@ -133,7 +133,6 @@ void WriteDat(unsigned char I2C_Data)//写数据
   */
 void OLED_Init(void)
 {
-    OS_ERR      err;
     macOLED_RESET_ON();
     macOLED_RESET_OFF();
 
@@ -291,7 +290,7 @@ void OLED_ShowStr(unsigned char x, unsigned char y, unsigned char ch[], unsigned
     *                    N:汉字在codetab.h中的索引
     * @retval 无
   */
-void OLED_ShowCN(unsigned char x, unsigned char y, unsigned char N)
+void OLED_ShowCN(unsigned char x, unsigned char y, unsigned char N, unsigned char isTurn)
 {
     unsigned char wm=0;
     unsigned int  adder=32*N;
@@ -315,18 +314,30 @@ void OLED_ShowCN(unsigned char x, unsigned char y, unsigned char N)
     *
     * @retval 无
   */
-void OLED_xShowCN(unsigned char x, unsigned char y, unsigned char * pFontbuf)
+void OLED_xShowCN(unsigned char x, unsigned char y, unsigned char * pFontbuf ,unsigned char isTurn)
 {
     unsigned char wm=0;
     OLED_SetPos( x , y );
+    // 清除显示
     for( wm = 0; wm < 16; wm++ )
     {
-        WriteDat( *pFontbuf++ );
+        WriteDat( 0 );
     }
     OLED_SetPos( x,y + 1 );
     for(wm = 0; wm < 16; wm++)
     {
-        WriteDat( *pFontbuf++ );
+        WriteDat( 0 );
+    }
+
+    OLED_SetPos( x , y );
+    for( wm = 0; wm < 16; wm++ )
+    {
+        WriteDat( !isTurn ? *pFontbuf++ : ~(*pFontbuf++));
+    }
+    OLED_SetPos( x,y + 1 );
+    for(wm = 0; wm < 16; wm++)
+    {
+        WriteDat( !isTurn ? *pFontbuf++ : ~(*pFontbuf++));
     }
 }
 
@@ -336,18 +347,30 @@ void OLED_xShowCN(unsigned char x, unsigned char y, unsigned char * pFontbuf)
     *
     * @retval 无
   */
-void OLED_xShowEN(unsigned char x, unsigned char y, unsigned char * pFontbuf)
+void OLED_xShowEN(unsigned char x, unsigned char y, unsigned char * pFontbuf, unsigned char isTurn)
 {
     unsigned char wm=0;
     OLED_SetPos( x , y );
+    // 清除显示
     for( wm = 0; wm < 8; wm++ )
     {
-        WriteDat( *pFontbuf++ );
+        WriteDat( 0 );
     }
     OLED_SetPos( x,y + 1 );
     for(wm = 0; wm < 8; wm++)
     {
-        WriteDat( *pFontbuf++ );
+        WriteDat( 0 );
+    }
+
+    OLED_SetPos( x , y );
+    for( wm = 0; wm < 8; wm++ )
+    {
+        WriteDat( !isTurn ? *pFontbuf++ : ~(*pFontbuf++));
+    }
+    OLED_SetPos( x,y + 1 );
+    for(wm = 0; wm < 8; wm++)
+    {
+        WriteDat( !isTurn ? *pFontbuf++ : ~(*pFontbuf++));
     }
 }
 
