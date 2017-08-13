@@ -83,7 +83,7 @@ void FONT_SPI_FLASH_Init(void)
 
 /**
  * @brief  读取FLASH数据
- * @param 	pBuffer，存储读出数据的指针
+ * @param   pBuffer，存储读出数据的指针
  * @param   ReadAddr，读取地址
  * @param   NumByteToRead，读取数据长度
  * @retval 无

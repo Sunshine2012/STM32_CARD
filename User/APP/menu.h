@@ -26,16 +26,15 @@ typedef struct Dlg
 {
    CPU_INT08U ID;                 /* 类型：正(30H), 负(31H) */
    char MsgRow[4][36];
-   //char MsgRow1[36];
-   //char MsgRow2[36];
-   //char MsgRow3[36];
 }Dlg;
 
 
 extern Dlg                              g_dlg[];
+extern unsigned char g_ucCurDlg;           // 当前显示的菜单ID
 
 void doShowStatusMenu (unsigned char dlg_id, unsigned char isNotRow);
 void doShowMainMenu (unsigned char dlg_id, unsigned char isNotRow);
 void doShowIdSetMenu (unsigned char dlg_id, unsigned char isNotRow);
+void doShowDebugOne (unsigned char dlg_id, unsigned char isNotRow);
 
 #endif

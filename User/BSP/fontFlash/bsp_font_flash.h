@@ -38,7 +38,7 @@
 
 #define JLX128_DeviceID                 0x9F
 #define JLX128_PowerDown                0xB9
-#define JLX128_ReleasePowerDown	        0xAB
+#define JLX128_ReleasePowerDown         0xAB
 
 /* WIP(busy)标志，FLASH内部正在写入 */
 #define WIP_Flag                  0x01
@@ -73,8 +73,8 @@
 #define      FONT_FLASH_SPI_MOSI_PORT                GPIOB
 #define      FONT_FLASH_SPI_MOSI_PIN                 GPIO_Pin_15
 
-#define  		FONT_SPI_FLASH_CS_LOW()     						GPIO_ResetBits( FONT_FLASH_SPI_CS_PORT, FONT_FLASH_SPI_CS_PIN )
-#define  		FONT_SPI_FLASH_CS_HIGH()    						GPIO_SetBits( FONT_FLASH_SPI_CS_PORT, FONT_FLASH_SPI_CS_PIN )
+#define         FONT_SPI_FLASH_CS_LOW()                             GPIO_ResetBits( FONT_FLASH_SPI_CS_PORT, FONT_FLASH_SPI_CS_PIN )
+#define         FONT_SPI_FLASH_CS_HIGH()                            GPIO_SetBits( FONT_FLASH_SPI_CS_PORT, FONT_FLASH_SPI_CS_PIN )
 
 /*SPI接口定义-结尾****************************/
 

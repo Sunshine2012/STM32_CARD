@@ -102,7 +102,7 @@ extern OS_TCB   AppTaskUartFrameTCB;        // 读取解析数据任务控制块
 
 extern OS_Q queue_uart;     // 消息队列
 extern OS_Q queue_can;      // 消息队列
-
+extern unsigned char g_ucIsUpdateMenu;     // 更新显示
 /*
 *********************************************************************************************************
 *                                                 MACRO'S

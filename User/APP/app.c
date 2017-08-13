@@ -72,7 +72,7 @@ OS_Q queue_uart;     // 消息队列
 
 OS_Q queue_can;      // 消息队列
 
-
+unsigned char g_ucIsUpdateMenu;     // 更新显示
 /*
 *********************************************************************************************************
 *                                                STACKS
@@ -389,6 +389,8 @@ static  void AppTaskOLED ( void * p_arg )
     OLED_CLS();
 #endif
 
+
+    doShowStatusMenu(DLG_STATUS,5);      // 显示菜单,需要反显示的行?
     while (DEF_TRUE)
     {                            //任务体，通常写成一个死循环
         /*
@@ -408,7 +410,20 @@ static  void AppTaskOLED ( void * p_arg )
                             (CPU_TS        *)&ts,                  //返回消息被发布的时间戳
                             (OS_ERR        *)&err);                //返回错误类型
         */
-        doShowStatusMenu(DLG_STATUS,5);      // 显示菜单,需要反显示的行号
+        if (g_ucIsUpdateMenu)
+        {
+            g_ucIsUpdateMenu = 0;
+            doShowStatusMenu(DLG_STATUS,5);      // 显示菜单,需要反显示的行号
+        }
+        key = g_ucKeyValues;
+        g_ucKeyValues = KEY_NUL;
+
+        if ( key == KEY_ENTRY )
+        {
+            doShowMainMenu (DLG_MAIN, 1);       // 进入设置状态,阻塞,直到退出
+            g_ucIsUpdateMenu = 1;
+        }
+
         OSTimeDly ( 100, OS_OPT_TIME_DLY, & err );
     }
 }

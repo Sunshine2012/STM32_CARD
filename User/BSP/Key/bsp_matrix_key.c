@@ -67,27 +67,19 @@ u8 matrix_update_key(void)
         OSTimeDly ( 2, OS_OPT_TIME_DLY, & err );
         for(j = 0; j < 2; j++)            //j是输入口，当键按下时导通被置为低电平
         {
-            matrix_key[i][j] = 0;
+            //matrix_key[i][j] = 0;
             if(GPIO_ReadInputDataBit(matrix_key_input[j].GPIO_x, matrix_key_input[j].GPIO_pin) == 0)
             {
-
-               //GPIO_SetBits(matrix_key_output[i].GPIO_x, matrix_key_output[i].GPIO_pin);
-               //return 0;
                 while(!GPIO_ReadInputDataBit(matrix_key_input[j].GPIO_x, matrix_key_input[j].GPIO_pin))
                 {
                     OSTimeDly ( 20, OS_OPT_TIME_DLY, & err );
                 }
-                matrix_key[i][j] = 1;
+                //matrix_key[i][j] = 1;
                 //macLED2_TOGGLE ();
                 GPIO_SetBits(matrix_key_output[i].GPIO_x, matrix_key_output[i].GPIO_pin);
                 g_ucKeyValues = (i + 1) * 10 + (j + 1);
                 return 0;
             }
-            else
-            {
-                matrix_key[i][j] = 0;
-            }
-
         }
         GPIO_SetBits(matrix_key_output[i].GPIO_x, matrix_key_output[i].GPIO_pin);
     }
