@@ -32,9 +32,10 @@ typedef struct Dlg
 extern Dlg                              g_dlg[];
 extern unsigned char g_ucCurDlg;           // 当前显示的菜单ID
 
-void doShowStatusMenu (unsigned char dlg_id, unsigned char isNotRow);
-void doShowMainMenu (unsigned char dlg_id, unsigned char isNotRow);
-void doShowIdSetMenu (unsigned char dlg_id, unsigned char isNotRow);
-void doShowDebugOne (unsigned char dlg_id, unsigned char isNotRow);
+void doShowStatusMenu (unsigned char dlg_id, unsigned char isNotRow, void * p_parm);
+void doShowMainMenu (unsigned char dlg_id, unsigned char isNotRow, void * p_parm);
+void doShowIdSetMenu (unsigned char dlg_id, unsigned char isNotRow, void * p_parm);
+void doShowDebugOne (unsigned char dlg_id, unsigned char isNotRow, void * p_parm);
+void doShowDebugTwo (unsigned char dlg_id, unsigned char isNotRow, void * p_parm);
 
 #endif

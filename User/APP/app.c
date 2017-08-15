@@ -390,7 +390,7 @@ static  void AppTaskOLED ( void * p_arg )
 #endif
 
 
-    doShowStatusMenu(DLG_STATUS,5);      // 显示菜单,需要反显示的行?
+    doShowStatusMenu(DLG_STATUS,5, NULL);      // 显示菜单,需要反显示的行?
     while (DEF_TRUE)
     {                            //任务体，通常写成一个死循环
         /*
@@ -413,14 +413,14 @@ static  void AppTaskOLED ( void * p_arg )
         if (g_ucIsUpdateMenu)
         {
             g_ucIsUpdateMenu = 0;
-            doShowStatusMenu(DLG_STATUS,5);      // 显示菜单,需要反显示的行号
+            doShowStatusMenu(DLG_STATUS,5, NULL);      // 显示菜单,需要反显示的行号
         }
         key = g_ucKeyValues;
         g_ucKeyValues = KEY_NUL;
 
         if ( key == KEY_ENTRY )
         {
-            doShowMainMenu (DLG_MAIN, 1);       // 进入设置状态,阻塞,直到退出
+            doShowMainMenu (DLG_MAIN, 1, NULL);       // 进入设置状态,阻塞,直到退出
             g_ucIsUpdateMenu = 1;
         }
 

@@ -1,9 +1,9 @@
 #ifndef __OLED_I2C_H
-#define	__OLED_I2C_H
+#define __OLED_I2C_H
 
 #include "stm32f10x.h"
 
-#define OLED_ADDRESS	0x7e // 屏的默认地址0x7e
+#define OLED_ADDRESS    0x7e // 屏的默认地址0x7e
 
 
 
@@ -21,6 +21,9 @@
 #define             macOLED_RESET_TOGGLE()                        GPIO_ReadOutputDataBit ( macOLED_RESET_GPIO_PORT, macLED1_GPIO_PIN ) ? \
                                                                   GPIO_ResetBits ( macOLED_RESET_GPIO_PORT, macOLED_RESET_GPIO_PIN ) : GPIO_SetBits ( macOLED_RESET_GPIO_PORT, macOLED_RESET_GPIO_PIN )
 
+/*等待超时时间*/
+#define IICT_FLAG_TIMEOUT         ((uint32_t)0x1000)
+#define IICT_LONG_TIMEOUT         ((uint32_t)(10 * IICT_FLAG_TIMEOUT))
 
 void I2C_Configuration(void);
 void I2C_WriteByte(uint8_t addr,uint8_t data);
@@ -37,5 +40,8 @@ void OLED_ShowCN(unsigned char x, unsigned char y, unsigned char N, unsigned cha
 void OLED_DrawBMP(unsigned char x0,unsigned char y0,unsigned char x1,unsigned char y1,unsigned char BMP[]);
 void OLED_xShowCN(unsigned char x, unsigned char y, unsigned char * pFontbuf, unsigned char isTurn);
 void OLED_xShowEN(unsigned char x, unsigned char y, unsigned char * pFontbuf, unsigned char isTurn);
+
+
+static uint16_t IIC_TIMEOUT_UserCallback(uint8_t errorCode);
 
 #endif

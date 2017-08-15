@@ -13,7 +13,7 @@ Dlg g_dlg[] = {
 
                         {DLG_DEBUG_MAIN,     "1:              ", "2:              ", "3:              ", "4:              "},
                         {DLG_DEBUG_ONE,      "    号卡机调试  ", "1.连续循环出卡  ", "2.循环出一张卡  ", "3.翻一张好卡    "},
-                        {DLG_DEBUG_TWO,      "4.读取送卡传感器", "5.读取卡盒传感器", "6.读取取卡传感器", "                "},
+                        {DLG_DEBUG_TWO,      "    号卡机调试  ", "4.勾一张卡      ", "5.读取卡盒传感器", "6.读取取卡传感器"},
 
                         {255,                "                ", "                ", "                ", "                "},
                      };
@@ -31,8 +31,8 @@ unsigned char check_menu(unsigned char ch)
     return 255;
 }
 
-// 显示状态菜单,如果有一行需要反显示,则设置当前行反显示
-void doShowStatusMenu (unsigned char dlg_id, unsigned char isNotRow)
+// 显示状态菜单,如果有一行需要反显示,则设置当前行反显示,传递参数地址
+void doShowStatusMenu (unsigned char dlg_id, unsigned char isNotRow, void * p_parm)
 {
     OS_ERR      err;
     unsigned char i;
@@ -44,8 +44,8 @@ void doShowStatusMenu (unsigned char dlg_id, unsigned char isNotRow)
     }
 }
 
-// 显示菜单,如果有一行需要反显示,则设置当前行反显示
-void doShowMainMenu (unsigned char dlg_id, unsigned char isNotRow)
+// 显示菜单,如果有一行需要反显示,则设置当前行反显示,传递参数地址
+void doShowMainMenu (unsigned char dlg_id, unsigned char isNotRow, void * p_parm)
 {
     OS_ERR      err;
     unsigned char i;
@@ -67,12 +67,12 @@ void doShowMainMenu (unsigned char dlg_id, unsigned char isNotRow)
                     case 0:
                         isNotRow++;     // 只进行反显操作,不
                     case 1:
-                        doShowIdSetMenu (DLG_CARD_ID, 1);
+                        doShowIdSetMenu (DLG_CARD_ID, 1, NULL);
                         break;
                     case 2:
                         break;
                     case 3:
-                        doShowDebugOne (DLG_DEBUG_ONE,0);
+                        doShowDebugOne (DLG_DEBUG_ONE,0, NULL);
                         break;
                     default:
                         break;
@@ -119,8 +119,8 @@ void doShowMainMenu (unsigned char dlg_id, unsigned char isNotRow)
 }
 
 
-// ID设置菜单,如果有一行需要反显示,则设置当前行反显示
-void doShowIdSetMenu (unsigned char dlg_id, unsigned char isNotRow)
+// ID设置菜单,如果有一行需要反显示,则设置当前行反显示,传递参数地址
+void doShowIdSetMenu (unsigned char dlg_id, unsigned char isNotRow, void * p_parm)
 {
     OS_ERR      err;
     unsigned char i;
@@ -154,7 +154,7 @@ void doShowIdSetMenu (unsigned char dlg_id, unsigned char isNotRow)
         switch (key)
         {
             case KEY_ENTRY:
-                if (1 <= num <=4 && 0x7811 <= id <= 0x7814)
+                if (1 <= num && num <= 4 && 0x7811 <= id && id <= 0x7814)
                 {
                     id_h = ( id >> 8 ) & 0xff;
                     id_l = id & 0xff;
@@ -225,7 +225,7 @@ void doShowIdSetMenu (unsigned char dlg_id, unsigned char isNotRow)
                 {
                     case 1:
                     case 2:
-                        if (1 <= num <=4 && 0x7811 <= id <= 0x7814)
+                        if (1 <= num && num <=4 && 0x7811 <= id && id <= 0x7814)
                         {
                             id_h = ( id >> 8 ) & 0xff;
                             id_l = id & 0xff;
@@ -264,8 +264,8 @@ void doShowIdSetMenu (unsigned char dlg_id, unsigned char isNotRow)
 }
 
 
-// 调试菜单1,如果有一行需要反显示,则设置当前行反显示
-void doShowDebugOne (unsigned char dlg_id, unsigned char isNotRow)
+// 调试菜单1,如果有一行需要反显示,则设置当前行反显示,传递参数地址
+void doShowDebugOne (unsigned char dlg_id, unsigned char isNotRow, void * p_parm)
 {
     OS_ERR      err;
     unsigned char i;
@@ -293,6 +293,7 @@ void doShowDebugOne (unsigned char dlg_id, unsigned char isNotRow)
         switch (key)
         {
             case KEY_ENTRY:
+                key = KEY_NUL;
                 /*
                 if (1 <= num <=4 && 0x7811 <= id <= 0x7814)
                 {
@@ -308,15 +309,19 @@ void doShowDebugOne (unsigned char dlg_id, unsigned char isNotRow)
                 return;
                 break;
             case KEY_UP:
-                if (0 < isNotRow < 4)
+                if (0 < isNotRow)
                 {
                     isNotRow--;
                 }
                 break;
             case KEY_DOWN:
-                if (0 < isNotRow < 4)
+                if (isNotRow < 4)
                 {
                     isNotRow++;
+                }
+                if (isNotRow == 4)
+                {
+                    doShowDebugTwo (DLG_DEBUG_TWO, 1, &num);
                 }
                 break;
             case KEY_LEFT:
@@ -337,22 +342,114 @@ void doShowDebugOne (unsigned char dlg_id, unsigned char isNotRow)
                 switch (isNotRow)
                 {
                     case 1:
+                        id_h = ( id >> 8 ) & 0xff;
+                        id_l = id & 0xff;
+                        MyCANTransmit(&gt_TxMessage, num, num, CYCLE_SPIT_CARD, num, id_h, id_l, NO_FAIL);
+                        break;
+                    case 2:
+                        id_h = ( id >> 8 ) & 0xff;
+                        id_l = id & 0xff;
+                        MyCANTransmit(&gt_TxMessage, num, num, CYCLE_SPIT_ONE_CARD, num, id_h, id_l, NO_FAIL);
+                        break;
+                    case 3:
+                        id_h = ( id >> 8 ) & 0xff;
+                        id_l = id & 0xff;
+                        MyCANTransmit(&gt_TxMessage, num, num, SPIT_ONE_OK_CARD, num, id_h, id_l, NO_FAIL);
+                        break;
+                    default:
+                        break;
+                }
+                break;
+            default:
+                break;
+        }
+        if (KEY_NUL != key)    // 如果有按键按下,则更新界面
+        {
+            sprintf(str_num,"0%d",num);
+            for (i = 0; i < 2; i++)
+            {
+                g_dlg[dlgId].MsgRow[0][i + 2] = str_num[i];
+            }
+            for (i = 0; i < 4; i++)
+            {
+                display_GB2312_string (0, i * 2, g_dlg[dlgId].MsgRow[i], i == isNotRow ? 1 : 0);
+            }
+        }
+        OSTimeDly ( 5, OS_OPT_TIME_DLY, & err );     //不断阻塞该任务
+    }
+}
+
+
+
+
+// 调试菜单2,如果有一行需要反显示,则设置当前行反显示,传递参数地址
+void doShowDebugTwo (unsigned char dlg_id, unsigned char isNotRow, void * p_parm)
+{
+    OS_ERR      err;
+    unsigned char i;
+    unsigned char dlgId = check_menu(dlg_id);
+    unsigned char key = KEY_NUL;
+    //unsigned char num = *(unsigned char *)p_parm;      // 卡机号
+    unsigned char num = 1;      // 卡机号
+    unsigned char str_num[10] = {0};
+    unsigned char str_id[10] = {0};
+    unsigned char id_h = 0;          // CAN通信的ID高字节
+    unsigned char id_l = 0;          // CAN通信的ID低字节
+    unsigned short id = 0x7810 | num;      // CAN通信的ID
+    sprintf(str_num,"0%d",num);
+    for (i = 0; i < 2; i++)
+    {
+        g_dlg[dlgId].MsgRow[0][i + 2] = str_num[i];
+    }
+    for (i = 0; i < 4; i++)
+    {
+        display_GB2312_string (0, i * 2, g_dlg[dlgId].MsgRow[i], i == isNotRow ? 1 : 0);
+    }
+    while (DEF_TRUE)
+    {                            //任务体，通常写成一个死循环
+        key = g_ucKeyValues;
+        g_ucKeyValues = KEY_NUL;
+        switch (key)
+        {
+            case KEY_ENTRY:
+                key = KEY_NUL;
+                break;
+            case KEY_QUIT:
+                g_ucCurDlg = DLG_MAIN;
+                g_ucKeyValues = 0xfe;
+                return;
+                break;
+            case KEY_UP:
+                if (1 < isNotRow)
+                {
+                    isNotRow--;
+                }
+                break;
+            case KEY_DOWN:
+                if (isNotRow < 3)
+                {
+                    isNotRow++;
+                }
+                break;
+            case KEY_LEFT:
+            case KEY_RIGHT:
+            case KEY_OK:
+                switch (isNotRow)
+                {
+                    case 1:
                             id_h = ( id >> 8 ) & 0xff;
                             id_l = id & 0xff;
-                            MyCANTransmit(&gt_TxMessage, num, num, CYCLE_SPIT_CARD, num, id_h, id_l, NO_FAIL);
+                            MyCANTransmit(&gt_TxMessage, num, num, SPIT_ONE_BAD_CARD, num, id_h, id_l, NO_FAIL);
                         break;
                     case 2:
                             id_h = ( id >> 8 ) & 0xff;
                             id_l = id & 0xff;
-                            MyCANTransmit(&gt_TxMessage, num, num, CYCLE_SPIT_ONE_CARD, num, id_h, id_l, NO_FAIL);
+                            MyCANTransmit(&gt_TxMessage, num, num, HOOK_ONE_CARD, num, id_h, id_l, NO_FAIL);
                         break;
                     case 3:
                             id_h = ( id >> 8 ) & 0xff;
                             id_l = id & 0xff;
                             MyCANTransmit(&gt_TxMessage, num, num, SPIT_ONE_OK_CARD, num, id_h, id_l, NO_FAIL);
-                        break;
-                    case 4:
-
                         break;
                     default:
                         break;

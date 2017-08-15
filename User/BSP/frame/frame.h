@@ -199,7 +199,7 @@ typedef enum CMD
     CYCLE_SPIT_ONE_CARD     = 0x41,                 /* 循环出一张卡 */
     SPIT_ONE_OK_CARD        = 0x42,                 /* 翻一张好卡 */
     SPIT_ONE_BAD_CARD       = 0x43,                 /* 翻一张坏卡 */
-
+    HOOK_ONE_CARD           = 0x44,                 /* 勾一张卡 */
 
 }CMD;
 
