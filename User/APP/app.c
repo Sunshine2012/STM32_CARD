@@ -410,9 +410,10 @@ static  void AppTaskOLED ( void * p_arg )
                             (CPU_TS        *)&ts,                  //返回消息被发布的时间戳
                             (OS_ERR        *)&err);                //返回错误类型
         */
-        if (g_ucIsUpdateMenu)
+        if (g_ucIsUpdateMenu || g_ucKeyValues == KEY_QUIT)
         {
             g_ucIsUpdateMenu = 0;
+            g_ucKeyValues = KEY_NUL;
             doShowStatusMenu(DLG_STATUS,5, NULL);      // 显示菜单,需要反显示的行号
         }
         key = g_ucKeyValues;

@@ -195,11 +195,34 @@ typedef enum CMD
     50H：初始化命令
     */
     // 40H--5FH：卡机调机命令信息
-    CYCLE_SPIT_CARD         = 0x40,                 /* 连续循环出卡 */
+    STOP_DEBUG              = 0x40,                 /* 停止调试 */
     CYCLE_SPIT_ONE_CARD     = 0x41,                 /* 循环出一张卡 */
     SPIT_ONE_OK_CARD        = 0x42,                 /* 翻一张好卡 */
     SPIT_ONE_BAD_CARD       = 0x43,                 /* 翻一张坏卡 */
     HOOK_ONE_CARD           = 0x44,                 /* 勾一张卡 */
+
+    //
+    SPIT_MOTOR_POSITIVE_STEP= 0x45,                 /* 翻卡电机正单步 */
+    SPIT_MOTOR_NEGATIVE_STEP= 0x46,                 /* 翻卡电机反单步 */
+
+    HOOK_MOTOR_POSITIVE_STEP= 0x47,                 /* 勾卡电机正单步 */
+    HOOK_MOTOR_NEGATIVE_STEP= 0x48,                 /* 勾卡电机反单步 */
+
+    SPIT_MOTOR_POSITIVE     = 0x49,                 /* 翻卡电机正翻到底 */
+    SPIT_MOTOR_NEGATIVE     = 0x4A,                 /* 翻卡电机反翻到底 */
+    SPIT_MOTOR_ZERO         = 0x4B,                 /* 翻卡电机回零位 */
+
+    HOOK_MOTOR_POSITIVE     = 0x4C,                 /* 勾卡电机正翻到底 */
+    HOOK_MOTOR_NEGATIVE     = 0x4D,                 /* 勾卡电机反翻到底 */
+    HOOK_MOTOR_ZERO         = 0x4E,                 /* 勾卡电机回零位 */
+
+    READ_KEY_INFO           = 0x4F,                 /* 读取按键信息 */
+    LED_ON                  = 0x50,                 /* 指示灯亮 */
+    LED_OFF                 = 0x51,                 /* 指示灯灭 */
+    READ_SE     = 0x52,                 /* 读取传感器状态 */
+
+
+
 
 }CMD;
 
@@ -230,9 +253,12 @@ typedef enum CARD_AND_MECHINE_STATUS
     TURN_ONE_CARD_FAIL         = 0x85,                 /* 翻一张卡失败 */
     SEND_CARD_SUCCESS          = 0x86,                 /* 送一张卡成功 */
     SEND_CARD_FAIL             = 0x87,                 /* 送一张卡失败 */
-    SEND_CARD_SENSOR_STATUS    = 0x88,                 /* 送卡传感器状态 */
-    CARD_BOX_SENSOR_STATUS     = 0x89,                 /* 卡盒传感器状态 */
-    CARD_OUT_SENSOR_STATUS     = 0x8a,                 /* 取卡传感器状态 */
+    SEND_CARD_SENSOR_OK        = 0x88,                 /* 送卡传感器状态正常 */
+    SEND_CARD_SENSOR_FAULT     = 0x89,                 /* 送卡传感器状态故障 */
+    CARD_BOX_SENSOR_OK         = 0x8a,                 /* 卡盒传感器状态正常 */
+    CARD_BOX_SENSOR_FAULT      = 0x8b,                 /* 卡盒传感器状态故障 */
+    CARD_OUT_SENSOR_OK         = 0x8c,                 /* 取卡传感器状态正常 */
+    CARD_OUT_SENSOR_FAULT      = 0x8d,                 /* 取卡传感器状态故障 */
 
 }CARD_AND_MECHINE_STATUS;
 
