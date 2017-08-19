@@ -20,6 +20,8 @@ typedef enum KEY_VALUES
 }KEY_VALUES;
 
 extern unsigned char g_ucKeyValues;      // 当前按键值,全局
+extern unsigned char g_ucKeyContinu;     // 连续按键的标志
+
 
 /* 4*4矩阵键盘 */
 void matrix_keyboard_init(void);

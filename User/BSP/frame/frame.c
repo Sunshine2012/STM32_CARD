@@ -99,40 +99,47 @@ CPU_INT08U  AnalyzeCANFrame ( void * p_arg )
 {
     CanRxMsg *pRxMessage = (CanRxMsg *)p_arg;                // can数据接收缓存
     OS_ERR      err;
+    unsigned char i;
+    unsigned char str_id[10] = {0};
 
     switch(pRxMessage->Data[3])
     {
-        case 0x01:
-
-        break;
-//        case MACHINE_CHECK_CARD:
-//            MyCANTransmit(&gt_TxMessage, pRxMessage->Data[1], 1, MACHINE_STATUES, CARD_IS_OK, NO_FAIL);
-//        break;
-        case KEY_PRESS:
+        case MACHINE_CHECK_CARD:    // 指定工位验卡
+            DEBUG_printf ("%s\r\n",(char *)check_msg(CARD_KEY_PRESS));
+            MyCANTransmit(&gt_TxMessage, pRxMessage->Data[1], pRxMessage->Data[1], MACHINE_STATUES, CARD_IS_OK, 0, 0, NO_FAIL);
+            printf ("%s\n",(char *)&g_tCardKeyPressFrame);
+            break;
+        case KEY_PRESS:             // 司机已按键
             //OLED_ShowStr(0,0,p_arg,1);
             DEBUG_printf ("%s\r\n",(char *)check_msg(CARD_KEY_PRESS));
             MyCANTransmit(&gt_TxMessage, pRxMessage->Data[1], pRxMessage->Data[1], WRITE_CARD_STATUS, CARD_IS_OK, 0, 0, NO_FAIL);
             printf ("%s\n",(char *)&g_tCardKeyPressFrame);
             //OLED_ShowStr(0,0,p_arg,1);
-        break;
-        case MACHINE_CHECK_CARD:
-            DEBUG_printf ("%s\r\n",(char *)check_msg(CARD_KEY_PRESS));
-            MyCANTransmit(&gt_TxMessage, pRxMessage->Data[1], pRxMessage->Data[1], MACHINE_STATUES, CARD_IS_OK, 0, 0, NO_FAIL);
-            printf ("%s\n",(char *)&g_tCardKeyPressFrame);
-        break;
-
-        case CARD_SPIT_NOTICE:
-            //OLED_ShowStr(0,0,p_arg,1);   /* 设置卡夹卡数(67H)帧 */
+            break;
+        case CARD_SPIT_NOTICE:      // 出卡通知
             dacSet(DATA_anjianquka,SOUND_LENGTH_anjianquka);
-            OSTimeDly ( 2000, OS_OPT_TIME_DLY, & err );
-        break;
-        case CARD_TAKE_AWAY_NOTICE:
+            //OSTimeDly ( 2000, OS_OPT_TIME_DLY, & err );
+            break;
+        case CARD_TAKE_AWAY_NOTICE: // 卡已被取走通知
             dacSet(DATA_xiexie,SOUND_LENGTH_xiexie);
-            OSTimeDly ( 2500, OS_OPT_TIME_DLY, & err );
-        break;
+            //OSTimeDly ( 2500, OS_OPT_TIME_DLY, & err );
+            break;
+        case CARD_IS_READY:
+            break;
+        case SERCH_CARD_MECHINE_ACK:// 查询卡机的回复
+            g_usCurID = pRxMessage->Data[5] << 8 | pRxMessage->Data[6];
+            sprintf(str_id,"%x   ",g_usCurID);
+            for (i = 0; i < 6; i++)
+            {
+                g_dlg[DLG_CARD_ID].MsgRow[1][i + 10] = str_id[i];
+            }
+            g_ucKeyValues = KEY_ENTRY;      // 更新界面
+            break;
+        case IS_NO_CARD_WARNING:    // 无卡报警
+            break;
         default:
             //OLED_ShowStr(0,0,p_arg,1);
-        break;
+            break;
     }
     return 0;
 }

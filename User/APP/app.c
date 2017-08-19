@@ -458,7 +458,7 @@ void  AppTaskCanFrame ( void * p_arg )
             AnalyzeCANFrame((void *)ptRxMessage);
             // printf ("%s",(char *)ptRxMessage);
         }
-        OSTimeDly ( 10, OS_OPT_TIME_DLY, & err ); //不断阻塞该任务
+        OSTimeDly ( 100, OS_OPT_TIME_DLY, & err ); //不断阻塞该任务
     }
 }
 
@@ -470,7 +470,7 @@ void  AppTaskUartFrame ( void * p_arg )
     OS_ERR      err;
     OS_MSG_SIZE    msg_size;
     CPU_INT08U * pMsg = NULL;
-    //CPU_INT08U ucaMsg[30] = "0aiwesky uC/OS-III";
+    //CPU_INT08U ucaMsg[30] = "aiwesky uC/OS-III";
 
     OSTimeDly ( 1000, OS_OPT_TIME_DLY, & err ); //等待1S
     OS_CRITICAL_ENTER();                 //进入临界段，不希望下面串口打印遭到中断
@@ -498,7 +498,7 @@ void  AppTaskUartFrame ( void * p_arg )
         {
             //OLED_ShowStr(0,0,pMsg,1);
         }
-        OSTimeDly ( 10, OS_OPT_TIME_DLY, & err );     //不断阻塞该任务
+        OSTimeDly ( 100, OS_OPT_TIME_DLY, & err );     //不断阻塞该任务
     }
 }
 

@@ -4,6 +4,7 @@
 /**************矩阵键盘.c文件*****************************/
 unsigned char matrix_key[4][4];
 unsigned char g_ucKeyValues = KEY_NUL;      // 当前按键值,全局
+unsigned char g_ucKeyContinu = 0;           // 连续按键的标志
 struct io_port
 {
     GPIO_TypeDef *GPIO_x;
@@ -56,6 +57,7 @@ void matrix_keyboard_init(void)
 u8 matrix_update_key(void)
 {
     unsigned char i, j;
+    unsigned char ucTime = 0;
     OS_ERR      err;
     if (g_ucKeyValues != KEY_NUL)
     {
@@ -73,6 +75,14 @@ u8 matrix_update_key(void)
                 while(!GPIO_ReadInputDataBit(matrix_key_input[j].GPIO_x, matrix_key_input[j].GPIO_pin))
                 {
                     OSTimeDly ( 1, OS_OPT_TIME_DLY, & err );
+                    if (g_ucKeyContinu == 1)
+                    {
+                        if (ucTime++ == 150)         // 如果是连续按键,150ms退出,加上进程延时50ms,共200ms发送一次按键
+                        {
+                            ucTime = 0;
+                            break;
+                        }
+                    }
                 }
                 //matrix_key[i][j] = 1;
                 //macLED2_TOGGLE ();

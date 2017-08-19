@@ -12,7 +12,8 @@ typedef enum DLG_ID
     DLG_CARD_ID                  = 0x04,                 /*  */
 
     DLG_CARD_MAIN                = 0x10,                 /*  */
-    DLG_MECHINE_STATUS           = 0x11,                 /*  */
+    DLG_STATUS_ONE               = 0x11,                 /*  */
+    DLG_STATUS_TWO               = 0x12,                 /*  */
 
     DLG_DEBUG_MAIN               = 0x20,                 /*  */
     DLG_DEBUG_ONE                = 0x21,                 /*  */
@@ -31,9 +32,13 @@ typedef struct Dlg
 
 extern Dlg                              g_dlg[];
 extern unsigned char g_ucCurDlg;           // 当前显示的菜单ID
+extern unsigned short g_usCurID;           // 当前通信设备的ID,在设置设备ID时候使用
+
 
 void doShowStatusMenu (unsigned char dlg_id, unsigned char isNotRow, void * p_parm);
 void doShowMainMenu (unsigned char dlg_id, unsigned char isNotRow, void * p_parm);
+void doShowStatusOne (unsigned char dlg_id, unsigned char isNotRow, void * p_parm);
+void doShowStatusTwo (unsigned char dlg_id, unsigned char isNotRow, void * p_parm);
 void doShowIdSetMenu (unsigned char dlg_id, unsigned char isNotRow, void * p_parm);
 void doShowDebugMain (unsigned char dlg_id, unsigned char isNotRow, void * p_parm);
 void doShowDebugOne (unsigned char dlg_id, unsigned char isNotRow, void * p_parm);

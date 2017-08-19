@@ -162,6 +162,8 @@ typedef enum CMD
     CARD_MACHINE_INIT_ACK   = 0x02,                 /* (卡机--》主机) 初始化回复。内容在状态和故障码内 */
     CYCLE_ASK               = 0x03,                 /* 定时询问 */
     CYCLE_ACK               = 0x04,                 /* 定时回复 */
+    ENTER_DEBUG             = 0x05,                 /* 进入调试 */
+    QUIT_DEBUG              = 0x06,                 /* 退出调试 */
 
     // 10H--1FH：主机板发送至卡机板信息命令
     SET_MECHINE_ID          = 0x10,                 /* 设置卡机的ID号 */
@@ -169,12 +171,18 @@ typedef enum CMD
     MACHINE_STATUES         = 0x12,                 /* 指定工位卡情况，内容在状态码内 */
     WRITE_CARD_STATUS       = 0x13,                 /* 写卡情况，内容在状态码内 */
     YUETONG_CARD_HAS_READ   = 0x14,                 /* 粤通卡已读卡通知  */
+    SEARCH_CARD_MECHINE     = 0x15,                 /* 搜索询问卡机号和ID码  */
+    SET_CARD_COUNT          = 0x16,                 /* 设置IC卡数量  */
 
     // 20H--2FH：卡机板发送至主机板信息命令
     MACHINE_CHECK_CARD      = 0x21,                 /* 指定工位验卡 */
     KEY_PRESS               = 0x22,                 /* 司机已按键 */
     CARD_SPIT_NOTICE        = 0x23,                 /* 出卡通知，内容在状态和故障码内 */
     CARD_TAKE_AWAY_NOTICE   = 0x24,                 /* 卡已被取走通知 */
+    CARD_IS_READY           = 0x25,                 /* 卡已就绪 */
+    SERCH_CARD_MECHINE_ACK  = 0x26,                 /* 搜索询问回答 */
+    IS_NO_CARD_WARNING      = 0x27,                 /* 无卡报警 */
+    BAD_CARD_FULL           = 0x28,                 /* 坏卡满报警 */
 
     // 30H--3FH：总调机命令信息
     DEBUG_ALL               = 0x30,
@@ -219,7 +227,7 @@ typedef enum CMD
     READ_KEY_INFO           = 0x4F,                 /* 读取按键信息 */
     LED_ON                  = 0x50,                 /* 指示灯亮 */
     LED_OFF                 = 0x51,                 /* 指示灯灭 */
-    READ_SE     = 0x52,                 /* 读取传感器状态 */
+    READ_SENSOR             = 0x52,                 /* 读取传感器状态 */
 
 
 
