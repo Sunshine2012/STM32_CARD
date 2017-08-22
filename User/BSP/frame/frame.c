@@ -78,9 +78,52 @@ const Print_msg g_taPri_msg[] = {
                             {'0',NULL}
                         };
 
+const Print_msg g_taShow_msg[] = {
+                            {'$',                           "NULL"},
+                            {MACHINE_CHECK_CARD,            "验卡"},
+                            {KEY_PRESS,                     "按键"},
+                            {CARD_SPIT_NOTICE,              "出卡"},
+                            {CARD_TAKE_AWAY_NOTICE,         "取卡"},
+                            {'0',NULL}
+                        };
+
+const Print_msg g_taShowStatus_msg[] = {
+                            {'$',                           "NULL"},
+                            {CARD_IS_OK,                    "好卡"},
+                            {CARD_IS_BAD,                   "坏卡"},
+                            {'0',NULL}
+                        };
 
 // 找到打印的字符串，并返回其首地址
-CPU_INT08U * check_msg(CPU_INT08U ch)
+CPU_INT08U * CheckShowStatusmsg(CPU_INT08U ch)
+{
+    CPU_INT08U i = 0;
+    for (i = 0; i < (sizeof (g_taShowStatus_msg) / sizeof (g_taShowStatus_msg[0])); i++)
+    {
+        if(g_taShowStatus_msg[i].CTL == ch)
+        {
+            return (CPU_INT08U *)g_taShowStatus_msg[i].Msg;
+        }
+    }
+    return (CPU_INT08U *)g_taShowStatus_msg[0].Msg;
+}
+
+// 找到打印的字符串，并返回其首地址
+CPU_INT08U * CheckShowmsg(CPU_INT08U ch)
+{
+    CPU_INT08U i = 0;
+    for (i = 0; i < (sizeof (g_taShow_msg) / sizeof (g_taShow_msg[0])); i++)
+    {
+        if(g_taShow_msg[i].CTL == ch)
+        {
+            return (CPU_INT08U *)g_taShow_msg[i].Msg;
+        }
+    }
+    return (CPU_INT08U *)g_taShow_msg[0].Msg;
+}
+
+// 找到打印的字符串，并返回其首地址
+CPU_INT08U * CheckPrimsg(CPU_INT08U ch)
 {
     CPU_INT08U i = 0;
     for (i = 0; i < (sizeof (g_taPri_msg) / sizeof (g_taPri_msg[0])); i++)
@@ -105,13 +148,13 @@ CPU_INT08U  AnalyzeCANFrame ( void * p_arg )
     switch(pRxMessage->Data[3])
     {
         case MACHINE_CHECK_CARD:    // 指定工位验卡
-            DEBUG_printf ("%s\r\n",(char *)check_msg(CARD_KEY_PRESS));
+            DEBUG_printf ("%s\r\n",(char *)CheckPrimsg(CARD_KEY_PRESS));
             MyCANTransmit(&gt_TxMessage, pRxMessage->Data[1], pRxMessage->Data[1], MACHINE_STATUES, CARD_IS_OK, 0, 0, NO_FAIL);
             printf ("%s\n",(char *)&g_tCardKeyPressFrame);
             break;
         case KEY_PRESS:             // 司机已按键
             //OLED_ShowStr(0,0,p_arg,1);
-            DEBUG_printf ("%s\r\n",(char *)check_msg(CARD_KEY_PRESS));
+            DEBUG_printf ("%s\r\n",(char *)CheckPrimsg(CARD_KEY_PRESS));
             MyCANTransmit(&gt_TxMessage, pRxMessage->Data[1], pRxMessage->Data[1], WRITE_CARD_STATUS, CARD_IS_OK, 0, 0, NO_FAIL);
             printf ("%s\n",(char *)&g_tCardKeyPressFrame);
             //OLED_ShowStr(0,0,p_arg,1);
@@ -167,7 +210,7 @@ CPU_INT08U  AnalyzeUartFrame ( void * p_arg )
         g_tP_RsctlFrame.RSCTL = ucNum;
         OS_CRITICAL_ENTER();                 //进入临界段，不希望下面串口打印遭到中断
         printf("%s",(char *)&g_tP_RsctlFrame);   //发送正应答帧
-        DEBUG_printf ("%s\r\n",(char *)check_msg(type_frame));
+        DEBUG_printf ("%s\r\n",(char *)CheckPrimsg(type_frame));
         //printf ("%s\r\n","收到信息");
         OS_CRITICAL_EXIT();
         switch(type_frame)

@@ -125,7 +125,7 @@ void display_GB2312_string(u8 x, u8 y, unsigned char *text, unsigned char isTurn
     u8 i = 0;
     u8 fontbuf[32] = {0};
     u32 fontaddr = 0;
-    while ((text[i] > 0x00))
+    while ((text[i] > 0x00) && i < 16)
     {
         if ( ( ( text[i] >= 0xb0 ) && ( text[i] <= 0xf7 ) ) && ( text[i+1] >= 0xa1 ) )
         {

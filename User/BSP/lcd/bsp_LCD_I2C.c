@@ -101,7 +101,11 @@ void I2C_WriteByte(uint8_t addr,uint8_t data)
     IICTimeout = IICT_FLAG_TIMEOUT;
     while(I2C_GetFlagStatus(I2C1, I2C_FLAG_BUSY))
     {
-        if ((IICTimeout--) == 0) IIC_TIMEOUT_UserCallback(0);    // 超时退出
+        if ((IICTimeout--) == 0) // 超时退出
+        {
+           IIC_TIMEOUT_UserCallback(0);
+           break;
+        }
     }
 
     I2C_GenerateSTART(I2C1, ENABLE);//开启I2C1
@@ -109,7 +113,11 @@ void I2C_WriteByte(uint8_t addr,uint8_t data)
     IICTimeout = IICT_FLAG_TIMEOUT;
     while(!I2C_CheckEvent(I2C1, I2C_EVENT_MASTER_MODE_SELECT))/*EV5,主模式*/
     {
-        if ((IICTimeout--) == 0) IIC_TIMEOUT_UserCallback(0);
+        if ((IICTimeout--) == 0)
+        {
+           IIC_TIMEOUT_UserCallback(0);
+           break;
+        }
     }
 
     I2C_Send7bitAddress(I2C1, OLED_ADDRESS, I2C_Direction_Transmitter);//器件地址 -- 默认0x78
@@ -117,7 +125,11 @@ void I2C_WriteByte(uint8_t addr,uint8_t data)
     IICTimeout = IICT_FLAG_TIMEOUT;
     while(!I2C_CheckEvent(I2C1, I2C_EVENT_MASTER_TRANSMITTER_MODE_SELECTED))
     {
-        if ((IICTimeout--) == 0) IIC_TIMEOUT_UserCallback(0);
+        if ((IICTimeout--) == 0)
+        {
+           IIC_TIMEOUT_UserCallback(0);
+           break;
+        }
     }
 
     I2C_SendData(I2C1, addr);//寄存器地址
@@ -125,7 +137,11 @@ void I2C_WriteByte(uint8_t addr,uint8_t data)
     IICTimeout = IICT_FLAG_TIMEOUT;
     while (!I2C_CheckEvent(I2C1, I2C_EVENT_MASTER_BYTE_TRANSMITTED))
     {
-        if ((IICTimeout--) == 0) IIC_TIMEOUT_UserCallback(0);
+        if ((IICTimeout--) == 0)
+        {
+           IIC_TIMEOUT_UserCallback(0);
+           break;
+        }
     }
 
     I2C_SendData(I2C1, data);//发送数据
@@ -133,7 +149,11 @@ void I2C_WriteByte(uint8_t addr,uint8_t data)
     IICTimeout = IICT_FLAG_TIMEOUT;
     while (!I2C_CheckEvent(I2C1, I2C_EVENT_MASTER_BYTE_TRANSMITTED))
     {
-        if ((IICTimeout--) == 0) IIC_TIMEOUT_UserCallback(0);
+        if ((IICTimeout--) == 0)
+        {
+           IIC_TIMEOUT_UserCallback(0);
+           break;
+        }
     }
 
     I2C_GenerateSTOP(I2C1, ENABLE);//关闭I2C1总线
@@ -443,6 +463,6 @@ void OLED_DrawBMP(unsigned char x0,unsigned char y0,unsigned char x1,unsigned ch
 static  uint16_t IIC_TIMEOUT_UserCallback(uint8_t errorCode)
 {
     /* 等待超时后的处理,输出错误信息 */
-    FONT_FLASH_ERROR("SPI 等待超时!errorCode = %d",errorCode);
+    IIC_ERROR("SPI 等待超时!errorCode = %d",errorCode);
     return 0;
 }

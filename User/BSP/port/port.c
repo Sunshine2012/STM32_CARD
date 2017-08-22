@@ -18,7 +18,7 @@ void NVIC0_IRQHandler(void)
         // macLED1_TOGGLE();
         DK1=1;                              //到达位置1，顶卡电机刹车
         DK2=1;
-        
+
         // 这里要延时
 
         DK1=0;                              //到达位置1，顶卡电机停

@@ -297,7 +297,7 @@ void TmrCallback (OS_TMR *p_tmr, void *p_arg) //软件定时器MyTmr的回调函数
 
     cpu_clk_freq = BSP_CPU_ClkFreq();                   //获取CPU时钟，时间戳是以该时钟计数
 
-    //macLED2_TOGGLE ();
+    //macLED1_TOGGLE ();
 
     ts_end = OS_TS_GET() - ts_start;     //获取定时后的时间戳（以CPU时钟进行计数的一个计数值）
                                          //，并计算定时时间。
@@ -390,7 +390,7 @@ static  void AppTaskOLED ( void * p_arg )
 #endif
 
 
-    doShowStatusMenu(DLG_STATUS,5, NULL);      // 显示菜单,需要反显示的行?
+    doShowStatusMenu(DLG_STATUS, 5, NULL);      // 显示菜单,需要反显示的行?
     while (DEF_TRUE)
     {                            //任务体，通常写成一个死循环
         /*
@@ -414,7 +414,7 @@ static  void AppTaskOLED ( void * p_arg )
         {
             g_ucIsUpdateMenu = 0;
             g_ucKeyValues = KEY_NUL;
-            doShowStatusMenu(DLG_STATUS,5, NULL);      // 显示菜单,需要反显示的行号
+            doShowStatusMenu(DLG_STATUS, 5, NULL);      // 显示菜单,需要反显示的行号
         }
         key = g_ucKeyValues;
         g_ucKeyValues = KEY_NUL;

@@ -2,7 +2,8 @@
 #include "menu.h"
 
 unsigned char g_ucCurDlg;                       // 当前显示的菜单ID
-unsigned short g_usCurID = 0x7810;              // 当前通信设备的ID
+unsigned short g_usCurID = 0x7811;              // 当前通信设备的ID
+
 
 
 Dlg g_dlg[] = {
@@ -15,7 +16,7 @@ Dlg g_dlg[] = {
                         {DLG_STATUS_TWO,     "1号出坏卡:      ", "2号出坏卡:      ", "3号出坏卡:      ", "4号出坏卡:      "},
                        //{DLG_STATUS_ONE,     "    卡机状态    ", "出好卡数量:     ", "回收坏卡数:     ", "故障次数:       "},
 
-                        {DLG_DEBUG_MAIN,     "    号卡机调试 ", "1:联动运行       ", "2:单动运行      ", "****************"},
+                        {DLG_DEBUG_MAIN,     "    号卡机调试  ", "1:联动运行      ", "2:单动运行      ", "                "},
                         {DLG_DEBUG_ONE,      "↑:翻一张好卡    ", "↓:翻一张坏卡    ", "←:勾一张卡      ", "→:循环出卡      "},
                         {DLG_DEBUG_TWO,      "↑:单动正翻卡    ", "↓:单动反翻卡    ", "←:单动正勾卡    ", "→:单动反勾卡    "},
 
@@ -65,7 +66,6 @@ void doShowMainMenu (unsigned char dlg_id, unsigned char isNotRow, void * p_parm
     while (DEF_TRUE)
     {                            //任务体，通常写成一个死循环
         key = g_ucKeyValues;
-        g_ucKeyValues = KEY_NUL;
         switch (key)
         {
             case KEY_ENTRY:
@@ -73,6 +73,7 @@ void doShowMainMenu (unsigned char dlg_id, unsigned char isNotRow, void * p_parm
                 {
                     case 0:
                         //isNotRow++;     // 只进行反显操作,不做其他操作
+                        break;
                     case 1:
                         doShowStatusOne (DLG_STATUS_ONE, 5, NULL);
                         break;
@@ -80,7 +81,7 @@ void doShowMainMenu (unsigned char dlg_id, unsigned char isNotRow, void * p_parm
                         doShowIdSetMenu (DLG_CARD_ID, 1, NULL);
                         break;
                     case 3:
-                        doShowDebugMain (DLG_DEBUG_MAIN,0, NULL);
+                        doShowDebugMain (DLG_DEBUG_MAIN, 0, NULL);
                         break;
                     default:
                         break;
@@ -121,6 +122,7 @@ void doShowMainMenu (unsigned char dlg_id, unsigned char isNotRow, void * p_parm
                 display_GB2312_string (0, i * 2, g_dlg[dlgId].MsgRow[i], i == isNotRow ? 1 : 0);
             }
         }
+        g_ucKeyValues = KEY_NUL;
         OSTimeDly ( 100, OS_OPT_TIME_DLY, & err );     //不断阻塞该任务
     }
 }
@@ -147,12 +149,8 @@ void doShowStatusOne (unsigned char dlg_id, unsigned char isNotRow, void * p_par
     while (DEF_TRUE)
     {                            //任务体，通常写成一个死循环
         key = g_ucKeyValues;
-        g_ucKeyValues = KEY_NUL;
         switch (key)
         {
-            case KEY_LEFT:
-
-                break;
             case KEY_RIGHT:
                 doShowStatusTwo (DLG_STATUS_TWO, 5, NULL);
                 break;
@@ -176,6 +174,7 @@ void doShowStatusOne (unsigned char dlg_id, unsigned char isNotRow, void * p_par
                 display_GB2312_string (0, i * 2, g_dlg[dlgId].MsgRow[i], i == isNotRow ? 1 : 0);
             }
         }
+        g_ucKeyValues = KEY_NUL;
         OSTimeDly ( 100, OS_OPT_TIME_DLY, & err );     //不断阻塞该任务
     }
 }
@@ -202,13 +201,10 @@ void doShowStatusTwo (unsigned char dlg_id, unsigned char isNotRow, void * p_par
     while (DEF_TRUE)
     {                            //任务体，通常写成一个死循环
         key = g_ucKeyValues;
-        g_ucKeyValues = KEY_NUL;
         switch (key)
         {
             case KEY_LEFT:
                 return;
-                break;
-            case KEY_RIGHT:
                 break;
             case KEY_QUIT:
                 break;
@@ -230,6 +226,7 @@ void doShowStatusTwo (unsigned char dlg_id, unsigned char isNotRow, void * p_par
                 display_GB2312_string (0, i * 2, g_dlg[dlgId].MsgRow[i], i == isNotRow ? 1 : 0);
             }
         }
+        g_ucKeyValues = KEY_NUL;
         OSTimeDly ( 100, OS_OPT_TIME_DLY, & err );     //不断阻塞该任务
     }
 }
@@ -268,7 +265,6 @@ void doShowIdSetMenu (unsigned char dlg_id, unsigned char isNotRow, void * p_par
     while (DEF_TRUE)
     {                            //任务体，通常写成一个死循环
         key = g_ucKeyValues;
-        g_ucKeyValues = KEY_NUL;
         switch (key)
         {
             case KEY_ENTRY:
@@ -341,16 +337,16 @@ void doShowIdSetMenu (unsigned char dlg_id, unsigned char isNotRow, void * p_par
                         {
                             id_h = 0x78 ;
                             id_l = 0x11 + i;
-                            MyCANTransmit(&gt_TxMessage, num, num, SEARCH_CARD_MECHINE, num, id_h, id_l, NO_FAIL);
+                            MyCANTransmit(&gt_TxMessage, i, i, SEARCH_CARD_MECHINE, i, id_h, id_l, NO_FAIL);
                         }
                         break;
-                    case 2:
+                    //case 2:
                     case 3:
                         if (1 <= num && num <=4 && 0x7811 <= id && id <= 0x7814)    // 设置搜索到的卡机的卡机号和ID号
                         {
                             id_h = ( g_usCurID >> 8 ) & 0xff;
                             id_l = g_usCurID & 0xff;
-                            MyCANTransmit(&gt_TxMessage, 0, 0, SET_MECHINE_ID, num, id_h, id_l, NO_FAIL);
+                            MyCANTransmit(&gt_TxMessage, id_l & 0x0f, id_l & 0x0f, SET_MECHINE_ID, id_l & 0x0f, id_h, id_l, NO_FAIL);
                         }
                         break;
                     default:
@@ -385,6 +381,7 @@ void doShowIdSetMenu (unsigned char dlg_id, unsigned char isNotRow, void * p_par
                 display_GB2312_string (0, i * 2, g_dlg[dlgId].MsgRow[i], i == isNotRow ? 1 : 0);
             }
         }
+        g_ucKeyValues = KEY_NUL;
         OSTimeDly ( 100, OS_OPT_TIME_DLY, & err );     //不断阻塞该任务
     }
 }
@@ -398,16 +395,18 @@ void doShowDebugMain (unsigned char dlg_id, unsigned char isNotRow, void * p_par
     unsigned char dlgId = check_menu(dlg_id);
     unsigned char key = KEY_NUL;
     unsigned char num = 1;      // 卡机号
-    unsigned char str_num[5] = {0};
-    unsigned char str_id[5] = {0};
+    unsigned char str_num[10] = {0};
+    unsigned char str_id[10] = {0};
     unsigned short id = 0x7810 | num;       // CAN通信的ID
     unsigned char id_h = ( id >> 8 ) & 0xff;                // CAN通信的ID高字节
     unsigned char id_l = id & 0xff;                         // CAN通信的ID低字节
     sprintf(str_num,"0%d",num);
+    str_num [3] = 0;
     for (i = 0; i < 2; i++)
     {
-        g_dlg[dlgId].MsgRow[0][i + 1] = str_num[i];
+        g_dlg[dlgId].MsgRow[0][i + 2] = str_num[i];
     }
+    g_dlg[dlgId].MsgRow[0][15] = 0;
     OLED_CLS(); // 显示之前,清屏
     for (i = 0; i < 4; i++)
     {
@@ -416,7 +415,6 @@ void doShowDebugMain (unsigned char dlg_id, unsigned char isNotRow, void * p_par
     while (DEF_TRUE)
     {                            //任务体，通常写成一个死循环
         key = g_ucKeyValues;
-        g_ucKeyValues = KEY_NUL;
         switch (key)
         {
             case KEY_ENTRY:
@@ -424,6 +422,7 @@ void doShowDebugMain (unsigned char dlg_id, unsigned char isNotRow, void * p_par
                 {
                     case 0:
                         //isNotRow++;     // 只进行反显操作,不做其他操作
+                        key = KEY_NUL;
                         break;
                     case 1:
                         MyCANTransmit(&gt_TxMessage, num, num, ENTER_DEBUG, num, id_h, id_l, NO_FAIL);
@@ -454,12 +453,16 @@ void doShowDebugMain (unsigned char dlg_id, unsigned char isNotRow, void * p_par
                 {
                     num--;
                     //id--;
-                    sprintf(str_num,"0%d ",num);
+                    sprintf(str_num, "0%d", num);
+                    str_num [3] = 0;
                     for (i = 0; i < 2; i++)
                     {
-                        g_dlg[dlgId].MsgRow[0][i + 1] = str_num[i];
+                        g_dlg[dlgId].MsgRow[0][i + 2] = str_num[i];
                     }
-                    g_dlg[dlgId].MsgRow[0][15] = 0;
+                }
+                else
+                {
+                    key = KEY_NUL;
                 }
                 break;
             case KEY_RIGHT:
@@ -467,12 +470,16 @@ void doShowDebugMain (unsigned char dlg_id, unsigned char isNotRow, void * p_par
                 {
                     num++;
                     //id++;
-                    sprintf(str_num,"0%d ",num);
+                    sprintf(str_num, "0%d", num);
+                    str_num [3] = 0;
                     for (i = 0; i < 2; i++)
                     {
-                        g_dlg[dlgId].MsgRow[0][i + 1] = str_num[i];
+                        g_dlg[dlgId].MsgRow[0][i + 2] = str_num[i];
                     }
-                    g_dlg[dlgId].MsgRow[0][15] = 0;
+                }
+                else
+                {
+                    key = KEY_NUL;
                 }
                 break;
             case KEY_OK:
@@ -495,6 +502,7 @@ void doShowDebugMain (unsigned char dlg_id, unsigned char isNotRow, void * p_par
                 display_GB2312_string (0, i * 2, g_dlg[dlgId].MsgRow[i], i == isNotRow ? 1 : 0);
             }
         }
+        g_ucKeyValues = KEY_NUL;
         OSTimeDly ( 100, OS_OPT_TIME_DLY, & err );     //不断阻塞该任务
     }
 }
@@ -522,7 +530,6 @@ void doShowDebugOne (unsigned char dlg_id, unsigned char isNotRow, void * p_parm
     while (DEF_TRUE)
     {                            //任务体，通常写成一个死循环
         key = g_ucKeyValues;
-        g_ucKeyValues = KEY_NUL;
         switch (key)
         {
             case KEY_UP:
@@ -562,6 +569,7 @@ void doShowDebugOne (unsigned char dlg_id, unsigned char isNotRow, void * p_parm
                 display_GB2312_string (0, i * 2, g_dlg[dlgId].MsgRow[i], i == isNotRow ? 1 : 0);
             }
         }
+        g_ucKeyValues = KEY_NUL;
         OSTimeDly ( 100, OS_OPT_TIME_DLY, & err );     //不断阻塞该任务
     }
 }
@@ -588,7 +596,6 @@ void doShowDebugTwo (unsigned char dlg_id, unsigned char isNotRow, void * p_parm
     while (DEF_TRUE)
     {                            //任务体，通常写成一个死循环
         key = g_ucKeyValues;
-        g_ucKeyValues = KEY_NUL;
         switch (key)
         {
             case KEY_UP:
@@ -618,6 +625,11 @@ void doShowDebugTwo (unsigned char dlg_id, unsigned char isNotRow, void * p_parm
                 g_ucKeyValues = KEY_NUL;
                 break;
         }
+        if (g_ucKeyContinu == 0xff)
+        {
+            g_ucKeyContinu = 1;             // 松开按键之后,给卡机发送停止命令
+            MyCANTransmit(&gt_TxMessage, num, num, STOP_DEBUG, num, id_h, id_l, NO_FAIL);
+        }
         if (g_ucKeyValues == KEY_QUIT)      // 按QUIT键,直接退到主界面,避免连续的刷屏,退出,并保持按键值不变
         {
             g_ucKeyContinu = 0;             // 退出单动模式
@@ -630,6 +642,7 @@ void doShowDebugTwo (unsigned char dlg_id, unsigned char isNotRow, void * p_parm
                 display_GB2312_string (0, i * 2, g_dlg[dlgId].MsgRow[i], i == isNotRow ? 1 : 0);
             }
         }
+        g_ucKeyValues = KEY_NUL;
         OSTimeDly ( 100, OS_OPT_TIME_DLY, & err );     //不断阻塞该任务
     }
 }

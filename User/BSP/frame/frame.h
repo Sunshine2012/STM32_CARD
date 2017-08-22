@@ -167,7 +167,7 @@ typedef enum CMD
 
     // 10H--1FH：主机板发送至卡机板信息命令
     SET_MECHINE_ID          = 0x10,                 /* 设置卡机的ID号 */
-    CAR_IS_COMING           = 0x11,                 /* 已来车通知 */
+    STOP_WORKING            = 0x11,                 /* 停止工作 */
     MACHINE_STATUES         = 0x12,                 /* 指定工位卡情况，内容在状态码内 */
     WRITE_CARD_STATUS       = 0x13,                 /* 写卡情况，内容在状态码内 */
     YUETONG_CARD_HAS_READ   = 0x14,                 /* 粤通卡已读卡通知  */

@@ -19,16 +19,17 @@ typedef enum DLG_ID
     DLG_DEBUG_ONE                = 0x21,                 /*  */
     DLG_DEBUG_TWO                = 0x22,                 /*  */
     DLG_DEBUG_THREE              = 0x23,                 /*  */
-}DLG_ID;
 
+    DLG_FAULT_CODE               = 0x24,                 /*  */
+
+}DLG_ID;
 
 // 界面结构体
 typedef struct Dlg
 {
-   CPU_INT08U ID;                 /* 类型：正(30H), 负(31H) */
+   CPU_INT08U ID;
    char MsgRow[4][36];
 }Dlg;
-
 
 extern Dlg                              g_dlg[];
 extern unsigned char g_ucCurDlg;           // 当前显示的菜单ID
