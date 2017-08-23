@@ -148,7 +148,7 @@ u8 matrix_update_key(void)
                 //macLED2_TOGGLE ();
                 GPIO_SetBits(matrix_key_output[i].GPIO_x, matrix_key_output[i].GPIO_pin);
                 g_ucKeyValues = (i + 1) * 10 + (j + 1);
-                //MyCANTransmit(&gt_TxMessage, 1, 1, SET_MECHINE_ID, g_ucKeyValues, g_ucKeyValues, g_ucKeyValues, NO_FAIL);
+                //myCANTransmit(&gt_TxMessage, 1, 1, SET_MECHINE_ID, g_ucKeyValues, g_ucKeyValues, g_ucKeyValues, NO_FAIL);
                 return 0;
             }
         }

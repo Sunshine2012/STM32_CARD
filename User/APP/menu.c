@@ -8,7 +8,7 @@ unsigned short g_usCurID = 0x7811;              // 当前通信设备的ID
 
 Dlg g_dlg[] = {
                         {DLG_LOGO,           "    ****电子    ", " www.*****.com  ", "   ****发卡机   ", "   版本: V1.0   "},
-                        {DLG_STATUS,         "1:              ", "2:              ", "3:              ", "4:              "},
+                        {DLG_STATUS,         "1号工作         ", "2号备用         ", "3号工作         ", "4号备用         "},
                         {DLG_MAIN,           "     主菜单     ", "1.卡机状态      ", "2.卡机设置      ", "3.调机运行      "},
                         {DLG_CARD_ID,        "   设置卡机ID   ", "搜索卡机        ", "卡机号:         ", "通信ID号:       "},
                         {DLG_CARD_MAIN,      "卡机状态:1号卡机", "         2号卡机", "         3号卡机", "         4号卡机"},
@@ -71,9 +71,6 @@ void doShowMainMenu (unsigned char dlg_id, unsigned char isNotRow, void * p_parm
             case KEY_ENTRY:
                 switch (isNotRow)
                 {
-                    case 0:
-                        //isNotRow++;     // 只进行反显操作,不做其他操作
-                        break;
                     case 1:
                         doShowStatusOne (DLG_STATUS_ONE, 5, NULL);
                         break;
@@ -84,6 +81,7 @@ void doShowMainMenu (unsigned char dlg_id, unsigned char isNotRow, void * p_parm
                         doShowDebugMain (DLG_DEBUG_MAIN, 0, NULL);
                         break;
                     default:
+                        key = KEY_NUL;
                         break;
                 }
                 break;
@@ -109,14 +107,16 @@ void doShowMainMenu (unsigned char dlg_id, unsigned char isNotRow, void * p_parm
                 return;
                 break;
             default:
+                key = KEY_NUL;
                 break;
         }
         if (g_ucKeyValues == KEY_QUIT)      // 按QUIT键,退出,并清理按键值
         {
             return;
         }
-        if (KEY_NUL != key)
+        if (KEY_NUL != key || g_ucIsUpdateMenu)
         {
+            g_ucIsUpdateMenu = 0;
             for (i = 0; i < 4; i++)
             {
                 display_GB2312_string (0, i * 2, g_dlg[dlgId].MsgRow[i], i == isNotRow ? 1 : 0);
@@ -167,8 +167,9 @@ void doShowStatusOne (unsigned char dlg_id, unsigned char isNotRow, void * p_par
         {
             return;
         }
-        if (KEY_NUL != key)    // 如果有按键按下,则更新界面
+        if (KEY_NUL != key || g_ucIsUpdateMenu)    // 如果有按键按下,则更新界面
         {
+            g_ucIsUpdateMenu = 0;
             for (i = 0; i < 4; i++)
             {
                 display_GB2312_string (0, i * 2, g_dlg[dlgId].MsgRow[i], i == isNotRow ? 1 : 0);
@@ -219,8 +220,9 @@ void doShowStatusTwo (unsigned char dlg_id, unsigned char isNotRow, void * p_par
         {
             return;
         }
-        if (KEY_NUL != key)    // 如果有按键按下,则更新界面
+        if (KEY_NUL != key || g_ucIsUpdateMenu)    // 如果有按键按下,则更新界面
         {
+            g_ucIsUpdateMenu = 0;
             for (i = 0; i < 4; i++)
             {
                 display_GB2312_string (0, i * 2, g_dlg[dlgId].MsgRow[i], i == isNotRow ? 1 : 0);
@@ -272,7 +274,7 @@ void doShowIdSetMenu (unsigned char dlg_id, unsigned char isNotRow, void * p_par
                 {
                     id_h = ( g_usCurID >> 8 ) & 0xff;
                     id_l = g_usCurID & 0xff;
-                    MyCANTransmit(&gt_TxMessage, 0, 0, SET_MECHINE_ID, num, id_h, id_l, NO_FAIL);
+                    myCANTransmit(&gt_TxMessage, 0, 0, SET_MECHINE_ID, num, id_h, id_l, NO_FAIL);
                 }*/
                 break;
             case KEY_UP:
@@ -337,7 +339,7 @@ void doShowIdSetMenu (unsigned char dlg_id, unsigned char isNotRow, void * p_par
                         {
                             id_h = 0x78 ;
                             id_l = 0x11 + i;
-                            MyCANTransmit(&gt_TxMessage, i, i, SEARCH_CARD_MECHINE, i, id_h, id_l, NO_FAIL);
+                            myCANTransmit(&gt_TxMessage, i, i, SEARCH_CARD_MECHINE, i, id_h, id_l, NO_FAIL);
                         }
                         break;
                     //case 2:
@@ -346,7 +348,7 @@ void doShowIdSetMenu (unsigned char dlg_id, unsigned char isNotRow, void * p_par
                         {
                             id_h = ( g_usCurID >> 8 ) & 0xff;
                             id_l = g_usCurID & 0xff;
-                            MyCANTransmit(&gt_TxMessage, id_l & 0x0f, id_l & 0x0f, SET_MECHINE_ID, id_l & 0x0f, id_h, id_l, NO_FAIL);
+                            myCANTransmit(&gt_TxMessage, (id_l & 0x0f), (id_l & 0x0f), SET_MECHINE_ID, num, (id >> 8) & 0xff, id & 0xff, NO_FAIL);
                         }
                         break;
                     default:
@@ -364,8 +366,9 @@ void doShowIdSetMenu (unsigned char dlg_id, unsigned char isNotRow, void * p_par
         {
             return;
         }
-        if (KEY_NUL != key)    // 如果有按键按下,则更新界面
+        if (KEY_NUL != key || g_ucIsUpdateMenu)    // 如果有按键按下,则更新界面
         {
+            g_ucIsUpdateMenu = 0;
             sprintf(str_num,"0%d      ",num);
             sprintf(str_id,"%x   ",id);
             for (i = 0; i < 6; i++)
@@ -406,7 +409,6 @@ void doShowDebugMain (unsigned char dlg_id, unsigned char isNotRow, void * p_par
     {
         g_dlg[dlgId].MsgRow[0][i + 2] = str_num[i];
     }
-    g_dlg[dlgId].MsgRow[0][15] = 0;
     OLED_CLS(); // 显示之前,清屏
     for (i = 0; i < 4; i++)
     {
@@ -425,11 +427,11 @@ void doShowDebugMain (unsigned char dlg_id, unsigned char isNotRow, void * p_par
                         key = KEY_NUL;
                         break;
                     case 1:
-                        MyCANTransmit(&gt_TxMessage, num, num, ENTER_DEBUG, num, id_h, id_l, NO_FAIL);
+                        myCANTransmit(&gt_TxMessage, num, num, ENTER_DEBUG, num, id_h, id_l, NO_FAIL);
                         doShowDebugOne (DLG_DEBUG_ONE, 5, &num);
                         break;
                     case 2:
-                        MyCANTransmit(&gt_TxMessage, num, num, ENTER_DEBUG, num, id_h, id_l, NO_FAIL);
+                        myCANTransmit(&gt_TxMessage, num, num, ENTER_DEBUG, num, id_h, id_l, NO_FAIL);
                         doShowDebugTwo (DLG_DEBUG_TWO, 5, &num);
                         break;
                     default:
@@ -495,8 +497,9 @@ void doShowDebugMain (unsigned char dlg_id, unsigned char isNotRow, void * p_par
         {
             return;
         }
-        if (KEY_NUL != key)    // 如果有按键按下,则更新界面
+        if (KEY_NUL != key || g_ucIsUpdateMenu)    // 如果有按键按下,则更新界面
         {
+            g_ucIsUpdateMenu = 0;
             for (i = 0; i < 4; i++)
             {
                 display_GB2312_string (0, i * 2, g_dlg[dlgId].MsgRow[i], i == isNotRow ? 1 : 0);
@@ -534,22 +537,22 @@ void doShowDebugOne (unsigned char dlg_id, unsigned char isNotRow, void * p_parm
         {
             case KEY_UP:
                 isNotRow = 0;
-                MyCANTransmit(&gt_TxMessage, num, num, SPIT_ONE_OK_CARD, num, id_h, id_l, NO_FAIL);
+                myCANTransmit(&gt_TxMessage, num, num, SPIT_ONE_OK_CARD, num, id_h, id_l, NO_FAIL);
                 break;
             case KEY_DOWN:
                 isNotRow = 1;
-                MyCANTransmit(&gt_TxMessage, num, num, SPIT_ONE_BAD_CARD, num, id_h, id_l, NO_FAIL);
+                myCANTransmit(&gt_TxMessage, num, num, SPIT_ONE_BAD_CARD, num, id_h, id_l, NO_FAIL);
                 break;
             case KEY_LEFT:
                 isNotRow = 2;
-                MyCANTransmit(&gt_TxMessage, num, num, HOOK_ONE_CARD, num, id_h, id_l, NO_FAIL);
+                myCANTransmit(&gt_TxMessage, num, num, HOOK_ONE_CARD, num, id_h, id_l, NO_FAIL);
                 break;
             case KEY_RIGHT:
                 isNotRow = 3;
-                MyCANTransmit(&gt_TxMessage, num, num, CYCLE_SPIT_ONE_CARD, num, id_h, id_l, NO_FAIL);
+                myCANTransmit(&gt_TxMessage, num, num, CYCLE_SPIT_ONE_CARD, num, id_h, id_l, NO_FAIL);
                 break;
             case KEY_QUIT:
-                MyCANTransmit(&gt_TxMessage, num, num, QUIT_DEBUG, num, id_h, id_l, NO_FAIL);
+                myCANTransmit(&gt_TxMessage, num, num, QUIT_DEBUG, num, id_h, id_l, NO_FAIL);
                 break;
             case KEY_CANCEL:
                 return;
@@ -562,8 +565,9 @@ void doShowDebugOne (unsigned char dlg_id, unsigned char isNotRow, void * p_parm
         {
             return;
         }
-        if (KEY_NUL != key)    // 如果有按键按下,则更新界面
+        if (KEY_NUL != key || g_ucIsUpdateMenu)    // 如果有按键按下,则更新界面
         {
+            g_ucIsUpdateMenu = 0;
             for (i = 0; i < 4; i++)
             {
                 display_GB2312_string (0, i * 2, g_dlg[dlgId].MsgRow[i], i == isNotRow ? 1 : 0);
@@ -600,22 +604,22 @@ void doShowDebugTwo (unsigned char dlg_id, unsigned char isNotRow, void * p_parm
         {
             case KEY_UP:
                 isNotRow = 0;
-                MyCANTransmit(&gt_TxMessage, num, num, SPIT_MOTOR_POSITIVE_STEP, num, id_h, id_l, NO_FAIL);
+                myCANTransmit(&gt_TxMessage, num, num, SPIT_MOTOR_POSITIVE_STEP, num, id_h, id_l, NO_FAIL);
                 break;
             case KEY_DOWN:
                 isNotRow = 1;
-                MyCANTransmit(&gt_TxMessage, num, num, SPIT_MOTOR_NEGATIVE_STEP, num, id_h, id_l, NO_FAIL);
+                myCANTransmit(&gt_TxMessage, num, num, SPIT_MOTOR_NEGATIVE_STEP, num, id_h, id_l, NO_FAIL);
                 break;
             case KEY_LEFT:
                 isNotRow = 2;
-                MyCANTransmit(&gt_TxMessage, num, num, HOOK_MOTOR_POSITIVE_STEP, num, id_h, id_l, NO_FAIL);
+                myCANTransmit(&gt_TxMessage, num, num, HOOK_MOTOR_POSITIVE_STEP, num, id_h, id_l, NO_FAIL);
                 break;
             case KEY_RIGHT:
                 isNotRow = 3;
-                MyCANTransmit(&gt_TxMessage, num, num, HOOK_MOTOR_NEGATIVE_STEP, num, id_h, id_l, NO_FAIL);
+                myCANTransmit(&gt_TxMessage, num, num, HOOK_MOTOR_NEGATIVE_STEP, num, id_h, id_l, NO_FAIL);
                 break;
             case KEY_QUIT:
-                MyCANTransmit(&gt_TxMessage, num, num, QUIT_DEBUG, num, id_h, id_l, NO_FAIL);
+                myCANTransmit(&gt_TxMessage, num, num, QUIT_DEBUG, num, id_h, id_l, NO_FAIL);
                 break;
             case KEY_CANCEL:
                 g_ucKeyContinu = 0;             // 退出单动模式
@@ -628,15 +632,16 @@ void doShowDebugTwo (unsigned char dlg_id, unsigned char isNotRow, void * p_parm
         if (g_ucKeyContinu == 0xff)
         {
             g_ucKeyContinu = 1;             // 松开按键之后,给卡机发送停止命令
-            MyCANTransmit(&gt_TxMessage, num, num, STOP_DEBUG, num, id_h, id_l, NO_FAIL);
+            myCANTransmit(&gt_TxMessage, num, num, STOP_DEBUG, num, id_h, id_l, NO_FAIL);
         }
         if (g_ucKeyValues == KEY_QUIT)      // 按QUIT键,直接退到主界面,避免连续的刷屏,退出,并保持按键值不变
         {
             g_ucKeyContinu = 0;             // 退出单动模式
             return;
         }
-        if (KEY_NUL != key)    // 如果有按键按下,则更新界面
+        if (KEY_NUL != key || g_ucIsUpdateMenu)    // 如果有按键按下,则更新界面
         {
+            g_ucIsUpdateMenu = 0;
             for (i = 0; i < 4; i++)
             {
                 display_GB2312_string (0, i * 2, g_dlg[dlgId].MsgRow[i], i == isNotRow ? 1 : 0);

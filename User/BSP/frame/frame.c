@@ -79,23 +79,52 @@ const Print_msg g_taPri_msg[] = {
                         };
 
 const Print_msg g_taShow_msg[] = {
-                            {'$',                           "NULL"},
+                            {0,                             "NULL"},
                             {MACHINE_CHECK_CARD,            "验卡"},
                             {KEY_PRESS,                     "按键"},
                             {CARD_SPIT_NOTICE,              "出卡"},
                             {CARD_TAKE_AWAY_NOTICE,         "取卡"},
-                            {'0',NULL}
+                            {CARD_IS_READY,                 "卡就绪"},
+                            {0xfe,                          "      "},
+                            {0xff,NULL}
                         };
 
 const Print_msg g_taShowStatus_msg[] = {
-                            {'$',                           "NULL"},
+                            {0,                             "NULL"},
                             {CARD_IS_OK,                    "好卡"},
                             {CARD_IS_BAD,                   "坏卡"},
-                            {'0',NULL}
+                            {0xfe,                          "    "},
+                            {0xff,NULL}
                         };
 
+// 复制要显示的菜单数据到数组中
+void copyMenu (CPU_INT08U num, CPU_INT08U cmd, CPU_INT08U values, CPU_INT08U addr, CPU_INT08U count)
+{
+    CPU_INT08U *str_id = CheckShowMsg(cmd);
+    unsigned char i, n;
+    n = check_menu (DLG_STATUS);
+    for (i = 0; i < count; i++)
+    {
+        g_dlg[n].MsgRow[num - 1][i + addr] = str_id[i];
+    }
+    g_ucIsUpdateMenu = 1;      // 更新界面
+}
+
+// 复制要显示的菜单数据到数组中
+void copyStatusMsg (CPU_INT08U num, CPU_INT08U cmd, CPU_INT08U values, CPU_INT08U addr, CPU_INT08U count)
+{
+    CPU_INT08U *str_id = CheckShowStatusMsg(cmd);
+    unsigned char i, n;
+    //strcpy() = CheckShowMsg(id);
+    n = check_menu (DLG_STATUS);
+    for (i = 0; i < count; i++)
+    {
+        g_dlg[n].MsgRow[num - 1][i + addr] = str_id[i];
+    }
+}
+
 // 找到打印的字符串，并返回其首地址
-CPU_INT08U * CheckShowStatusmsg(CPU_INT08U ch)
+CPU_INT08U * CheckShowStatusMsg (CPU_INT08U ch)
 {
     CPU_INT08U i = 0;
     for (i = 0; i < (sizeof (g_taShowStatus_msg) / sizeof (g_taShowStatus_msg[0])); i++)
@@ -109,7 +138,7 @@ CPU_INT08U * CheckShowStatusmsg(CPU_INT08U ch)
 }
 
 // 找到打印的字符串，并返回其首地址
-CPU_INT08U * CheckShowmsg(CPU_INT08U ch)
+CPU_INT08U * CheckShowMsg (CPU_INT08U ch)
 {
     CPU_INT08U i = 0;
     for (i = 0; i < (sizeof (g_taShow_msg) / sizeof (g_taShow_msg[0])); i++)
@@ -123,7 +152,7 @@ CPU_INT08U * CheckShowmsg(CPU_INT08U ch)
 }
 
 // 找到打印的字符串，并返回其首地址
-CPU_INT08U * CheckPrimsg(CPU_INT08U ch)
+CPU_INT08U * CheckPriMsg (CPU_INT08U ch)
 {
     CPU_INT08U i = 0;
     for (i = 0; i < (sizeof (g_taPri_msg) / sizeof (g_taPri_msg[0])); i++)
@@ -142,41 +171,49 @@ CPU_INT08U  AnalyzeCANFrame ( void * p_arg )
 {
     CanRxMsg *pRxMessage = (CanRxMsg *)p_arg;                // can数据接收缓存
     OS_ERR      err;
-    unsigned char i;
+    unsigned char i, n;
     unsigned char str_id[10] = {0};
+    static unsigned char count = 1;
 
     switch(pRxMessage->Data[3])
     {
         case MACHINE_CHECK_CARD:    // 指定工位验卡
-            DEBUG_printf ("%s\r\n",(char *)CheckPrimsg(CARD_KEY_PRESS));
-            MyCANTransmit(&gt_TxMessage, pRxMessage->Data[1], pRxMessage->Data[1], MACHINE_STATUES, CARD_IS_OK, 0, 0, NO_FAIL);
+            DEBUG_printf ("%s\r\n",(char *)CheckPriMsg(CARD_KEY_PRESS));
+            myCANTransmit(&gt_TxMessage, pRxMessage->Data[1], pRxMessage->Data[1], MACHINE_STATUES, (count) % 10 ? CARD_IS_OK : CARD_IS_BAD, 0, 0, NO_FAIL);
             printf ("%s\n",(char *)&g_tCardKeyPressFrame);
+            copyStatusMsg (pRxMessage->Data[1], (count++) % 10 ? CARD_IS_OK : CARD_IS_BAD, 0, 12, 4);
+            copyMenu (pRxMessage->Data[1], MACHINE_CHECK_CARD, 0, 8, 4);
             break;
         case KEY_PRESS:             // 司机已按键
-            //OLED_ShowStr(0,0,p_arg,1);
-            DEBUG_printf ("%s\r\n",(char *)CheckPrimsg(CARD_KEY_PRESS));
-            MyCANTransmit(&gt_TxMessage, pRxMessage->Data[1], pRxMessage->Data[1], WRITE_CARD_STATUS, CARD_IS_OK, 0, 0, NO_FAIL);
+            DEBUG_printf ("%s\r\n",(char *)CheckPriMsg(CARD_KEY_PRESS));
+            myCANTransmit(&gt_TxMessage, pRxMessage->Data[1], pRxMessage->Data[1], WRITE_CARD_STATUS, CARD_IS_OK, 0, 0, NO_FAIL);
             printf ("%s\n",(char *)&g_tCardKeyPressFrame);
-            //OLED_ShowStr(0,0,p_arg,1);
             break;
         case CARD_SPIT_NOTICE:      // 出卡通知
             dacSet(DATA_anjianquka,SOUND_LENGTH_anjianquka);
+            copyStatusMsg (pRxMessage->Data[1], 0xfe, 0, 12, 4);
+            copyMenu (pRxMessage->Data[1], CARD_SPIT_NOTICE, 0, 8, 4);
             //OSTimeDly ( 2000, OS_OPT_TIME_DLY, & err );
             break;
         case CARD_TAKE_AWAY_NOTICE: // 卡已被取走通知
             dacSet(DATA_xiexie,SOUND_LENGTH_xiexie);
+            copyStatusMsg (pRxMessage->Data[1], 0xfe, 0, 12, 4);
+            copyMenu (pRxMessage->Data[1], CARD_TAKE_AWAY_NOTICE, 0, 8, 4);
             //OSTimeDly ( 2500, OS_OPT_TIME_DLY, & err );
             break;
         case CARD_IS_READY:
+            copyStatusMsg (pRxMessage->Data[1], 0xfe, 0, 14, 2);
+            copyMenu (pRxMessage->Data[1], CARD_IS_READY, 0, 8, 6);
             break;
         case SERCH_CARD_MECHINE_ACK:// 查询卡机的回复
             g_usCurID = pRxMessage->Data[5] << 8 | pRxMessage->Data[6];
-            sprintf(str_id,"%x   ",g_usCurID);
+            sprintf(str_id,"%x  ",g_usCurID);
+            n = check_menu (DLG_CARD_ID);
             for (i = 0; i < 6; i++)
             {
-                g_dlg[DLG_CARD_ID].MsgRow[1][i + 10] = str_id[i];
+                g_dlg[n].MsgRow[1][i + 10] = str_id[i];
             }
-            g_ucKeyValues = KEY_ENTRY;      // 更新界面
+            g_ucIsUpdateMenu = 1;      // 更新界面
             break;
         case IS_NO_CARD_WARNING:    // 无卡报警
             break;
@@ -210,7 +247,7 @@ CPU_INT08U  AnalyzeUartFrame ( void * p_arg )
         g_tP_RsctlFrame.RSCTL = ucNum;
         OS_CRITICAL_ENTER();                 //进入临界段，不希望下面串口打印遭到中断
         printf("%s",(char *)&g_tP_RsctlFrame);   //发送正应答帧
-        DEBUG_printf ("%s\r\n",(char *)CheckPrimsg(type_frame));
+        DEBUG_printf ("%s\r\n",(char *)CheckPriMsg(type_frame));
         //printf ("%s\r\n","收到信息");
         OS_CRITICAL_EXIT();
         switch(type_frame)

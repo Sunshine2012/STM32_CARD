@@ -149,7 +149,7 @@ typedef struct PC_SET_CARD_NUM_FRAME
 // ≥£πÊ–≈œ¢Ω·ππÃÂ
 typedef struct Print_msg
 {
-    CPU_INT08U CTL;                 /* ¿‡–Õ£∫’˝(30H), ∏∫(31H) */
+    CPU_INT08U CTL;
     char Msg[40];
     CPU_INT08U END;
 }Print_msg;
@@ -311,6 +311,10 @@ extern PC_SET_CARD_NUM_FRAME            g_tPcSetCardNumFrame;               /* …
 
 CPU_INT08U  AnalyzeCANFrame ( void * p_arg );
 CPU_INT08U  AnalyzeUartFrame ( void * p_arg );
-
+CPU_INT08U * CheckShowStatusMsg (CPU_INT08U ch);
+CPU_INT08U * CheckShowMsg (CPU_INT08U ch);
+CPU_INT08U * CheckPriMsg (CPU_INT08U ch);
+void copyMenu (CPU_INT08U num, CPU_INT08U id, CPU_INT08U values, CPU_INT08U addr, CPU_INT08U count);
+void copyStatusMsg (CPU_INT08U num, CPU_INT08U id, CPU_INT08U values, CPU_INT08U addr, CPU_INT08U count);
 
 #endif /* __FRAME_H */

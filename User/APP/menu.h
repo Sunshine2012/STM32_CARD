@@ -44,5 +44,6 @@ void doShowIdSetMenu (unsigned char dlg_id, unsigned char isNotRow, void * p_par
 void doShowDebugMain (unsigned char dlg_id, unsigned char isNotRow, void * p_parm);
 void doShowDebugOne (unsigned char dlg_id, unsigned char isNotRow, void * p_parm);
 void doShowDebugTwo (unsigned char dlg_id, unsigned char isNotRow, void * p_parm);
+unsigned char check_menu(unsigned char ch);
 
 #endif

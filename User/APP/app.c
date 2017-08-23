@@ -345,32 +345,6 @@ static  void  AppTaskTmr ( void * p_arg )
     }
 }
 
-TestStatus Buffercmp(u8* pBuffer1,u8* pBuffer2, uint16_t BufferLength);
-
-/*
- * 函数名：Buffercmp
- * 描述  ：比较两个缓冲区中的数据是否相等
- * 输入  ：-pBuffer1     src缓冲区指针
- *         -pBuffer2     dst缓冲区指针
- *         -BufferLength 缓冲区长度
- * 输出  ：无
- * 返回  ：-PASSED pBuffer1 等于   pBuffer2
- *         -FAILED pBuffer1 不同于 pBuffer2
- */
-TestStatus Buffercmp(u8* pBuffer1, u8* pBuffer2, uint16_t BufferLength)
-{
-  while(BufferLength--)
-  {
-    if(*pBuffer1 != *pBuffer2)
-    {
-      return FAILED;
-    }
-
-    pBuffer1++;
-    pBuffer2++;
-  }
-  return PASSED;
-}
 static  void AppTaskOLED ( void * p_arg )
 {
     CPU_SR_ALLOC();      //使用到临界段（在关/开中断时）时必需该宏，该宏声明和定义一个局部变

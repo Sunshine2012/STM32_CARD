@@ -80,7 +80,7 @@ void CAN_RCC_Config(void)
 
 
 
-unsigned char MyCANTransmit (void * p_Msg, unsigned char mechine_id, unsigned char boxNum, unsigned char cmd, unsigned char status,
+unsigned char myCANTransmit (void * p_Msg, unsigned char mechine_id, unsigned char boxNum, unsigned char cmd, unsigned char status,
                       unsigned char data_H, unsigned char data_L, unsigned char errNum)
 {
     u32 i = 0;
@@ -92,10 +92,10 @@ unsigned char MyCANTransmit (void * p_Msg, unsigned char mechine_id, unsigned ch
     memset(p_TxMessage,0,sizeof (CanTxMsg));
     /* transmit */
     uCount++;
-    if (uCount % 10 == 0)
-    {
-        status = CARD_IS_BAD;
-    }
+    //if (uCount % 10 == 0 && CARD_IS_OK == status)
+    //{
+    //    status = CARD_IS_BAD;
+    //}
     p_TxMessage->StdId = 0x00;
     p_TxMessage->ExtId = 0x7810 | mechine_id;
     p_TxMessage->RTR = CAN_RTR_DATA;
@@ -270,8 +270,8 @@ void USB_LP_CAN1_RX0_IRQHandler(void)
 
     OS_CRITICAL_ENTER();                 //进入临界段，不希望下面串口打印遭到中断
     CAN_Receive(CAN1,CAN_FIFO0, &gt_RxMessage);
-    //CANTransmit (&gt_RxMessage);
-    macLED1_TOGGLE ();
+    // CANTransmit (&gt_RxMessage);
+    // macLED1_TOGGLE ();
     if(((0x0000ff00 & gt_RxMessage.ExtId) == 0x00007800) && (gt_RxMessage.IDE == CAN_ID_EXT))
     {
         /* 发布消息到消息队列 queue */
