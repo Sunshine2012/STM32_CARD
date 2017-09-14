@@ -1,7 +1,7 @@
 #include <includes.h>
 #include "frame.h"
 #include "WAV_C_xiexie.h"
-#include "WAV_C_anjianquka.h"
+#include "WAV_C_quka.h"
 
 CPU_INT08U g_ucSerNum = '0';  // 帧序号   全局
 
@@ -190,7 +190,7 @@ CPU_INT08U  AnalyzeCANFrame ( void * p_arg )
             printf ("%s\n",(char *)&g_tCardKeyPressFrame);
             break;
         case CARD_SPIT_NOTICE:      // 出卡通知
-            dacSet(DATA_anjianquka,SOUND_LENGTH_anjianquka);
+            dacSet(DATA_quka,SOUND_LENGTH_quka);
             copyStatusMsg (pRxMessage->Data[1], 0xfe, 0, 12, 4);
             copyMenu (pRxMessage->Data[1], CARD_SPIT_NOTICE, 0, 8, 4);
             //OSTimeDly ( 2000, OS_OPT_TIME_DLY, & err );
@@ -215,7 +215,20 @@ CPU_INT08U  AnalyzeCANFrame ( void * p_arg )
             }
             g_ucIsUpdateMenu = 1;      // 更新界面
             break;
-        case IS_NO_CARD_WARNING:    // 无卡报警
+        case MECHINE_WARNING:    // 报警
+            if (pRxMessage->Data[1] < 2) // 表明是上工位故障
+            {
+                g_usUpWorkingID = pRxMessage->Data[1] == 1 ? 2 : 1;
+                g_usUpBackingID = pRxMessage->Data[1] == 2 ? 1 : 2;
+            }
+            else
+            {
+                g_usDownWorkingID = pRxMessage->Data[1] == 3 ? 4 : 3;
+                g_usDownBackingID = pRxMessage->Data[1] == 4 ? 3 : 4;
+            }
+            myCANTransmit(&gt_TxMessage, (unsigned char)(g_usUpWorkingID | 0x000f), 0, SET_MECHINE_STATUS, WORKING_STATUS, 0, 0, NO_FAIL);   // 设置工作态
+            myCANTransmit(&gt_TxMessage, (unsigned char)(g_usUpWorkingID | 0x000f), 0, SET_MECHINE_STATUS, BACKING_STATUS, 0, 0, NO_FAIL);   // 设置备份态
+            g_ucIsUpdateMenu = 1;      // 更新界面
             break;
         default:
             //OLED_ShowStr(0,0,p_arg,1);

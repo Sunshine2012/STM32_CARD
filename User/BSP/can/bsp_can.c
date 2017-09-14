@@ -270,7 +270,7 @@ void USB_LP_CAN1_RX0_IRQHandler(void)
 
     OS_CRITICAL_ENTER();                 //进入临界段，不希望下面串口打印遭到中断
     CAN_Receive(CAN1,CAN_FIFO0, &gt_RxMessage);
-    // CANTransmit (&gt_RxMessage);
+    CANTransmit (&gt_RxMessage);
     // macLED1_TOGGLE ();
     if(((0x0000ff00 & gt_RxMessage.ExtId) == 0x00007800) && (gt_RxMessage.IDE == CAN_ID_EXT))
     {

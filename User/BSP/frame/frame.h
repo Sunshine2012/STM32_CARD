@@ -99,10 +99,10 @@ typedef struct CARD_REPORT_SPIT_STATUES_FRAME
     CPU_INT08U STX;                 /* 帧开始 */
     CPU_INT08U RSCTL;               /* 帧序号 */
     CPU_INT08U CTL;                 /* 帧类型 */
-    CPU_INT08U CARD_SPIT1[8];        /* 1#卡机内卡夹编号 */
-    CPU_INT08U CARD_SPIT2[8];        /* 2#卡机内卡夹编号 */
-    CPU_INT08U CARD_SPIT3[8];        /* 3#卡机内卡夹编号 */
-    CPU_INT08U CARD_SPIT4[8];        /* 4#卡机内卡夹编号 */
+    CPU_INT08U CARD_SPIT1[8];       /* 1#卡机内卡夹编号 */
+    CPU_INT08U CARD_SPIT2[8];       /* 2#卡机内卡夹编号 */
+    CPU_INT08U CARD_SPIT3[8];       /* 3#卡机内卡夹编号 */
+    CPU_INT08U CARD_SPIT4[8];       /* 4#卡机内卡夹编号 */
     CPU_INT08U ETX;                 /* 帧结束 */
     CPU_INT08U END;
 }CARD_REPORT_SPIT_STATUES_FRAME;
@@ -162,8 +162,8 @@ typedef enum CMD
     CARD_MACHINE_INIT_ACK   = 0x02,                 /* (卡机--》主机) 初始化回复。内容在状态和故障码内 */
     CYCLE_ASK               = 0x03,                 /* 定时询问 */
     CYCLE_ACK               = 0x04,                 /* 定时回复 */
-    ENTER_DEBUG             = 0x05,                 /* 进入调试 */
-    QUIT_DEBUG              = 0x06,                 /* 退出调试 */
+    SET_MECHINE_STATUS      = 0x05,                 /* 卡机工作状态设置 */
+    CAR_NOTIFICATION        = 0x06,                 /* 来车去车通知 */
 
     // 10H--1FH：主机板发送至卡机板信息命令
     SET_MECHINE_ID          = 0x10,                 /* 设置卡机的ID号 */
@@ -181,27 +181,14 @@ typedef enum CMD
     CARD_TAKE_AWAY_NOTICE   = 0x24,                 /* 卡已被取走通知 */
     CARD_IS_READY           = 0x25,                 /* 卡已就绪 */
     SERCH_CARD_MECHINE_ACK  = 0x26,                 /* 搜索询问回答 */
-    IS_NO_CARD_WARNING      = 0x27,                 /* 无卡报警 */
+    MECHINE_WARNING         = 0x27,                 /* 报警 */
     BAD_CARD_FULL           = 0x28,                 /* 坏卡满报警 */
 
     // 30H--3FH：总调机命令信息
     DEBUG_ALL               = 0x30,
+    ENTER_DEBUG             = 0x31,
+    QUIT_DEBUG              = 0x32,
 
-    /*
-    44H：读取送卡传感器状态
-    45H：读取卡盒传感器状态
-    46H：读取取卡传感器状态
-    47H：读取整机状态
-    48H：读取按键信息
-    49H：指示灯亮
-    4AH：指示灯灭
-    4BH：读取卡箱传感器状态
-    4CH：读取有卡传感器状态
-    4DH：翻卡电机正翻一步
-    4EH：翻卡电机反翻一步
-    4FH：翻卡电机回零位
-    50H：初始化命令
-    */
     // 40H--5FH：卡机调机命令信息
     STOP_DEBUG              = 0x40,                 /* 停止调试 */
     CYCLE_SPIT_ONE_CARD     = 0x41,                 /* 循环出一张卡 */
@@ -239,6 +226,14 @@ typedef enum CARD_AND_MECHINE_STATUS
 {
     // 00H--0FH：总状态
     ALL_IS_OK                  = 0x00,                 /* ALL IS OK */
+
+    WORKING_STATUS             = 0x01,                 /* 工作状态 */
+    BACKING_STATUS             = 0x02,                 /* 备机状态 */
+    DEBUGING_STATUS            = 0x03,                 /* 调试状态 */
+                                                       /* 已来车 */
+                                                       /* 车已走 */
+                                                       /* 使用粤通卡 */
+
 
     // 10H--1FH：卡状态
     HAS_CARD                   = 0x10,                 /* 有卡 */

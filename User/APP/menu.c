@@ -1,22 +1,26 @@
 #include <includes.h>
 #include "menu.h"
 
-unsigned char g_ucCurDlg;                       // 当前显示的菜单ID
-unsigned short g_usCurID = 0x7811;              // 当前通信设备的ID
-
+unsigned char  g_ucCurDlg           = 0;             // 当前显示的菜单ID
+unsigned short g_usCurID            = 0x7811;       // 当前通信设备的ID
+unsigned short g_usUpWorkingID      = 0x7811;       // 上工位工作卡机ID
+unsigned short g_usUpBackingID      = 0x7812;       // 上工位备用卡机ID
+unsigned short g_usDownWorkingID    = 0x7813;       // 下工位工作卡机ID
+unsigned short g_usDownBackingID    = 0x7814;       // 下工位备用卡机ID
 
 
 Dlg g_dlg[] = {
                         {DLG_LOGO,           "    ****电子    ", " www.*****.com  ", "   ****发卡机   ", "   版本: V1.0   "},
-                        {DLG_STATUS,         "1号工作         ", "2号备用         ", "3号工作         ", "4号备用         "},
+                        {DLG_STATUS,         "1:工作          ", "2:备用          ", "3:工作          ", "4:备用          "},
                         {DLG_MAIN,           "     主菜单     ", "1.卡机状态      ", "2.卡机设置      ", "3.调机运行      "},
                         {DLG_CARD_ID,        "   设置卡机ID   ", "搜索卡机        ", "卡机号:         ", "通信ID号:       "},
+                        {DLG_SET_WORKING,    " 卡机工作设置   ", "1:工作   2:备用 ", "3:工作   4:备用 ", "                "},
+
                         {DLG_CARD_MAIN,      "卡机状态:1号卡机", "         2号卡机", "         3号卡机", "         4号卡机"},
                         {DLG_STATUS_ONE,     "1号出卡:        ", "2号出卡:        ", "3号出卡:        ", "4号出卡:        "},
                         {DLG_STATUS_TWO,     "1号出坏卡:      ", "2号出坏卡:      ", "3号出坏卡:      ", "4号出坏卡:      "},
-                       //{DLG_STATUS_ONE,     "    卡机状态    ", "出好卡数量:     ", "回收坏卡数:     ", "故障次数:       "},
 
-                        {DLG_DEBUG_MAIN,     "    号卡机调试  ", "1:联动运行      ", "2:单动运行      ", "                "},
+                        {DLG_DEBUG_MAIN,     "     号卡机调试 ", "1:联动运行      ", "2:单动运行      ", "                "},
                         {DLG_DEBUG_ONE,      "↑:翻一张好卡    ", "↓:翻一张坏卡    ", "←:勾一张卡      ", "→:循环出卡      "},
                         {DLG_DEBUG_TWO,      "↑:单动正翻卡    ", "↓:单动反翻卡    ", "←:单动正勾卡    ", "→:单动反勾卡    "},
 
@@ -75,7 +79,7 @@ void doShowMainMenu (unsigned char dlg_id, unsigned char isNotRow, void * p_parm
                         doShowStatusOne (DLG_STATUS_ONE, 5, NULL);
                         break;
                     case 2:
-                        doShowIdSetMenu (DLG_CARD_ID, 1, NULL);
+                        doShowWorkingSet (DLG_SET_WORKING, 1, NULL);
                         break;
                     case 3:
                         doShowDebugMain (DLG_DEBUG_MAIN, 0, NULL);
@@ -97,12 +101,6 @@ void doShowMainMenu (unsigned char dlg_id, unsigned char isNotRow, void * p_parm
                     isNotRow++;
                 }
                 break;
-            case KEY_LEFT:
-                break;
-            case KEY_RIGHT:
-                break;
-            case KEY_OK:
-                break;
             case KEY_CANCEL:    // 退出
                 return;
                 break;
@@ -123,7 +121,7 @@ void doShowMainMenu (unsigned char dlg_id, unsigned char isNotRow, void * p_parm
             }
         }
         g_ucKeyValues = KEY_NUL;
-        OSTimeDly ( 100, OS_OPT_TIME_DLY, & err );     //不断阻塞该任务
+        OSTimeDly ( 10, OS_OPT_TIME_DLY, & err );     //不断阻塞该任务
     }
 }
 
@@ -176,7 +174,7 @@ void doShowStatusOne (unsigned char dlg_id, unsigned char isNotRow, void * p_par
             }
         }
         g_ucKeyValues = KEY_NUL;
-        OSTimeDly ( 100, OS_OPT_TIME_DLY, & err );     //不断阻塞该任务
+        OSTimeDly ( 10, OS_OPT_TIME_DLY, & err );     //不断阻塞该任务
     }
 }
 
@@ -229,11 +227,136 @@ void doShowStatusTwo (unsigned char dlg_id, unsigned char isNotRow, void * p_par
             }
         }
         g_ucKeyValues = KEY_NUL;
-        OSTimeDly ( 100, OS_OPT_TIME_DLY, & err );     //不断阻塞该任务
+        OSTimeDly ( 10, OS_OPT_TIME_DLY, & err );     //不断阻塞该任务
     }
 }
 
 
+
+// ID设置菜单,如果有一行需要反显示,则设置当前行反显示,传递参数地址
+void doShowWorkingSet (unsigned char dlg_id, unsigned char isNotRow, void * p_parm)
+{
+    OS_ERR      err;
+    unsigned char i;
+    unsigned char dlgId = check_menu(dlg_id);
+    unsigned char key = KEY_NUL;
+    unsigned char num = 1;      // 卡机号
+    unsigned char str_num[10] = {0};
+    unsigned char str_id[10] = {0};
+
+    unsigned char master1[] = "1:工作   2:备用 ";
+    unsigned char master2[] = "1:备用   2:工作 ";
+    unsigned char master3[] = "3:工作   4:备用 ";
+    unsigned char master4[] = "3:备用   4:工作 ";
+
+    unsigned short id = 0x7811;      // CAN通信的ID
+
+    for (i = 0; i < 4; i++)
+    {
+        display_GB2312_string (0, i * 2, g_dlg[dlgId].MsgRow[i], i == isNotRow ? 1 : 0);
+    }
+    while (DEF_TRUE)
+    {                            //任务体，通常写成一个死循环
+        key = g_ucKeyValues;
+        switch (key)
+        {
+            case KEY_UP:
+                if (1 < isNotRow)
+                {
+                    isNotRow--;
+                }
+                break;
+            case KEY_DOWN:
+                if (2 > isNotRow)
+                {
+                    isNotRow++;
+                }
+                break;
+            case KEY_LEFT:
+                switch (isNotRow)
+                {
+                    case 1:
+                        for (i = 0; i < 16; i++)
+                        {
+                            g_dlg[dlgId].MsgRow[1][i] = master1[i];
+                        }
+                        g_usUpWorkingID = 0x7811;
+                        g_usUpBackingID = 0x7812;
+                        break;
+                    case 2:
+                        for (i = 0; i < 16; i++)
+                        {
+                            g_dlg[dlgId].MsgRow[2][i] = master3[i];
+                        }
+                        g_usDownWorkingID = 0x7813;
+                        g_usDownBackingID = 0x7814;
+                        break;
+                    default:
+                        break;
+                }
+                break;
+            case KEY_RIGHT:
+                switch (isNotRow)
+                {
+                    case 1:
+                        for (i = 0; i < 16; i++)
+                        {
+                            g_dlg[dlgId].MsgRow[1][i] = master2[i];
+                        }
+                        g_usUpWorkingID = 0x7812;
+                        g_usUpBackingID = 0x7811;
+                        break;
+                    case 2:
+                        for (i = 0; i < 16; i++)
+                        {
+                            g_dlg[dlgId].MsgRow[2][i] = master4[i];
+                        }
+                        g_usDownWorkingID = 0x7814;
+                        g_usDownBackingID = 0x7813;
+                    default:
+                        break;
+
+                }
+                break;
+            case KEY_ENTRY:
+            case KEY_OK:
+                switch (isNotRow)
+                {
+                    case 1:
+                        myCANTransmit(&gt_TxMessage, (unsigned char)(g_usUpWorkingID | 0x000f), 0, SET_MECHINE_STATUS, WORKING_STATUS, 0, 0, NO_FAIL);   // 设置工作态
+                        myCANTransmit(&gt_TxMessage, (unsigned char)(g_usUpBackingID | 0x000f), 0, SET_MECHINE_STATUS, BACKING_STATUS, 0, 0, NO_FAIL);   // 设置备用态
+                        break;
+                    case 2:
+                        myCANTransmit(&gt_TxMessage, (unsigned char)(g_usDownWorkingID | 0x000f), 0, SET_MECHINE_STATUS, WORKING_STATUS, 0, 0, NO_FAIL);   // 设置工作态
+                        myCANTransmit(&gt_TxMessage, (unsigned char)(g_usDownBackingID | 0x000f), 0, SET_MECHINE_STATUS, BACKING_STATUS, 0, 0, NO_FAIL);   // 设置备用态
+                        break;
+                    default:
+                        break;
+                }
+                break;
+            case KEY_CANCEL:
+                return;
+                break;
+            default:
+                break;
+
+        }
+        if (g_ucKeyValues == KEY_QUIT)      // 按QUIT键,直接退到主界面,避免连续的刷屏,退出,并保持按键值不变
+        {
+            return;
+        }
+        if (KEY_NUL != key || g_ucIsUpdateMenu)    // 如果有按键按下,则更新界面
+        {
+            g_ucIsUpdateMenu = 0;
+            for (i = 0; i < 4; i++)
+            {
+                display_GB2312_string (0, i * 2, g_dlg[dlgId].MsgRow[i], i == isNotRow ? 1 : 0);
+            }
+        }
+        g_ucKeyValues = KEY_NUL;
+        OSTimeDly ( 10, OS_OPT_TIME_DLY, & err );     //不断阻塞该任务
+    }
+}
 
 
 // ID设置菜单,如果有一行需要反显示,则设置当前行反显示,传递参数地址
@@ -270,12 +393,6 @@ void doShowIdSetMenu (unsigned char dlg_id, unsigned char isNotRow, void * p_par
         switch (key)
         {
             case KEY_ENTRY:
-                /*if (1 <= num && num <= 4 && 0x7811 <= id && id <= 0x7814)
-                {
-                    id_h = ( g_usCurID >> 8 ) & 0xff;
-                    id_l = g_usCurID & 0xff;
-                    myCANTransmit(&gt_TxMessage, 0, 0, SET_MECHINE_ID, num, id_h, id_l, NO_FAIL);
-                }*/
                 break;
             case KEY_UP:
                 if (1 < isNotRow)
@@ -385,7 +502,7 @@ void doShowIdSetMenu (unsigned char dlg_id, unsigned char isNotRow, void * p_par
             }
         }
         g_ucKeyValues = KEY_NUL;
-        OSTimeDly ( 100, OS_OPT_TIME_DLY, & err );     //不断阻塞该任务
+        OSTimeDly ( 10, OS_OPT_TIME_DLY, & err );     //不断阻塞该任务
     }
 }
 
@@ -506,7 +623,7 @@ void doShowDebugMain (unsigned char dlg_id, unsigned char isNotRow, void * p_par
             }
         }
         g_ucKeyValues = KEY_NUL;
-        OSTimeDly ( 100, OS_OPT_TIME_DLY, & err );     //不断阻塞该任务
+        OSTimeDly ( 10, OS_OPT_TIME_DLY, & err );     //不断阻塞该任务
     }
 }
 
@@ -574,7 +691,7 @@ void doShowDebugOne (unsigned char dlg_id, unsigned char isNotRow, void * p_parm
             }
         }
         g_ucKeyValues = KEY_NUL;
-        OSTimeDly ( 100, OS_OPT_TIME_DLY, & err );     //不断阻塞该任务
+        OSTimeDly ( 10, OS_OPT_TIME_DLY, & err );     //不断阻塞该任务
     }
 }
 
@@ -648,6 +765,6 @@ void doShowDebugTwo (unsigned char dlg_id, unsigned char isNotRow, void * p_parm
             }
         }
         g_ucKeyValues = KEY_NUL;
-        OSTimeDly ( 100, OS_OPT_TIME_DLY, & err );     //不断阻塞该任务
+        OSTimeDly ( 10, OS_OPT_TIME_DLY, & err );     //不断阻塞该任务
     }
 }

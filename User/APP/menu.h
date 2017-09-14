@@ -10,6 +10,7 @@ typedef enum DLG_ID
     DLG_MAIN                     = 0x02,                 /*  */
     DLG_PASS                     = 0x03,                 /*  */
     DLG_CARD_ID                  = 0x04,                 /*  */
+    DLG_SET_WORKING              = 0x05,                 /*  */
 
     DLG_CARD_MAIN                = 0x10,                 /*  */
     DLG_STATUS_ONE               = 0x11,                 /*  */
@@ -31,9 +32,14 @@ typedef struct Dlg
    char MsgRow[4][36];
 }Dlg;
 
-extern Dlg                              g_dlg[];
-extern unsigned char g_ucCurDlg;           // 当前显示的菜单ID
-extern unsigned short g_usCurID;           // 当前通信设备的ID,在设置设备ID时候使用
+extern Dlg           g_dlg[];
+extern unsigned char g_ucCurDlg;            // 当前显示的菜单ID
+extern unsigned short g_usCurID;            // 当前通信设备的ID,在设置设备ID时候使用
+extern unsigned short g_usUpWorkingID;       // 上工位工作卡机ID
+extern unsigned short g_usUpBackingID;       // 上工位备用卡机ID
+extern unsigned short g_usDownWorkingID;     // 下工位工作卡机ID
+extern unsigned short g_usDownBackingID;     // 下工位备用卡机ID
+
 
 
 void doShowStatusMenu (unsigned char dlg_id, unsigned char isNotRow, void * p_parm);
@@ -41,6 +47,7 @@ void doShowMainMenu (unsigned char dlg_id, unsigned char isNotRow, void * p_parm
 void doShowStatusOne (unsigned char dlg_id, unsigned char isNotRow, void * p_parm);
 void doShowStatusTwo (unsigned char dlg_id, unsigned char isNotRow, void * p_parm);
 void doShowIdSetMenu (unsigned char dlg_id, unsigned char isNotRow, void * p_parm);
+void doShowWorkingSet (unsigned char dlg_id, unsigned char isNotRow, void * p_parm);
 void doShowDebugMain (unsigned char dlg_id, unsigned char isNotRow, void * p_parm);
 void doShowDebugOne (unsigned char dlg_id, unsigned char isNotRow, void * p_parm);
 void doShowDebugTwo (unsigned char dlg_id, unsigned char isNotRow, void * p_parm);

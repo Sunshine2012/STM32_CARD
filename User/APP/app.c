@@ -399,7 +399,7 @@ static  void AppTaskOLED ( void * p_arg )
             g_ucIsUpdateMenu = 1;
         }
 
-        OSTimeDly ( 100, OS_OPT_TIME_DLY, & err );
+        OSTimeDly ( 10, OS_OPT_TIME_DLY, & err );
     }
 }
 
@@ -432,7 +432,7 @@ void  AppTaskCanFrame ( void * p_arg )
             AnalyzeCANFrame((void *)ptRxMessage);
             // printf ("%s",(char *)ptRxMessage);
         }
-        OSTimeDly ( 100, OS_OPT_TIME_DLY, & err ); //不断阻塞该任务
+        OSTimeDly ( 10, OS_OPT_TIME_DLY, & err ); //不断阻塞该任务
     }
 }
 
@@ -472,7 +472,7 @@ void  AppTaskUartFrame ( void * p_arg )
         {
             //OLED_ShowStr(0,0,pMsg,1);
         }
-        OSTimeDly ( 100, OS_OPT_TIME_DLY, & err );     //不断阻塞该任务
+        OSTimeDly ( 10, OS_OPT_TIME_DLY, & err );     //不断阻塞该任务
     }
 }
 
@@ -489,6 +489,6 @@ void  AppTaskKeyScan ( void * p_arg )
     while (DEF_TRUE)
     {                            //任务体，通常写成一个死循环
         matrix_update_key();                // 扫描按键
-        OSTimeDly ( 50, OS_OPT_TIME_DLY, & err );     //不断阻塞该任务
+        OSTimeDly ( 10, OS_OPT_TIME_DLY, & err );     //不断阻塞该任务
     }
 }
