@@ -226,8 +226,8 @@ CPU_INT08U  AnalyzeCANFrame ( void * p_arg )
                 g_usDownWorkingID = pRxMessage->Data[1] == 3 ? 4 : 3;
                 g_usDownBackingID = pRxMessage->Data[1] == 4 ? 3 : 4;
             }
-            myCANTransmit(&gt_TxMessage, (unsigned char)(g_usUpWorkingID | 0x000f), 0, SET_MECHINE_STATUS, WORKING_STATUS, 0, 0, NO_FAIL);   // 设置工作态
-            myCANTransmit(&gt_TxMessage, (unsigned char)(g_usUpWorkingID | 0x000f), 0, SET_MECHINE_STATUS, BACKING_STATUS, 0, 0, NO_FAIL);   // 设置备份态
+            myCANTransmit(&gt_TxMessage, (unsigned char)(g_usUpWorkingID & 0x000f), 0, SET_MECHINE_STATUS, WORKING_STATUS, 0, 0, NO_FAIL);   // 设置工作态
+            myCANTransmit(&gt_TxMessage, (unsigned char)(g_usUpWorkingID & 0x000f), 0, SET_MECHINE_STATUS, BACKING_STATUS, 0, 0, NO_FAIL);   // 设置备份态
             g_ucIsUpdateMenu = 1;      // 更新界面
             break;
         default:

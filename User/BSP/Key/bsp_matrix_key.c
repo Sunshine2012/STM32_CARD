@@ -103,7 +103,7 @@ void matrix_keyboard_init(void)
 
 }
 
-#else
+#elif NEW_BOARD_NEW_KEY
 
 static struct io_port matrix_key_output[4] =
 {

@@ -260,6 +260,9 @@ void doShowWorkingSet (unsigned char dlg_id, unsigned char isNotRow, void * p_pa
         key = g_ucKeyValues;
         switch (key)
         {
+            case KEY_ENTRY:
+                key = KEY_NUL;
+                break;
             case KEY_UP:
                 if (1 < isNotRow)
                 {
@@ -318,17 +321,16 @@ void doShowWorkingSet (unsigned char dlg_id, unsigned char isNotRow, void * p_pa
 
                 }
                 break;
-            case KEY_ENTRY:
             case KEY_OK:
                 switch (isNotRow)
                 {
                     case 1:
-                        myCANTransmit(&gt_TxMessage, (unsigned char)(g_usUpWorkingID | 0x000f), 0, SET_MECHINE_STATUS, WORKING_STATUS, 0, 0, NO_FAIL);   // 设置工作态
-                        myCANTransmit(&gt_TxMessage, (unsigned char)(g_usUpBackingID | 0x000f), 0, SET_MECHINE_STATUS, BACKING_STATUS, 0, 0, NO_FAIL);   // 设置备用态
+                        myCANTransmit(&gt_TxMessage, (unsigned char)(g_usUpWorkingID & 0x000f), 0, SET_MECHINE_STATUS, WORKING_STATUS, 0, 0, NO_FAIL);   // 设置工作态
+                        myCANTransmit(&gt_TxMessage, (unsigned char)(g_usUpBackingID & 0x000f), 0, SET_MECHINE_STATUS, BACKING_STATUS, 0, 0, NO_FAIL);   // 设置备用态
                         break;
                     case 2:
-                        myCANTransmit(&gt_TxMessage, (unsigned char)(g_usDownWorkingID | 0x000f), 0, SET_MECHINE_STATUS, WORKING_STATUS, 0, 0, NO_FAIL);   // 设置工作态
-                        myCANTransmit(&gt_TxMessage, (unsigned char)(g_usDownBackingID | 0x000f), 0, SET_MECHINE_STATUS, BACKING_STATUS, 0, 0, NO_FAIL);   // 设置备用态
+                        myCANTransmit(&gt_TxMessage, (unsigned char)(g_usDownWorkingID & 0x000f), 0, SET_MECHINE_STATUS, WORKING_STATUS, 0, 0, NO_FAIL);   // 设置工作态
+                        myCANTransmit(&gt_TxMessage, (unsigned char)(g_usDownBackingID & 0x000f), 0, SET_MECHINE_STATUS, BACKING_STATUS, 0, 0, NO_FAIL);   // 设置备用态
                         break;
                     default:
                         break;
