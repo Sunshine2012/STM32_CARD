@@ -311,5 +311,6 @@ CPU_INT08U * CheckShowMsg (CPU_INT08U ch);
 CPU_INT08U * CheckPriMsg (CPU_INT08U ch);
 void copyMenu (CPU_INT08U num, CPU_INT08U id, CPU_INT08U values, CPU_INT08U addr, CPU_INT08U count);
 void copyStatusMsg (CPU_INT08U num, CPU_INT08U id, CPU_INT08U values, CPU_INT08U addr, CPU_INT08U count);
+void copyWarningMsg (CPU_INT08U num, CPU_INT08U cmd, CPU_INT08U values, CPU_INT08U addr, CPU_INT08U count);
 
 #endif /* __FRAME_H */

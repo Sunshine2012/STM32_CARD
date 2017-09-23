@@ -73,7 +73,7 @@ void matrix_keyboard_init(void)
     GPIO_InitTypeDef GPIO_InitStructure;
     unsigned char i;
     RCC_APB2PeriphClockCmd (RCC_APB2Periph_GPIOB | RCC_APB2Periph_GPIOC | RCC_APB2Periph_GPIOD , ENABLE );    // 打开时钟,并且打开管脚复用
-    //GPIO_PinRemapConfig(GPIO_Remap_SWJ_Disable , ENABLE);           // 关闭JTAG和SW模式,管脚复用
+    GPIO_PinRemapConfig(GPIO_Remap_SWJ_Disable , ENABLE);           // 关闭JTAG和SW模式,管脚复用
 
     /* 键盘行扫描输出线 输出高电平 */
     GPIO_InitStructure.GPIO_Pin = GPIO_Pin_4 | GPIO_Pin_5;
@@ -178,7 +178,6 @@ u8 matrix_update_key(void)
                             ucTime = 0;
                             ucKeyFlag = 1;           // 按键送开之后,发送数据
                             g_ucKeyValues = (i + 1) * 10 + (j + 1);
-                            //break;
                         }
                     }
                 }

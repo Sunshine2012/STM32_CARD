@@ -96,6 +96,13 @@ const Print_msg g_taShowStatus_msg[] = {
                             {0xfe,                          "    "},
                             {0xff,NULL}
                         };
+const Print_msg g_taShowWarning_msg[] = {
+                            {0,                             "NULL"},
+                            {CARD_IS_OK,                    "好卡"},
+                            {CARD_IS_BAD,                   "坏卡"},
+                            {0xfe,                          "    "},
+                            {0xff,NULL}
+                        };
 
 // 复制要显示的菜单数据到数组中
 void copyMenu (CPU_INT08U num, CPU_INT08U cmd, CPU_INT08U values, CPU_INT08U addr, CPU_INT08U count)
@@ -112,6 +119,19 @@ void copyMenu (CPU_INT08U num, CPU_INT08U cmd, CPU_INT08U values, CPU_INT08U add
 
 // 复制要显示的菜单数据到数组中
 void copyStatusMsg (CPU_INT08U num, CPU_INT08U cmd, CPU_INT08U values, CPU_INT08U addr, CPU_INT08U count)
+{
+    CPU_INT08U *str_id = CheckShowStatusMsg(cmd);
+    unsigned char i, n;
+    //strcpy() = CheckShowMsg(id);
+    n = check_menu (DLG_STATUS);
+    for (i = 0; i < count; i++)
+    {
+        g_dlg[n].MsgRow[num - 1][i + addr] = str_id[i];
+    }
+}
+
+// 复制要显示的菜单数据到数组中
+void copyWarningMsg (CPU_INT08U num, CPU_INT08U cmd, CPU_INT08U values, CPU_INT08U addr, CPU_INT08U count)
 {
     CPU_INT08U *str_id = CheckShowStatusMsg(cmd);
     unsigned char i, n;
@@ -182,28 +202,45 @@ CPU_INT08U  AnalyzeCANFrame ( void * p_arg )
             myCANTransmit(&gt_TxMessage, pRxMessage->Data[1], pRxMessage->Data[1], MACHINE_STATUES, (count) % 10 ? CARD_IS_OK : CARD_IS_BAD, 0, 0, NO_FAIL);
             printf ("%s\n",(char *)&g_tCardKeyPressFrame);
             copyStatusMsg (pRxMessage->Data[1], (count++) % 10 ? CARD_IS_OK : CARD_IS_BAD, 0, 12, 4);
-            copyMenu (pRxMessage->Data[1], MACHINE_CHECK_CARD, 0, 8, 4);
+            copyMenu (pRxMessage->Data[1], MACHINE_CHECK_CARD, 0, 7, 4);
             break;
         case KEY_PRESS:             // 司机已按键
             DEBUG_printf ("%s\r\n",(char *)CheckPriMsg(CARD_KEY_PRESS));
-            myCANTransmit(&gt_TxMessage, pRxMessage->Data[1], pRxMessage->Data[1], WRITE_CARD_STATUS, CARD_IS_OK, 0, 0, NO_FAIL);
+            if (pRxMessage->Data[2] == 0x01 && pRxMessage->Data[1] <= 2)  // 如果设备为运行态且有卡
+            {
+                g_usUpWorkingID = pRxMessage->Data[1] == 1 ? 2 : 1;
+                g_usUpBackingID = pRxMessage->Data[1] == 1 ? 1 : 2;
+            }
+            else if (pRxMessage->Data[2] == 0x01 && pRxMessage->Data[1] > 2)
+            {
+                g_usDownWorkingID = pRxMessage->Data[1] == 3 ? 4 : 3;
+                g_usDownBackingID = pRxMessage->Data[1] == 3 ? 3 : 4;
+            }
+
+            if (pRxMessage->Data[2] == 0x01 && pRxMessage->Data[4] == 0x10) // 如果设备为运行态且有卡
+            {
+              myCANTransmit(&gt_TxMessage, pRxMessage->Data[1], pRxMessage->Data[1], WRITE_CARD_STATUS, CARD_IS_OK, 0, 0, NO_FAIL);
+              copyStatusMsg (pRxMessage->Data[1], (count++) % 10 ? CARD_IS_OK : CARD_IS_BAD, 0, 12, 4);
+              copyMenu (pRxMessage->Data[1], MACHINE_CHECK_CARD, 0, 7, 4);
+            }
+
             printf ("%s\n",(char *)&g_tCardKeyPressFrame);
             break;
         case CARD_SPIT_NOTICE:      // 出卡通知
             dacSet(DATA_quka,SOUND_LENGTH_quka);
             copyStatusMsg (pRxMessage->Data[1], 0xfe, 0, 12, 4);
-            copyMenu (pRxMessage->Data[1], CARD_SPIT_NOTICE, 0, 8, 4);
+            copyMenu (pRxMessage->Data[1], CARD_SPIT_NOTICE, 0, 7, 4);
             //OSTimeDly ( 2000, OS_OPT_TIME_DLY, & err );
             break;
         case CARD_TAKE_AWAY_NOTICE: // 卡已被取走通知
             dacSet(DATA_xiexie,SOUND_LENGTH_xiexie);
             copyStatusMsg (pRxMessage->Data[1], 0xfe, 0, 12, 4);
-            copyMenu (pRxMessage->Data[1], CARD_TAKE_AWAY_NOTICE, 0, 8, 4);
+            copyMenu (pRxMessage->Data[1], CARD_TAKE_AWAY_NOTICE, 0, 7, 4);
             //OSTimeDly ( 2500, OS_OPT_TIME_DLY, & err );
             break;
         case CARD_IS_READY:
             copyStatusMsg (pRxMessage->Data[1], 0xfe, 0, 14, 2);
-            copyMenu (pRxMessage->Data[1], CARD_IS_READY, 0, 8, 6);
+            copyMenu (pRxMessage->Data[1], CARD_IS_READY, 0, 7, 6);
             break;
         case SERCH_CARD_MECHINE_ACK:// 查询卡机的回复
             g_usCurID = pRxMessage->Data[5] << 8 | pRxMessage->Data[6];
@@ -216,18 +253,21 @@ CPU_INT08U  AnalyzeCANFrame ( void * p_arg )
             g_ucIsUpdateMenu = 1;      // 更新界面
             break;
         case MECHINE_WARNING:    // 报警
-            if (pRxMessage->Data[1] < 2) // 表明是上工位故障
+            if (pRxMessage->Data[1] <= 2) // 表明是上工位故障
             {
                 g_usUpWorkingID = pRxMessage->Data[1] == 1 ? 2 : 1;
-                g_usUpBackingID = pRxMessage->Data[1] == 2 ? 1 : 2;
+                g_usUpBackingID = pRxMessage->Data[1] == 1 ? 1 : 2;
+                myCANTransmit(&gt_TxMessage, (unsigned char)(g_usUpWorkingID & 0x000f), 0, SET_MECHINE_STATUS, WORKING_STATUS, 0, 0, NO_FAIL);   // 设置工作态
+                myCANTransmit(&gt_TxMessage, (unsigned char)(g_usUpBackingID & 0x000f), 0, SET_MECHINE_STATUS, BACKING_STATUS, 0, 0, NO_FAIL);   // 设置备份态
             }
             else
             {
                 g_usDownWorkingID = pRxMessage->Data[1] == 3 ? 4 : 3;
-                g_usDownBackingID = pRxMessage->Data[1] == 4 ? 3 : 4;
+                g_usDownBackingID = pRxMessage->Data[1] == 3 ? 3 : 4;
+                myCANTransmit(&gt_TxMessage, (unsigned char)(g_usDownWorkingID & 0x000f), 0, SET_MECHINE_STATUS, WORKING_STATUS, 0, 0, NO_FAIL);   // 设置工作态
+                myCANTransmit(&gt_TxMessage, (unsigned char)(g_usDownBackingID & 0x000f), 0, SET_MECHINE_STATUS, BACKING_STATUS, 0, 0, NO_FAIL);   // 设置备份态
+
             }
-            myCANTransmit(&gt_TxMessage, (unsigned char)(g_usUpWorkingID & 0x000f), 0, SET_MECHINE_STATUS, WORKING_STATUS, 0, 0, NO_FAIL);   // 设置工作态
-            myCANTransmit(&gt_TxMessage, (unsigned char)(g_usUpWorkingID & 0x000f), 0, SET_MECHINE_STATUS, BACKING_STATUS, 0, 0, NO_FAIL);   // 设置备份态
             g_ucIsUpdateMenu = 1;      // 更新界面
             break;
         default:
