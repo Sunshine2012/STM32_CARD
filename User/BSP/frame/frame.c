@@ -208,18 +208,18 @@ CPU_INT08U  AnalyzeCANFrame ( void * p_arg )
             DEBUG_printf ("%s\r\n",(char *)CheckPriMsg(CARD_KEY_PRESS));
             if (pRxMessage->Data[2] == 0x01 && pRxMessage->Data[1] <= 2)  // 如果设备为运行态且有卡
             {
-                g_usUpWorkingID = pRxMessage->Data[1] == 1 ? 2 : 1;
-                g_usUpBackingID = pRxMessage->Data[1] == 1 ? 1 : 2;
+                g_usUpWorkingID = pRxMessage->Data[1] == 1 ? 0x7811 : 0x7812;
+                g_usUpBackingID = pRxMessage->Data[1] == 1 ? 0x7812 : 0x7811;
             }
             else if (pRxMessage->Data[2] == 0x01 && pRxMessage->Data[1] > 2)
             {
-                g_usDownWorkingID = pRxMessage->Data[1] == 3 ? 4 : 3;
-                g_usDownBackingID = pRxMessage->Data[1] == 3 ? 3 : 4;
+                g_usDownWorkingID = pRxMessage->Data[1] == 3 ? 0x7814 : 0x7813;
+                g_usDownBackingID = pRxMessage->Data[1] == 3 ? 0x7813 : 0x7814;
             }
 
             if (pRxMessage->Data[2] == 0x01 && pRxMessage->Data[4] == 0x10) // 如果设备为运行态且有卡
             {
-              myCANTransmit(&gt_TxMessage, pRxMessage->Data[1], pRxMessage->Data[1], WRITE_CARD_STATUS, CARD_IS_OK, 0, 0, NO_FAIL);
+              myCANTransmit(&gt_TxMessage, (unsigned char)(g_usUpWorkingID & 0x000f), (unsigned char)(g_usUpWorkingID & 0x000f), WRITE_CARD_STATUS, CARD_IS_OK, 0, 0, NO_FAIL);
               copyStatusMsg (pRxMessage->Data[1], (count++) % 10 ? CARD_IS_OK : CARD_IS_BAD, 0, 12, 4);
               copyMenu (pRxMessage->Data[1], MACHINE_CHECK_CARD, 0, 7, 4);
             }
@@ -255,15 +255,15 @@ CPU_INT08U  AnalyzeCANFrame ( void * p_arg )
         case MECHINE_WARNING:    // 报警
             if (pRxMessage->Data[1] <= 2) // 表明是上工位故障
             {
-                g_usUpWorkingID = pRxMessage->Data[1] == 1 ? 2 : 1;
-                g_usUpBackingID = pRxMessage->Data[1] == 1 ? 1 : 2;
+                g_usUpWorkingID = pRxMessage->Data[1] == 1 ? 0x7812 : 0x7811;
+                g_usUpBackingID = pRxMessage->Data[1] == 1 ? 0x7811 : 0x7812;
                 myCANTransmit(&gt_TxMessage, (unsigned char)(g_usUpWorkingID & 0x000f), 0, SET_MECHINE_STATUS, WORKING_STATUS, 0, 0, NO_FAIL);   // 设置工作态
                 myCANTransmit(&gt_TxMessage, (unsigned char)(g_usUpBackingID & 0x000f), 0, SET_MECHINE_STATUS, BACKING_STATUS, 0, 0, NO_FAIL);   // 设置备份态
             }
             else
             {
-                g_usDownWorkingID = pRxMessage->Data[1] == 3 ? 4 : 3;
-                g_usDownBackingID = pRxMessage->Data[1] == 3 ? 3 : 4;
+                g_usDownWorkingID = pRxMessage->Data[1] == 3 ? 0x7814 : 0x7813;
+                g_usDownBackingID = pRxMessage->Data[1] == 3 ? 0x7813 : 0x7814;
                 myCANTransmit(&gt_TxMessage, (unsigned char)(g_usDownWorkingID & 0x000f), 0, SET_MECHINE_STATUS, WORKING_STATUS, 0, 0, NO_FAIL);   // 设置工作态
                 myCANTransmit(&gt_TxMessage, (unsigned char)(g_usDownBackingID & 0x000f), 0, SET_MECHINE_STATUS, BACKING_STATUS, 0, 0, NO_FAIL);   // 设置备份态
 
