@@ -7,11 +7,13 @@ unsigned short g_usUpWorkingID      = 0x7811;       // 上工位工作卡机ID
 unsigned short g_usUpBackingID      = 0x7812;       // 上工位备用卡机ID
 unsigned short g_usDownWorkingID    = 0x7813;       // 下工位工作卡机ID
 unsigned short g_usDownBackingID    = 0x7814;       // 下工位备用卡机ID
+unsigned char g_ucDeviceIsReady     = 0;            //  两个卡机处于待机状态下，按键按下，主机收到两条按键信息，此时只处理主机的，如果只收到一条按键信息，则直接发卡
+
 
 
 Dlg g_dlg[] = {
                         {DLG_LOGO,           "    ****电子    ", " www.*****.com  ", "   ****发卡机   ", "   版本: V1.0   "},
-                        {DLG_STATUS,         "1:工作          ", "2:备用          ", "3:工作          ", "4:备用          "},
+                        {DLG_STATUS,         "1.工作:         ", "2.备用:         ", "3.工作:         ", "4.备用:         "},
                         {DLG_MAIN,           "     主菜单     ", "1.卡机状态      ", "2.卡机设置      ", "3.调机运行      "},
                         {DLG_CARD_ID,        "   设置卡机ID   ", "搜索卡机        ", "卡机号:         ", "通信ID号:       "},
                         {DLG_SET_WORKING,    " 卡机工作设置   ", "1:工作   2:备用 ", "3:工作   4:备用 ", "                "},
@@ -327,10 +329,12 @@ void doShowWorkingSet (unsigned char dlg_id, unsigned char isNotRow, void * p_pa
                     case 1:
                         myCANTransmit(&gt_TxMessage, (unsigned char)(g_usUpWorkingID & 0x000f), 0, SET_MECHINE_STATUS, WORKING_STATUS, 0, 0, NO_FAIL);   // 设置工作态
                         myCANTransmit(&gt_TxMessage, (unsigned char)(g_usUpBackingID & 0x000f), 0, SET_MECHINE_STATUS, BACKING_STATUS, 0, 0, NO_FAIL);   // 设置备用态
+                        isNotRow++;
                         break;
                     case 2:
                         myCANTransmit(&gt_TxMessage, (unsigned char)(g_usDownWorkingID & 0x000f), 0, SET_MECHINE_STATUS, WORKING_STATUS, 0, 0, NO_FAIL);   // 设置工作态
                         myCANTransmit(&gt_TxMessage, (unsigned char)(g_usDownBackingID & 0x000f), 0, SET_MECHINE_STATUS, BACKING_STATUS, 0, 0, NO_FAIL);   // 设置备用态
+                        isNotRow--;
                         break;
                     default:
                         break;

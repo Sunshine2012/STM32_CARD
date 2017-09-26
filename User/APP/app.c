@@ -422,7 +422,7 @@ void  AppTaskCanFrame ( void * p_arg )
         /* 请求消息队列 queue 的消息 */
         ptRxMessage = OSQPend ((OS_Q         *)&queue_can,            //消息变量指针
                         (OS_TICK       )10,                    //等待时长
-                        (OS_OPT        )OS_OPT_PEND_BLOCKING,  //如果没有获取到信号量就等待
+                        (OS_OPT        )OS_OPT_PEND_NON_BLOCKING,  //如果没有获取到信号量就不等待
                         (OS_MSG_SIZE  *)&msg_size,             //获取消息的字节大小
                         (CPU_TS       *)0,                     //获取任务发送时的时间戳
                         (OS_ERR       *)&err);                 //返回错误
@@ -458,7 +458,7 @@ void  AppTaskUartFrame ( void * p_arg )
     {                            //任务体，通常写成一个死循环
         pMsg = OSQPend ((OS_Q         *)&queue_uart,            //消息变量指针
                         (OS_TICK       )10,                     //等待时长
-                        (OS_OPT        )OS_OPT_PEND_BLOCKING,   //如果没有获取到信号量就等待
+                        (OS_OPT        )OS_OPT_PEND_NON_BLOCKING,   //如果没有获取到信号量就不等待
                         (OS_MSG_SIZE  *)&msg_size,              //获取消息的字节大小
                         (CPU_TS       *)0,                      //获取任务发送时的时间戳
                         (OS_ERR       *)&err);                  //返回错误

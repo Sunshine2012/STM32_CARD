@@ -242,7 +242,8 @@ typedef enum CARD_AND_MECHINE_STATUS
     CARD_IS_BAD                = 0x13,                 /* 坏卡 */
     HAS_CHECKED_CARD           = 0x14,                 /* 已判卡 */
     HAS_WRITE_CARD             = 0x15,                 /* 已写卡 */
-
+    IS_WORKING                 = 0x20,
+    IS_BACKING                 = 0x21,
     // 20H--2FH：机状态
 
     // 30H--7FH：备用

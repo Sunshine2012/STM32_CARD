@@ -93,6 +93,8 @@ const Print_msg g_taShowStatus_msg[] = {
                             {0,                             "NULL"},
                             {CARD_IS_OK,                    "好卡"},
                             {CARD_IS_BAD,                   "坏卡"},
+                            {IS_WORKING,                    "工作"},
+                            {IS_BACKING,                    "备用"},
                             {0xfe,                          "    "},
                             {0xff,NULL}
                         };
@@ -110,6 +112,10 @@ void copyMenu (CPU_INT08U num, CPU_INT08U cmd, CPU_INT08U values, CPU_INT08U add
     CPU_INT08U *str_id = CheckShowMsg(cmd);
     unsigned char i, n;
     n = check_menu (DLG_STATUS);
+    for (i = addr; i < 16; i++)
+    {
+        g_dlg[n].MsgRow[num - 1][i] = ' ';
+    }
     for (i = 0; i < count; i++)
     {
         g_dlg[n].MsgRow[num - 1][i + addr] = str_id[i];
@@ -199,48 +205,103 @@ CPU_INT08U  AnalyzeCANFrame ( void * p_arg )
     {
         case MACHINE_CHECK_CARD:    // 指定工位验卡
             DEBUG_printf ("%s\r\n",(char *)CheckPriMsg(CARD_KEY_PRESS));
-            myCANTransmit(&gt_TxMessage, pRxMessage->Data[1], pRxMessage->Data[1], MACHINE_STATUES, (count) % 10 ? CARD_IS_OK : CARD_IS_BAD, 0, 0, NO_FAIL);
             printf ("%s\n",(char *)&g_tCardKeyPressFrame);
-            copyStatusMsg (pRxMessage->Data[1], (count++) % 10 ? CARD_IS_OK : CARD_IS_BAD, 0, 12, 4);
             copyMenu (pRxMessage->Data[1], MACHINE_CHECK_CARD, 0, 7, 4);
+            copyStatusMsg (pRxMessage->Data[1], (count++) % 10 ? CARD_IS_OK : CARD_IS_BAD, 0, 12, 4);
+            myCANTransmit(&gt_TxMessage, pRxMessage->Data[1], pRxMessage->Data[2], MACHINE_STATUES, (count) % 10 ? CARD_IS_OK : CARD_IS_BAD, 0, 0, NO_FAIL);
             break;
         case KEY_PRESS:             // 司机已按键
             DEBUG_printf ("%s\r\n",(char *)CheckPriMsg(CARD_KEY_PRESS));
-            if (pRxMessage->Data[2] == 0x01 && pRxMessage->Data[1] <= 2)  // 如果设备为运行态且有卡
+            if (pRxMessage->Data[2] == 1)
             {
-                g_usUpWorkingID = pRxMessage->Data[1] == 1 ? 0x7811 : 0x7812;
-                g_usUpBackingID = pRxMessage->Data[1] == 1 ? 0x7812 : 0x7811;
+                switch (pRxMessage->Data[1])    // 更新主备机状态
+                {
+                    case 1:
+                        copyStatusMsg (1, IS_WORKING, 0, 2, 4);
+                        copyStatusMsg (2, IS_BACKING, 0, 2, 4);
+                        g_usUpWorkingID = 0x7811;
+                        g_usUpBackingID = 0x7812;
+                        break;
+                    case 2:
+                        copyStatusMsg (1, IS_BACKING, 0, 2, 4);
+                        copyStatusMsg (2, IS_WORKING, 0, 2, 4);
+                        g_usUpWorkingID = 0x7812;
+                        g_usUpBackingID = 0x7811;
+                        break;
+                    case 3:
+                        copyStatusMsg (3, IS_WORKING, 0, 2, 4);
+                        copyStatusMsg (4, IS_BACKING, 0, 2, 4);
+                        g_usDownWorkingID = 0x7813;
+                        g_usDownBackingID = 0x7814;
+                        break;
+                    case 4:
+                        copyStatusMsg (3, IS_BACKING, 0, 2, 4);
+                        copyStatusMsg (4, IS_WORKING, 0, 2, 4);
+                        g_usDownWorkingID = 0x7814;
+                        g_usDownBackingID = 0x7813;
+                        break;
+                    default:
+                        break;
+
+                }
+
             }
-            else if (pRxMessage->Data[2] == 0x01 && pRxMessage->Data[1] > 2)
+            else if (pRxMessage->Data[2] == 2)
             {
-                g_usDownWorkingID = pRxMessage->Data[1] == 3 ? 0x7814 : 0x7813;
-                g_usDownBackingID = pRxMessage->Data[1] == 3 ? 0x7813 : 0x7814;
+                switch (pRxMessage->Data[1])    // 更新主备机状态
+                {
+                    case 1:
+                        copyStatusMsg (1, IS_BACKING, 0, 2, 4);
+                        copyStatusMsg (2, IS_WORKING, 0, 2, 4);
+                        g_usUpWorkingID = 0x7812;
+                        g_usUpBackingID = 0x7811;
+                        break;
+                    case 2:
+                        copyStatusMsg (1, IS_WORKING, 0, 2, 4);
+                        copyStatusMsg (2, IS_BACKING, 0, 2, 4);
+                        g_usUpWorkingID = 0x7811;
+                        g_usUpBackingID = 0x7812;
+                        break;
+                    case 3:
+                        copyStatusMsg (3, IS_BACKING, 0, 2, 4);
+                        copyStatusMsg (4, IS_WORKING, 0, 2, 4);
+                        g_usDownWorkingID = 0x7814;
+                        g_usDownBackingID = 0x7813;
+                        break;
+                    case 4:
+                        copyStatusMsg (3, IS_WORKING, 0, 2, 4);
+                        copyStatusMsg (4, IS_BACKING, 0, 2, 4);
+                        g_usDownWorkingID = 0x7813;
+                        g_usDownBackingID = 0x7814;
+                        break;
+                    default:
+                        break;
+                }
+
             }
 
-            if (pRxMessage->Data[2] == 0x01 && pRxMessage->Data[4] == 0x10) // 如果设备为运行态且有卡
+            if (pRxMessage->Data[4] == 0x10) // 如果设备为运行态且有卡
             {
-              myCANTransmit(&gt_TxMessage, (unsigned char)(g_usUpWorkingID & 0x000f), (unsigned char)(g_usUpWorkingID & 0x000f), WRITE_CARD_STATUS, CARD_IS_OK, 0, 0, NO_FAIL);
-              copyStatusMsg (pRxMessage->Data[1], (count++) % 10 ? CARD_IS_OK : CARD_IS_BAD, 0, 12, 4);
+              myCANTransmit(&gt_TxMessage, pRxMessage->Data[1], pRxMessage->Data[2], WRITE_CARD_STATUS, CARD_IS_OK, 0, 0, NO_FAIL);
               copyMenu (pRxMessage->Data[1], MACHINE_CHECK_CARD, 0, 7, 4);
+              copyStatusMsg (pRxMessage->Data[1], (count++) % 10 ? CARD_IS_OK : CARD_IS_BAD, 0, 12, 4);
             }
-
             printf ("%s\n",(char *)&g_tCardKeyPressFrame);
             break;
         case CARD_SPIT_NOTICE:      // 出卡通知
             dacSet(DATA_quka,SOUND_LENGTH_quka);
-            copyStatusMsg (pRxMessage->Data[1], 0xfe, 0, 12, 4);
             copyMenu (pRxMessage->Data[1], CARD_SPIT_NOTICE, 0, 7, 4);
-            //OSTimeDly ( 2000, OS_OPT_TIME_DLY, & err );
+            copyStatusMsg (pRxMessage->Data[1], 0xfe, 0, 12, 4);            //
+
             break;
         case CARD_TAKE_AWAY_NOTICE: // 卡已被取走通知
             dacSet(DATA_xiexie,SOUND_LENGTH_xiexie);
-            copyStatusMsg (pRxMessage->Data[1], 0xfe, 0, 12, 4);
             copyMenu (pRxMessage->Data[1], CARD_TAKE_AWAY_NOTICE, 0, 7, 4);
-            //OSTimeDly ( 2500, OS_OPT_TIME_DLY, & err );
+            copyStatusMsg (pRxMessage->Data[1], 0xfe, 0, 12, 4);
             break;
         case CARD_IS_READY:
-            copyStatusMsg (pRxMessage->Data[1], 0xfe, 0, 14, 2);
             copyMenu (pRxMessage->Data[1], CARD_IS_READY, 0, 7, 6);
+            copyStatusMsg (pRxMessage->Data[1], 0xfe, 0, 13, 3);
             break;
         case SERCH_CARD_MECHINE_ACK:// 查询卡机的回复
             g_usCurID = pRxMessage->Data[5] << 8 | pRxMessage->Data[6];
