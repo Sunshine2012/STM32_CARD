@@ -98,64 +98,65 @@ void I2C_Configuration(void)
   */
 void I2C_WriteByte(uint8_t addr,uint8_t data)
 {
-    IICTimeout = IICT_FLAG_TIMEOUT;
+    IICTimeout = IICT_LONG_TIMEOUT;
     while(I2C_GetFlagStatus(I2C1, I2C_FLAG_BUSY))
     {
         if ((IICTimeout--) == 0) // 超时退出
         {
            IIC_TIMEOUT_UserCallback(0);
-           break;
+           goto fault;
         }
     }
 
     I2C_GenerateSTART(I2C1, ENABLE);//开启I2C1
 
-    IICTimeout = IICT_FLAG_TIMEOUT;
+    IICTimeout = IICT_LONG_TIMEOUT;
     while(!I2C_CheckEvent(I2C1, I2C_EVENT_MASTER_MODE_SELECT))/*EV5,主模式*/
     {
         if ((IICTimeout--) == 0)
         {
            IIC_TIMEOUT_UserCallback(0);
-           break;
+           goto fault;
         }
     }
 
     I2C_Send7bitAddress(I2C1, OLED_ADDRESS, I2C_Direction_Transmitter);//器件地址 -- 默认0x78
 
-    IICTimeout = IICT_FLAG_TIMEOUT;
+    IICTimeout = IICT_LONG_TIMEOUT;
     while(!I2C_CheckEvent(I2C1, I2C_EVENT_MASTER_TRANSMITTER_MODE_SELECTED))
     {
         if ((IICTimeout--) == 0)
         {
            IIC_TIMEOUT_UserCallback(0);
-           break;
+           goto fault;
         }
     }
 
     I2C_SendData(I2C1, addr);//寄存器地址
 
-    IICTimeout = IICT_FLAG_TIMEOUT;
+    IICTimeout = IICT_LONG_TIMEOUT;
     while (!I2C_CheckEvent(I2C1, I2C_EVENT_MASTER_BYTE_TRANSMITTED))
     {
         if ((IICTimeout--) == 0)
         {
            IIC_TIMEOUT_UserCallback(0);
-           break;
+           goto fault;
         }
     }
 
     I2C_SendData(I2C1, data);//发送数据
 
-    IICTimeout = IICT_FLAG_TIMEOUT;
+    IICTimeout = IICT_LONG_TIMEOUT;
     while (!I2C_CheckEvent(I2C1, I2C_EVENT_MASTER_BYTE_TRANSMITTED))
     {
         if ((IICTimeout--) == 0)
         {
            IIC_TIMEOUT_UserCallback(0);
-           break;
+           goto fault;
         }
     }
 
+fault:
     I2C_GenerateSTOP(I2C1, ENABLE);//关闭I2C1总线
 }
 

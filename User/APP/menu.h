@@ -5,23 +5,26 @@
 // dlg ID
 typedef enum DLG_ID
 {
-    DLG_LOGO                     = 0x00,                 /*  */
-    DLG_STATUS                   = 0x01,                 /*  */
-    DLG_MAIN                     = 0x02,                 /*  */
-    DLG_PASS                     = 0x03,                 /*  */
-    DLG_CARD_ID                  = 0x04,                 /*  */
-    DLG_SET_WORKING              = 0x05,                 /*  */
+    DLG_CLEAR_LCD                = 0,
+    DLG_LOGO                     = 1,                 /*  */
+    DLG_STATUS                   = 2,                 /*  */
+    DLG_MAIN                     = 3,                 /*  */
+    DLG_PASS                     = 4,                 /*  */
+    DLG_CARD_ID                  = 5,                 /*  */
+    DLG_WORKING_SET              = 6,                 /*  */
 
-    DLG_CARD_MAIN                = 0x10,                 /*  */
-    DLG_STATUS_ONE               = 0x11,                 /*  */
-    DLG_STATUS_TWO               = 0x12,                 /*  */
+    DLG_CARD_MAIN                = 20,                 /*  */
+    DLG_STATUS_ONE               = 21,                 /*  */
+    DLG_STATUS_TWO               = 22,                 /*  */
 
-    DLG_DEBUG_MAIN               = 0x20,                 /*  */
-    DLG_DEBUG_ONE                = 0x21,                 /*  */
-    DLG_DEBUG_TWO                = 0x22,                 /*  */
-    DLG_DEBUG_THREE              = 0x23,                 /*  */
+    DLG_CARD_COUNT_SET           = 30,                 /*  */
 
-    DLG_FAULT_CODE               = 0x24,                 /*  */
+    DLG_DEBUG_MAIN               = 40,                 /*  */
+    DLG_DEBUG_ONE                = 41,                 /*  */
+    DLG_DEBUG_TWO                = 42,                 /*  */
+    DLG_DEBUG_THREE              = 43,                 /*  */
+
+    DLG_FAULT_CODE               = 60,                 /* 故障码 */
 
 }DLG_ID;
 
@@ -41,9 +44,9 @@ extern unsigned short g_usDownWorkingID;     // 下工位工作卡机ID
 extern unsigned short g_usDownBackingID;     // 下工位备用卡机ID
 
 
-
 void doShowStatusMenu (unsigned char dlg_id, unsigned char isNotRow, void * p_parm);
 void doShowMainMenu (unsigned char dlg_id, unsigned char isNotRow, void * p_parm);
+void doShowCardCountSet (unsigned char dlg_id, unsigned char isNotRow, void * p_parm);
 void doShowStatusOne (unsigned char dlg_id, unsigned char isNotRow, void * p_parm);
 void doShowStatusTwo (unsigned char dlg_id, unsigned char isNotRow, void * p_parm);
 void doShowIdSetMenu (unsigned char dlg_id, unsigned char isNotRow, void * p_parm);

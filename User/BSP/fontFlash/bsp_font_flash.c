@@ -117,56 +117,6 @@ void FONT_SPI_FLASH_BufferRead(u8* pBuffer, u32 ReadAddr, u16 NumByteToRead)
     FONT_SPI_FLASH_CS_HIGH();
 }
 
-
-
-/******************************************************************/
-void display_GB2312_string(u8 x, u8 y, unsigned char *text, unsigned char isTurn)
-{
-    u8 i = 0;
-    u8 fontbuf[32] = {0};
-    u32 fontaddr = 0;
-    while ((text[i] > 0x00) && i < 16)
-    {
-        if ( ( ( text[i] >= 0xb0 ) && ( text[i] <= 0xf7 ) ) && ( text[i+1] >= 0xa1 ) )
-        {
-            /*国标简体（GB2312）汉字在晶联讯字库 IC 中的地址由以下公式来计算：*/
-            /*Address = ((MSB - 0xB0) * 94 + (LSB - 0xA1)+ 846)*32 + BaseAdd;BaseAdd=0*/
-            fontaddr = ( ( text[i] - 0xb0 ) * 94 + ( text[i + 1] - 0xa1 ) + 846 ) * 32;
-            //get_n_bytes_data_from_ROM(addrHigh,addrMid,addrLow,fontbuf,32 );      /*取 32 个字节的数据，存到"fontbuf[32]"*/
-            FONT_SPI_FLASH_BufferRead(fontbuf, fontaddr, sizeof (fontbuf) );        /*取 32 个字节的数据，存到"fontbuf[32]"*/
-            //display_graphic_16x16(y,x,fontbuf);                                   /*显示汉字到 LCD 上，y 为页地址，x 为列地址，fontbuf[]为数据*/
-            OLED_xShowCN(x, y, fontbuf, isTurn);
-            i += 2;
-            x += 16;
-        }
-        else if ( ( ( text[i] >= 0xa1 ) && ( text[i] <= 0xa3 ) ) && ( text[i+1] >= 0xa1 ) )
-        {
-            /*国标简体（GB2312）15x16 点的字符在晶联讯字库 IC 中的地址由以下公式来计算：*/
-            /*Address = ((MSB - 0xa1) * 94 + (LSB - 0xA1))*32+ BaseAdd;BaseAdd=0*/
-            fontaddr = (( text[i]- 0xa1 ) * 94 + ( text[i + 1] - 0xa1)) * 32;
-            FONT_SPI_FLASH_BufferRead(fontbuf, fontaddr, sizeof (fontbuf) );        /*取 32 个字节的数据，存到"fontbuf[32]"*/
-            OLED_xShowCN(x, y, fontbuf, isTurn);
-            i += 2;
-            x += 16;
-        }
-        else if ((text[i]>=0x20) &&(text[i]<=0x7e))
-        {
-            unsigned char fontbuf[16];
-            fontaddr = (( text[i] - 0x20) * 16) + 0x3cf80;             //0x3b7c0
-            FONT_SPI_FLASH_BufferRead( fontbuf, fontaddr, 16 );        /*取 16 个字节的数据，存到"fontbuf[32]"*/
-            OLED_xShowEN(x, y, fontbuf , isTurn);
-            i += 1;
-            x += 8;
-        }
-        else
-            i++;
-    }
-}
-
-
-
-
-
 /**
  * @brief  使用SPI读取一个字节的数据
  * @param  无
@@ -217,5 +167,71 @@ static  uint16_t SPI_TIMEOUT_UserCallback(uint8_t errorCode)
     FONT_FLASH_ERROR("SPI 等待超时!errorCode = %d",errorCode);
     return 0;
 }
+
+/**
+ * @brief  在LCD上指定位置显示一行字符串
+ * @param  x:水平起始位置(0~128);y垂直起始位置(0~8);text:指向显示字符串的首地址;isTurn:是否反显
+ * @retval 无
+ */
+void display_GB2312_string(u8 x, u8 y, unsigned char *text, unsigned char isTurn)
+{
+    u8 i = 0;
+    u8 fontbuf[32] = {0};
+    u32 fontaddr = 0;
+    while ((text[i] > 0x00) && i < 16)
+    {
+        if ( ( ( text[i] >= 0xb0 ) && ( text[i] <= 0xf7 ) ) && ( text[i+1] >= 0xa1 ) )
+        {
+            /*国标简体（GB2312）汉字在晶联讯字库 IC 中的地址由以下公式来计算：*/
+            /*Address = ((MSB - 0xB0) * 94 + (LSB - 0xA1)+ 846)*32 + BaseAdd;BaseAdd=0*/
+            fontaddr = ( ( text[i] - 0xb0 ) * 94 + ( text[i + 1] - 0xa1 ) + 846 ) * 32;
+            //get_n_bytes_data_from_ROM(addrHigh,addrMid,addrLow,fontbuf,32 );      /*取 32 个字节的数据，存到"fontbuf[32]"*/
+            FONT_SPI_FLASH_BufferRead(fontbuf, fontaddr, sizeof (fontbuf) );        /*取 32 个字节的数据，存到"fontbuf[32]"*/
+            //display_graphic_16x16(y,x,fontbuf);                                   /*显示汉字到 LCD 上，y 为页地址，x 为列地址，fontbuf[]为数据*/
+            OLED_xShowCN(x, y, fontbuf, isTurn);
+            i += 2;
+            x += 16;
+        }
+        else if ( ( ( text[i] >= 0xa1 ) && ( text[i] <= 0xa3 ) ) && ( text[i+1] >= 0xa1 ) )
+        {
+            /*国标简体（GB2312）15x16 点的字符在晶联讯字库 IC 中的地址由以下公式来计算：*/
+            /*Address = ((MSB - 0xa1) * 94 + (LSB - 0xA1))*32+ BaseAdd;BaseAdd=0*/
+            fontaddr = (( text[i]- 0xa1 ) * 94 + ( text[i + 1] - 0xa1)) * 32;
+            FONT_SPI_FLASH_BufferRead(fontbuf, fontaddr, sizeof (fontbuf) );        /*取 32 个字节的数据，存到"fontbuf[32]"*/
+            OLED_xShowCN(x, y, fontbuf, isTurn);
+            i += 2;
+            x += 16;
+        }
+        else if ((text[i]>=0x20) &&(text[i]<=0x7e))
+        {
+            unsigned char fontbuf[16];
+            fontaddr = (( text[i] - 0x20) * 16) + 0x3cf80;             //0x3b7c0
+            FONT_SPI_FLASH_BufferRead( fontbuf, fontaddr, 16 );        /*取 16 个字节的数据，存到"fontbuf[32]"*/
+            OLED_xShowEN(x, y, fontbuf , isTurn);
+            i += 1;
+            x += 8;
+        }
+        else
+            i++;
+    }
+}
+
+/**
+ * @brief  在LCD上指定位置显示一个半角字符
+ * @param  x:水平起始位置(0~128);y垂直起始位置(0~8);uchar:显示的字符;isTurn:是否反显
+ * @retval 无
+ */
+
+/******************************************************************/
+void display_GB2312_char(u8 x, u8 y, unsigned char uchar, unsigned char isTurn)
+{
+    u32 fontaddr = 0;
+    unsigned char fontbuf[16];
+    fontaddr = (( uchar - 0x20) * 16) + 0x3cf80;             //0x3b7c0
+    FONT_SPI_FLASH_BufferRead( fontbuf, fontaddr, 16 );        /*取 16 个字节的数据，存到"fontbuf[32]"*/
+    OLED_xShowEN(x, y, fontbuf , isTurn);
+}
+
+
 
 /*********************************************END OF FILE**********************/

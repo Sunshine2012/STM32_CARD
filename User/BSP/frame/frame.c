@@ -3,6 +3,12 @@
 #include "WAV_C_xiexie.h"
 #include "WAV_C_quka.h"
 
+unsigned char  g_ucDeviceIsReady    = 1;                  // 两个卡机处于待机状态下,按键按下,主机收到两条按键信息,此时只处理主机的,如果只收到一条按键信息,则直接发卡
+
+unsigned short g_usaInitCardCount[5]    = {9999, 9998, 9997, 9996, 9995};    // 卡初始设置值,[0]为总卡数量,发1张卡,减1,[1~4]为每个卡机初始卡数量,发1张卡,减1.
+unsigned short g_usaSpitCardCount[5]    = {0, 0, 0, 0, 0};    // 出卡数量,[0]为出卡总数量,发1张卡,加1,[1~4]为每个卡机发卡数量,发1张卡,加1.
+
+
 CPU_INT08U g_ucSerNum = '0';  // 帧序号   全局
 
 RSCTL_FREME g_tP_RsctlFrame = {'<','0','0','>'};        // 正应答帧
@@ -98,7 +104,7 @@ const Print_msg g_taShowStatus_msg[] = {
                             {0xfe,                          "    "},
                             {0xff,NULL}
                         };
-const Print_msg g_taShowWarning_msg[] = {
+const Print_msg g_taShowFaultCode_msg[] = {
                             {0,                             "NULL"},
                             {CARD_IS_OK,                    "好卡"},
                             {CARD_IS_BAD,                   "坏卡"},
@@ -137,16 +143,30 @@ void copyStatusMsg (CPU_INT08U num, CPU_INT08U cmd, CPU_INT08U values, CPU_INT08
 }
 
 // 复制要显示的菜单数据到数组中
-void copyWarningMsg (CPU_INT08U num, CPU_INT08U cmd, CPU_INT08U values, CPU_INT08U addr, CPU_INT08U count)
+void copyFaultMsg (CPU_INT08U num, CPU_INT08U cmd, CPU_INT08U values, CPU_INT08U addr, CPU_INT08U count)
 {
     CPU_INT08U *str_id = CheckShowStatusMsg(cmd);
     unsigned char i, n;
     //strcpy() = CheckShowMsg(id);
-    n = check_menu (DLG_STATUS);
+    n = check_menu (DLG_FAULT_CODE);
     for (i = 0; i < count; i++)
     {
         g_dlg[n].MsgRow[num - 1][i + addr] = str_id[i];
     }
+}
+
+// 找到打印的字符串，并返回其首地址
+CPU_INT08U * CheckShowFaultCode (CPU_INT08U ch)
+{
+    CPU_INT08U i = 0;
+    for (i = 0; i < (sizeof (g_taShowFaultCode_msg) / sizeof (g_taShowFaultCode_msg[0])); i++)
+    {
+        if(g_taShowFaultCode_msg[i].CTL == ch)
+        {
+            return (CPU_INT08U *)g_taShowFaultCode_msg[i].Msg;
+        }
+    }
+    return (CPU_INT08U *)g_taShowFaultCode_msg[0].Msg;
 }
 
 // 找到打印的字符串，并返回其首地址
@@ -208,9 +228,19 @@ CPU_INT08U  AnalyzeCANFrame ( void * p_arg )
             printf ("%s\n",(char *)&g_tCardKeyPressFrame);
             copyMenu (pRxMessage->Data[1], MACHINE_CHECK_CARD, 0, 7, 4);
             copyStatusMsg (pRxMessage->Data[1], (count++) % 10 ? CARD_IS_OK : CARD_IS_BAD, 0, 12, 4);
+            if (!(count++) % 10)
+            {
+                g_ucDeviceIsReady = 1;          // 如果为坏卡，则将清除标志，等待再次上报按键信息
+            }
             myCANTransmit(&gt_TxMessage, pRxMessage->Data[1], pRxMessage->Data[2], MACHINE_STATUES, (count) % 10 ? CARD_IS_OK : CARD_IS_BAD, 0, 0, NO_FAIL);
             break;
         case KEY_PRESS:             // 司机已按键
+            if (g_ucDeviceIsReady != 1)     // 如果卡没有被取走，按键不响应,直接退出
+            {
+                // myCANTransmit(&gt_TxMessage, pRxMessage->Data[1], pRxMessage->Data[2], KEY_PRESS, NO_FAIL, NO_FAIL, NO_FAIL, NO_FAIL);
+                return 0;
+            }
+            g_ucDeviceIsReady = 0;      // 按键发卡流程开始之后，再次
             DEBUG_printf ("%s\r\n",(char *)CheckPriMsg(CARD_KEY_PRESS));
             if (pRxMessage->Data[2] == 1)
             {
@@ -283,8 +313,8 @@ CPU_INT08U  AnalyzeCANFrame ( void * p_arg )
             if (pRxMessage->Data[4] == 0x10) // 如果设备为运行态且有卡
             {
               myCANTransmit(&gt_TxMessage, pRxMessage->Data[1], pRxMessage->Data[2], WRITE_CARD_STATUS, CARD_IS_OK, 0, 0, NO_FAIL);
-              copyMenu (pRxMessage->Data[1], MACHINE_CHECK_CARD, 0, 7, 4);
-              copyStatusMsg (pRxMessage->Data[1], (count++) % 10 ? CARD_IS_OK : CARD_IS_BAD, 0, 12, 4);
+              copyMenu (pRxMessage->Data[1], KEY_PRESS, 0, 7, 4);
+              // copyStatusMsg (pRxMessage->Data[1], (count++) % 10 ? CARD_IS_OK : CARD_IS_BAD, 0, 12, 4);
             }
             printf ("%s\n",(char *)&g_tCardKeyPressFrame);
             break;
@@ -295,6 +325,7 @@ CPU_INT08U  AnalyzeCANFrame ( void * p_arg )
 
             break;
         case CARD_TAKE_AWAY_NOTICE: // 卡已被取走通知
+            g_ucDeviceIsReady = 1;
             dacSet(DATA_xiexie,SOUND_LENGTH_xiexie);
             copyMenu (pRxMessage->Data[1], CARD_TAKE_AWAY_NOTICE, 0, 7, 4);
             copyStatusMsg (pRxMessage->Data[1], 0xfe, 0, 12, 4);

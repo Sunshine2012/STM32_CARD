@@ -100,7 +100,7 @@ void FONT_SPI_FLASH_BufferRead(u8* pBuffer, u32 ReadAddr, u16 NumByteToRead);
 u8 FONT_SPI_FLASH_ReadByte(void);
 u8 FONT_SPI_FLASH_SendByte(u8 byte);
 void display_GB2312_string(u8 x, u8 y, unsigned char *text, unsigned char isTurn);
-
+void display_GB2312_char(u8 x, u8 y, unsigned char uchar, unsigned char isTurn);
 
 #endif /* __FONT_SPI_FLASH_H */
 

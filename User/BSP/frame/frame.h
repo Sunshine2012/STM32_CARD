@@ -305,6 +305,10 @@ extern PC_TO_CARD_MECHINE_FRAME         g_tPcQuetyCardMechineFrame;         /* ²
 extern PC_TO_CARD_MECHINE_FRAME         g_tPcQuetyCardCpipFrame;            /* ²éÑ¯¿¨¼Ğ(66H)Ö¡              5×Ö½Ú */
 extern PC_SET_CARD_NUM_FRAME            g_tPcSetCardNumFrame;               /* ÉèÖÃ¿¨¼Ğ¿¨Êı(67H)Ö¡          8×Ö½Ú */
 
+extern unsigned char  g_ucDeviceIsReady;        // Á½¸ö¿¨»ú´¦ÓÚ´ı»ú×´Ì¬ÏÂ,°´¼ü°´ÏÂ,Ö÷»úÊÕµ½°´¼üĞÅÏ¢·¢¿¨,Ö»ÒªÓĞ¿¨Ã»ÓĞ±»È¡×ß,¼´Ê¹ÊÕµ½°´¼üĞÅÏ¢,Ò²²»ÔÙ·¢¿¨.
+extern unsigned short g_usaInitCardCount[5];    // ¿¨³õÊ¼ÉèÖÃÖµ,[0]Îª×Ü¿¨ÊıÁ¿,·¢1ÕÅ¿¨,¼õ1,[1~4]ÎªÃ¿¸ö¿¨»ú³õÊ¼¿¨ÊıÁ¿,·¢1ÕÅ¿¨,¼õ1.
+extern unsigned short g_usaSpitCardCount[5];    // ³ö¿¨ÊıÁ¿,[0]Îª³ö¿¨×ÜÊıÁ¿,·¢1ÕÅ¿¨,¼Ó1,[1~4]ÎªÃ¿¸ö¿¨»ú·¢¿¨ÊıÁ¿,·¢1ÕÅ¿¨,¼Ó1.
+
 CPU_INT08U  AnalyzeCANFrame ( void * p_arg );
 CPU_INT08U  AnalyzeUartFrame ( void * p_arg );
 CPU_INT08U * CheckShowStatusMsg (CPU_INT08U ch);

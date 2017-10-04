@@ -395,7 +395,7 @@ static  void AppTaskOLED ( void * p_arg )
 
         if ( key == KEY_ENTRY )
         {
-            doShowMainMenu (DLG_MAIN, 1, NULL);       // 进入设置状态,阻塞,直到退出
+            doShowMainMenu (DLG_MAIN, 0, NULL);       // 进入设置状态,阻塞,直到退出
             g_ucIsUpdateMenu = 1;
         }
 

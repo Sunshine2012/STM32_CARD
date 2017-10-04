@@ -2,9 +2,9 @@
 #define __BSP_MATRIX_KEY_H_
 
 #include "stm32f10x.h"
-//#define OLD_KEY   1
+#define OLD_KEY   1
 //#define NEW_KEY   1  /* 新按键 */
-#define NEW_BOARD_NEW_KEY  1   /* 新板新按键 */
+//#define NEW_BOARD_NEW_KEY  1   /* 新板新按键 */
 
 #ifdef OLD_KEY
 
