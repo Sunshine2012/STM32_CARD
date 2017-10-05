@@ -173,6 +173,7 @@ typedef enum CMD
     YUETONG_CARD_HAS_READ   = 0x14,                 /* 粤通卡已读卡通知  */
     SEARCH_CARD_MECHINE     = 0x15,                 /* 搜索询问卡机号和ID码  */
     SET_CARD_COUNT          = 0x16,                 /* 设置IC卡数量  */
+    CLEAR_FAULT_CODE        = 0x17,                 /* 清除报警  */
 
     // 20H--2FH：卡机板发送至主机板信息命令
     MACHINE_CHECK_CARD      = 0x21,                 /* 指定工位验卡 */
@@ -269,6 +270,7 @@ typedef enum CARD_AND_MECHINE_STATUS
 // 故障码：00--无故障
 typedef enum FAULT_CODE
 {
+#if 0
     NO_FAIL                     = 0x00,                 /*  */
     CAN_IS_FAIL                 = 0x01,                 /* CAN总线故障 */
     OUT_CARD_ELE_MOTOR_FAIL     = 0x02,                 /* 出卡电机故障 */
@@ -282,6 +284,19 @@ typedef enum FAULT_CODE
     TURN_CARD_FAIL              = 0x0a,                 /* 翻卡失败(卡在卡盒中出不来) */
     RS232_FAIL                  = 0x0b,                 /* RS232通信故障 */
     ULTRASONIC_FAIL             = 0x0c,                 /* 雷达测距故障 */
+#endif
+    NO_FAIL                     = 0x00,                 /* 无故障 */
+    FAULT_CODE01                = 0x01,                 /* 初始化勾卡电机不能回位 */
+    FAULT_CODE02                = 0x02,                 /* 初始化翻卡电机反转不能回位 */
+    FAULT_CODE03                = 0x03,                 /* 初始化翻卡电机正转不能回位 */
+    FAULT_CODE04                = 0x04,                 /* 工作时勾卡电机向前堵转 */
+    FAULT_CODE05                = 0x05,                 /* 工作时勾卡电机向后堵转 */
+    FAULT_CODE06                = 0x06,                 /* 工作时翻卡电机前翻堵转 */
+    FAULT_CODE07                = 0x07,                 /* 工作时翻卡电机前翻回程堵转 */
+    FAULT_CODE08                = 0x08,                 /* 工作时翻卡电机反翻堵转 */
+    FAULT_CODE09                = 0x09,                 /* 工作时翻卡电机发翻回程堵转 */
+
+    CLEAR_FAULT                 = 0x21
 
 }FAULT_CODE;
 

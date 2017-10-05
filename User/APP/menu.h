@@ -36,12 +36,14 @@ typedef struct Dlg
 }Dlg;
 
 extern Dlg           g_dlg[];
+extern Dlg g_dlg_fault_code[];
 extern unsigned char g_ucCurDlg;            // 当前显示的菜单ID
 extern unsigned short g_usCurID;            // 当前通信设备的ID,在设置设备ID时候使用
 extern unsigned short g_usUpWorkingID;       // 上工位工作卡机ID
 extern unsigned short g_usUpBackingID;       // 上工位备用卡机ID
 extern unsigned short g_usDownWorkingID;     // 下工位工作卡机ID
 extern unsigned short g_usDownBackingID;     // 下工位备用卡机ID
+extern unsigned char  g_ucaFaultCode[4][10];       // 卡机是否有未处理的故障
 
 
 void doShowStatusMenu (unsigned char dlg_id, unsigned char isNotRow, void * p_parm);
@@ -54,6 +56,8 @@ void doShowWorkingSet (unsigned char dlg_id, unsigned char isNotRow, void * p_pa
 void doShowDebugMain (unsigned char dlg_id, unsigned char isNotRow, void * p_parm);
 void doShowDebugOne (unsigned char dlg_id, unsigned char isNotRow, void * p_parm);
 void doShowDebugTwo (unsigned char dlg_id, unsigned char isNotRow, void * p_parm);
+void doShowFaultCode (unsigned char dlg_id, unsigned char isNotRow, void * p_parm);
+
 unsigned char check_menu(unsigned char ch);
 
 #endif

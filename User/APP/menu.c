@@ -7,7 +7,7 @@ unsigned short g_usUpWorkingID      = 0x7811;       // 上工位工作卡机ID
 unsigned short g_usUpBackingID      = 0x7812;       // 上工位备用卡机ID
 unsigned short g_usDownWorkingID    = 0x7813;       // 下工位工作卡机ID
 unsigned short g_usDownBackingID    = 0x7814;       // 下工位备用卡机ID
-
+unsigned char  g_ucaFaultCode[4][10]   = {0};       // 卡机是否有未处理的故障
 
 Dlg g_dlg[] = {
                         {DLG_CLEAR_LCD,      "                ", "                ", "                ", "                "},
@@ -30,6 +30,21 @@ Dlg g_dlg[] = {
                         {DLG_FAULT_CODE,     "    号卡机故障  ", "故障码:         ", "说明:           ", "                "},
 
                      };
+Dlg g_dlg_fault_code[] = {
+                        {DLG_CLEAR_LCD,      "                ", "                ", "                ", "                "},
+
+                        {FAULT_CODE01,       "    号卡机故障  ", "故障码:(01H)    ", "说明: 初始化勾卡", "电机不能回位    "},
+                        {FAULT_CODE02,       "    号卡机故障  ", "故障码:(02H)    ", "说明: 初始化翻卡", "电机反转不能回位"},
+                        {FAULT_CODE03,       "    号卡机故障  ", "故障码:(03H)    ", "说明: 初始化翻卡", "电机正转不能回位"},
+                        {FAULT_CODE04,       "    号卡机故障  ", "故障码:(04H)    ", "说明: 工作时勾卡", "电机向前堵转    "},
+                        {FAULT_CODE05,       "    号卡机故障  ", "故障码:(05H)    ", "说明: 工作时勾卡", "电机向后堵转    "},
+                        {FAULT_CODE06,       "    号卡机故障  ", "故障码:(06H)    ", "说明: 工作时翻卡", "电机前翻堵转    "},
+                        {FAULT_CODE07,       "    号卡机故障  ", "故障码:(07H)    ", "说明: 工作时翻卡", "电机前翻回程堵转"},
+                        {FAULT_CODE08,       "    号卡机故障  ", "故障码:(08H)    ", "说明: 工作时翻卡", "电机反翻堵转    "},
+                        {FAULT_CODE09,       "    号卡机故障  ", "故障码:(09H)    ", "说明: 工作时翻卡", "电机反翻回程堵转"},
+                        {255,      "                ", "                ", "                ", "                "},
+                     };
+
 // 找到显示的菜单ID,并返回其在数组中的索引
 unsigned char check_menu(unsigned char ch)
 {
@@ -987,3 +1002,62 @@ void doShowDebugTwo (unsigned char dlg_id, unsigned char isNotRow, void * p_parm
     }
 }
 
+
+// 显示故障码,如果有一行需要反显示,则设置当前行反显示,传递参数地址
+void doShowFaultCode (unsigned char dlg_id, unsigned char isNotRow, void * p_parm)
+{
+    OS_ERR      err;
+    unsigned char i = 0;
+    unsigned char j = 0;
+    unsigned char n = 0;
+    unsigned char dlgId = check_menu(dlg_id);
+    unsigned char key = KEY_NUL;
+    unsigned char num = 1;      // 卡机号
+    unsigned char str_num[5] = {0};
+    unsigned char str_id[5] = {0};
+    unsigned short id = 0x7810 | num;       // CAN通信的ID
+    unsigned char id_h = ( id >> 8 ) & 0xff;                // CAN通信的ID高字节
+    unsigned char id_l = id & 0xff;                         // CAN通信的ID低字节
+    for (i = 0; i < 4; i++)
+    {
+        display_GB2312_string (0, i * 2, g_dlg_fault_code[0].MsgRow[i], i == isNotRow ? 1 : 0);
+    }
+
+    for (i = 0; i < 4; i++)
+    {
+        for (j = 0; j < 10; j++)        // 每个卡机定义了数组长度为10的故障缓存,即g_dlg_fault_code[][10]
+        {
+            if (g_ucaFaultCode[i][0] != 0 && g_ucaFaultCode[i][0] == g_dlg_fault_code[j].ID) // 查找故障码对应的显示界面
+            {
+                g_ucaFaultCode[i][0] = 0;
+                num = i + 1;        // 记住是哪个卡机有故障,以清除故障
+                sprintf(str_num,"%02d",num);
+                for (n = 0; n < 2; n++)
+                {
+                    g_dlg_fault_code[j].MsgRow[0][n + 1] = str_num[n];
+                }
+                for (n = 0; n < 4; n++)
+                {
+                    display_GB2312_string (0, n * 2, g_dlg_fault_code[j].MsgRow[n], 0);     // 显示故障界面
+                }
+            }
+        }
+    }
+    while (DEF_TRUE)
+    {                            //任务体,通常写成一个死循环
+        key = g_ucKeyValues;
+        switch (key)
+        {
+            case KEY_CANCEL:
+                myCANTransmit(&gt_TxMessage, num, NO_FAIL, CLEAR_FAULT_CODE, CLEAR_FAULT, NO_FAIL, NO_FAIL, NO_FAIL);
+                g_ucIsUpdateMenu = 1;
+                return;
+                break;
+            default:
+                break;
+        }
+
+        g_ucKeyValues = KEY_NUL;
+        OSTimeDly ( 10, OS_OPT_TIME_DLY, & err );     //不断阻塞该任务
+    }
+}
