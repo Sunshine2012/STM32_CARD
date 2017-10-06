@@ -16,6 +16,7 @@ void  GENERAL_TIM_IRQHandler (void)
         time++;
         if (time == 3000)
         {
+            time = 0;
             g_ucDeviceIsReady = 1;
             TIM_ITConfig(GENERAL_TIM,TIM_IT_Update,DISABLE);            // πÿ±’÷–∂œ
         }

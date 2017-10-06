@@ -351,7 +351,7 @@
               <MiscControls></MiscControls>
               <Define>STM32F10X_HD,USE_STDPERIPH_DRIVER,OLED,uart4</Define>
               <Undefine></Undefine>
-              <IncludePath>..\..\Libraries\CMSIS;..\..\Libraries\FWlib\inc;..\..\User;..\..\User\APP;..\..\User\BSP;..\..\User\BSP\led;..\..\User\BSP\usart1;..\..\User\uC-CPU;..\..\User\uC-CPU\ARM-Cortex-M3\RealView;..\..\User\uC-LIB;..\..\User\uCOS-III\Source;..\..\User\uCOS-III\Ports\ARM-Cortex-M3\Generic\RealView;..\..\User\BSP\lcd;..\..\User\BSP\frame;..\..\User\BSP\usart4;..\..\User\BSP\can;..\..\User\BSP\flash;..\..\User\BSP\fontFlash;..\..\User\BSP\dacVoice;..\..\User\BSP\Key</IncludePath>
+              <IncludePath>..\..\Libraries\CMSIS;..\..\Libraries\FWlib\inc;..\..\User;..\..\User\APP;..\..\User\BSP;..\..\User\BSP\led;..\..\User\BSP\usart1;..\..\User\uC-CPU;..\..\User\uC-CPU\ARM-Cortex-M3\RealView;..\..\User\uC-LIB;..\..\User\uCOS-III\Source;..\..\User\uCOS-III\Ports\ARM-Cortex-M3\Generic\RealView;..\..\User\BSP\lcd;..\..\User\BSP\frame;..\..\User\BSP\usart4;..\..\User\BSP\can;..\..\User\BSP\flash;..\..\User\BSP\fontFlash;..\..\User\BSP\dacVoice;..\..\User\BSP\Key;..\..\User\BSP\generalTim</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -871,6 +871,11 @@
               <FileName>bsp_matrix_key.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\..\User\BSP\Key\bsp_matrix_key.c</FilePath>
+            </File>
+            <File>
+              <FileName>bsp_GeneralTim.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\User\BSP\generalTim\bsp_GeneralTim.c</FilePath>
             </File>
           </Files>
         </Group>
