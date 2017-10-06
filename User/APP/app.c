@@ -385,22 +385,20 @@ static  void AppTaskOLED ( void * p_arg )
                             (OS_ERR        *)&err);                //返回错误类型
         */
 
-        if (g_ucaFaultCode[0][0] != 0 || g_ucaFaultCode[1][0] != 0 || g_ucaFaultCode[2][0] != 0 || g_ucaFaultCode[3][0] != 0)
-        {
-            doShowFaultCode (DLG_CLEAR_LCD, 5, NULL);
-        }
-
         if (g_ucIsUpdateMenu || g_ucKeyValues == KEY_QUIT)
         {
             g_ucIsUpdateMenu = 0;
             g_ucKeyValues = KEY_NUL;
             doShowStatusMenu(DLG_STATUS, 5, NULL);      // 显示菜单,需要反显示的行号
         }
+
+        if (g_ucaFaultCode[0][0] != 0 || g_ucaFaultCode[1][0] != 0 || g_ucaFaultCode[2][0] != 0 || g_ucaFaultCode[3][0] != 0)
+        {
+            doShowFaultCode (DLG_CLEAR_LCD, 5, NULL);
+        }
+
         key = g_ucKeyValues;
         g_ucKeyValues = KEY_NUL;
-
-
-
         if ( key == KEY_ENTRY )
         {
             doShowMainMenu (DLG_MAIN, 0, NULL);       // 进入设置状态,阻塞,直到退出

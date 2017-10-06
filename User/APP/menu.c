@@ -42,7 +42,9 @@ Dlg g_dlg_fault_code[] = {
                         {FAULT_CODE07,       "    号卡机故障  ", "故障码:(07H)    ", "说明: 工作时翻卡", "电机前翻回程堵转"},
                         {FAULT_CODE08,       "    号卡机故障  ", "故障码:(08H)    ", "说明: 工作时翻卡", "电机反翻堵转    "},
                         {FAULT_CODE09,       "    号卡机故障  ", "故障码:(09H)    ", "说明: 工作时翻卡", "电机反翻回程堵转"},
-                        {255,      "                ", "                ", "                ", "                "},
+                        {FAULT_NO_CARD,      "    号卡机故障  ", "说明: 卡机中无卡", "请装载IC卡      ", "                "},
+                        {FAULT_BAD_CARD,     "    号卡机故障  ", "说明: 坏卡超数量", "请清理坏卡      ", "                "},
+                        {255,                "    未知故障    ", "故障码:(未知)   ", "                ", "                "},
                      };
 
 // 找到显示的菜单ID,并返回其在数组中的索引
@@ -976,7 +978,7 @@ void doShowDebugTwo (unsigned char dlg_id, unsigned char isNotRow, void * p_parm
                 return;
                 break;
             default:
-                g_ucKeyValues = KEY_NUL;
+                key = KEY_NUL;
                 break;
         }
         if (g_ucKeyContinu == 0xff)
@@ -1018,17 +1020,16 @@ void doShowFaultCode (unsigned char dlg_id, unsigned char isNotRow, void * p_par
     unsigned short id = 0x7810 | num;       // CAN通信的ID
     unsigned char id_h = ( id >> 8 ) & 0xff;                // CAN通信的ID高字节
     unsigned char id_l = id & 0xff;                         // CAN通信的ID低字节
+    unsigned char faultCodeIndex = 0;
+    unsigned char faultCode = 0;
     for (i = 0; i < 4; i++)
     {
-        display_GB2312_string (0, i * 2, g_dlg_fault_code[0].MsgRow[i], i == isNotRow ? 1 : 0);
-    }
-
-    for (i = 0; i < 4; i++)
-    {
-        for (j = 0; j < 10; j++)        // 每个卡机定义了数组长度为10的故障缓存,即g_dlg_fault_code[][10]
+        for (j = 0; j < (sizeof (g_dlg_fault_code) / sizeof (g_dlg_fault_code[0])); j++)
         {
             if (g_ucaFaultCode[i][0] != 0 && g_ucaFaultCode[i][0] == g_dlg_fault_code[j].ID) // 查找故障码对应的显示界面
             {
+                faultCode = g_ucaFaultCode[i][0];   // 记下当前的未处理的故障和卡机号
+                faultCodeIndex = i;
                 g_ucaFaultCode[i][0] = 0;
                 num = i + 1;        // 记住是哪个卡机有故障,以清除故障
                 sprintf(str_num,"%02d",num);
@@ -1040,15 +1041,31 @@ void doShowFaultCode (unsigned char dlg_id, unsigned char isNotRow, void * p_par
                 {
                     display_GB2312_string (0, n * 2, g_dlg_fault_code[j].MsgRow[n], 0);     // 显示故障界面
                 }
+                goto while_label;
             }
         }
     }
+/*
+    if (i == 4)
+    {
+        for (n = 0; n < 4; n++)
+        {
+            display_GB2312_string (0, n * 2, g_dlg_fault_code[12].MsgRow[n], 0);     // 显示故障界面
+        }
+    }
+*/
+while_label:
     while (DEF_TRUE)
     {                            //任务体,通常写成一个死循环
         key = g_ucKeyValues;
         switch (key)
         {
+            case KEY_ENTRY:     // 在故障码显示界面,按菜单键可以进入设置界面,且不清除按键值
+                g_ucaFaultCode[faultCodeIndex][0] = faultCode; // 保存当前未处理的故障,以免下次再次处理
+                return;
+                break;
             case KEY_CANCEL:
+                //g_ucaFaultCode[faultCodeIndex][0] = 0;
                 myCANTransmit(&gt_TxMessage, num, NO_FAIL, CLEAR_FAULT_CODE, CLEAR_FAULT, NO_FAIL, NO_FAIL, NO_FAIL);
                 g_ucIsUpdateMenu = 1;
                 return;

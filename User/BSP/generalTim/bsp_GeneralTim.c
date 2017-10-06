@@ -18,7 +18,7 @@ void  GENERAL_TIM_IRQHandler (void)
         {
             time = 0;
             g_ucDeviceIsReady = 1;
-            TIM_ITConfig(GENERAL_TIM,TIM_IT_Update,DISABLE);            // 关闭中断
+            //TIM_ITConfig(GENERAL_TIM,TIM_IT_Update,DISABLE);            // 关闭中断
         }
 
     }
