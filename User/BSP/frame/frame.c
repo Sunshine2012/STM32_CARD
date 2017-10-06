@@ -240,7 +240,8 @@ CPU_INT08U  AnalyzeCANFrame ( void * p_arg )
                 // myCANTransmit(&gt_TxMessage, pRxMessage->Data[1], pRxMessage->Data[2], KEY_PRESS, NO_FAIL, NO_FAIL, NO_FAIL, NO_FAIL);
                 return 0;
             }
-            g_ucDeviceIsReady = 0;      // 按键发卡流程开始之后，再次
+            g_ucDeviceIsReady = 0;      // 按键发卡流程开始之后，再次按键不再响应
+            GENERAL_TIM_Init ();
             DEBUG_printf ("%s\r\n",(char *)CheckPriMsg(CARD_KEY_PRESS));
             if (pRxMessage->Data[2] == 1)
             {
@@ -401,31 +402,31 @@ CPU_INT08U  AnalyzeUartFrame ( void * p_arg )
             case PC_INIT_MECHINE:               /* 初始化卡机信息(61H)帧 */
                 OLED_ShowStr(0,0,p_arg,1);
                 display_GB2312_string (0, 2, "初始化", 0);
-            break;
+                break;
             case PC_SPIT_OUT_CARD:              /* 出卡信息(62H)帧 */
                 OLED_ShowStr(0,0,p_arg,1);
                 display_GB2312_string (0, 2, "出卡信息", 0);
-            break;
+                break;
             case PC_BAD_CARD:                  /* 坏卡信息(63H)帧 */
                 OLED_ShowStr(0,0,p_arg,1);
                 display_GB2312_string (0, 2, "坏卡", 0);
-            break;
+                break;
             case PC_QUERY_CARD_MECHINE:         /* 查询卡机状态(65H)帧 */
                 OLED_ShowStr(0,0,p_arg,1);
                 display_GB2312_string (0, 2, "查询卡机", 0);
-            break;
+                break;
             case PC_QUERY_CARD_CLIP:
                 OLED_ShowStr(0,0,p_arg,1);   /* 查询卡夹(66H)帧 */
                 display_GB2312_string (0, 2, "查询卡夹", 0);
-            break;
+                break;
             case PC_SET_CARD_NUM:
                 OLED_ShowStr(0,0,p_arg,1);   /* 设置卡夹卡数(67H)帧 */
                 display_GB2312_string (0, 2, "设置卡夹", 0);
-            break;
+                break;
             default:
                 display_GB2312_string (0, 2, "无效信息", 0);
                 printf("错误信息帧！\n");
-            break;
+                break;
         }
     }
 

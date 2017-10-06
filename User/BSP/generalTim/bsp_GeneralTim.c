@@ -3,7 +3,7 @@
 
 uint32_t time = 0; // ms 计时变量
 /**
-  * @brief  This function handles TIM2 interrupt request.
+  * @brief  This function handles TIM interrupt request.
   * @param  None
   * @retval None
   */
@@ -12,10 +12,14 @@ void  GENERAL_TIM_IRQHandler (void)
     // 1ms中断一次
     if ( TIM_GetITStatus( GENERAL_TIM, TIM_IT_Update) != RESET )
     {
-        time++;
         TIM_ClearITPendingBit(GENERAL_TIM , TIM_FLAG_Update);       // 清中断
+        time++;
+        if (time == 3000)
+        {
+            g_ucDeviceIsReady = 1;
+            TIM_ITConfig(GENERAL_TIM,TIM_IT_Update,DISABLE);            // 关闭中断
+        }
 
-        TIM_ITConfig(GENERAL_TIM,TIM_IT_Update,DISABLE);            // 关闭中断
     }
 }
 
@@ -42,7 +46,7 @@ static void GENERAL_TIM_NVIC_Config(void)
 // *-----------------------------------------------------------------------------
 // *typedef struct
 // *{ TIM_Prescaler            都有
-// *    TIM_CounterMode              TIMx,x[6,7]没有，其他都有
+// *  TIM_CounterMode          TIMx,x[6,7]没有，其他都有
 // *  TIM_Period               都有
 // *  TIM_ClockDivision        TIMx,x[6,7]没有，其他都有
 // *  TIM_RepetitionCounter    TIMx,x[1,8,15,16,17]才有
