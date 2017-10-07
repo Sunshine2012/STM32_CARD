@@ -366,10 +366,6 @@ CPU_INT08U  AnalyzeCANFrame ( void * p_arg )
             {
                 g_ucaFaultCode[pRxMessage->Data[1] - 1][0] = FAULT_NO_CARD;
             }
-            else if (pRxMessage->Data[4] == 0x13)
-            {
-                g_ucaFaultCode[pRxMessage->Data[1] - 1][0] = FAULT_BAD_CARD;
-            }
             else if (pRxMessage->Data[4] == 0x21)
             {
                 g_ucaFaultCode[pRxMessage->Data[1] - 1][0] = pRxMessage->Data[7];

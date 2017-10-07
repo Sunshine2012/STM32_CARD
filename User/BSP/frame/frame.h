@@ -295,8 +295,10 @@ typedef enum FAULT_CODE
     FAULT_CODE07                = 0x07,                 /* 工作时翻卡电机前翻回程堵转 */
     FAULT_CODE08                = 0x08,                 /* 工作时翻卡电机反翻堵转 */
     FAULT_CODE09                = 0x09,                 /* 工作时翻卡电机发翻回程堵转 */
-    FAULT_NO_CARD               = 0x0a,                 /* 无卡 */
-    FAULT_BAD_CARD              = 0x0b,                 /* 坏卡 */
+    FAULT_CODE0A                = 0x0a,                 /* 工作时勾卡电机不转 */
+    FAULT_CODE0B                = 0x0b,                 /* 工作时翻卡电机不转 */
+    FAULT_CODE0C                = 0x0c,                 /* 通讯故障 */
+    FAULT_NO_CARD               = 0x0d,                 /* 无卡 */
 
     CLEAR_FAULT                 = 0x21
 
