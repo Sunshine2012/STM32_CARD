@@ -1,7 +1,8 @@
 #include <includes.h>
 #include "stm32f10x.h"
-
+#include "bsp_can.h"
 CanTxMsg gt_TxMessage;      // CAN发送数据缓存
+unsigned int g_uiSerNum = 0; // 帧序号,全局,卡机与主机之间的帧序号
 
 static void CAN_GPIO_Config(void)
 {
@@ -84,24 +85,17 @@ unsigned char myCANTransmit (void * p_Msg, unsigned char mechine_id, unsigned ch
                       unsigned char data_H, unsigned char data_L, unsigned char errNum)
 {
     u32 i = 0;
-    static u8 uCount = 0;
+    //static u8 uCount = 0;
     u8 TransmitMailbox;
     CanTxMsg *p_TxMessage = (CanTxMsg *)p_Msg;
     CanTxMsg TxMessage;
-    //CanRxMsg RxMessage;
     memset(p_TxMessage,0,sizeof (CanTxMsg));
-    /* transmit */
-    uCount++;
-    //if (uCount % 10 == 0 && CARD_IS_OK == status)
-    //{
-    //    status = CARD_IS_BAD;
-    //}
     p_TxMessage->StdId = 0x00;
     p_TxMessage->ExtId = 0x7810 | mechine_id;
     p_TxMessage->RTR = CAN_RTR_DATA;
     p_TxMessage->IDE = CAN_ID_EXT;;
     p_TxMessage->DLC = 8;
-    p_TxMessage->Data[0] = uCount;
+    p_TxMessage->Data[0] = g_uiSerNum;
     p_TxMessage->Data[1] = mechine_id;
     p_TxMessage->Data[2] = boxNum;
     p_TxMessage->Data[3] = cmd;
@@ -122,6 +116,7 @@ unsigned char myCANTransmit (void * p_Msg, unsigned char mechine_id, unsigned ch
     {
         i++;
     }
+    g_uiSerNum++;
     return 0;
 }
 

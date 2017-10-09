@@ -170,8 +170,8 @@ typedef enum CMD
     STOP_WORKING            = 0x11,                 /* 停止工作 */
     MACHINE_STATUES         = 0x12,                 /* 指定工位卡情况，内容在状态码内 */
     WRITE_CARD_STATUS       = 0x13,                 /* 写卡情况，内容在状态码内 */
-    YUETONG_CARD_HAS_READ   = 0x14,                 /* 粤通卡已读卡通知  */
-    SEARCH_CARD_MECHINE     = 0x15,                 /* 搜索询问卡机号和ID码  */
+    CARD_SPIT_NOTICE_ACK    = 0x14,                 /* 出卡通知回复  */
+    CARD_TAKE_AWAY_NOTICE_ACK= 0x15,                /* 卡被取走回复  */
     SET_CARD_COUNT          = 0x16,                 /* 设置IC卡数量  */
     CLEAR_FAULT_CODE        = 0x17,                 /* 清除报警  */
 

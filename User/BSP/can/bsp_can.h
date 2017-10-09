@@ -1,8 +1,10 @@
 #ifndef __BSP_CAN_H__
 #define __BSP_CAN_H__
 
-
 #include <includes.h>
+
+extern unsigned int g_uiSerNum; // 帧序号,全局,卡机与主机之间的帧序号
+
 
 typedef enum {FAILED = 0, PASSED = !FAILED} TestStatus;
 

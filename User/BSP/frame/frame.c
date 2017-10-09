@@ -232,16 +232,71 @@ CPU_INT08U  AnalyzeCANFrame ( void * p_arg )
             {
                 g_ucDeviceIsReady = 1;          // 如果为坏卡，则将清除标志，等待再次上报按键信息
             }
+            g_uiSerNum = pRxMessage->Data[0];                               // 保持帧序号不变,将数据回复
             myCANTransmit(&gt_TxMessage, pRxMessage->Data[1], pRxMessage->Data[2], MACHINE_STATUES, (count) % 10 ? CARD_IS_OK : CARD_IS_BAD, 0, 0, NO_FAIL);
             break;
         case KEY_PRESS:             // 司机已按键
             if (g_ucDeviceIsReady != 1)     // 如果卡没有被取走，按键不响应,直接退出
             {
-                // myCANTransmit(&gt_TxMessage, pRxMessage->Data[1], pRxMessage->Data[2], KEY_PRESS, NO_FAIL, NO_FAIL, NO_FAIL, NO_FAIL);
+                u8 TransmitMailbox;
+                CanTxMsg TxMessage;
+                g_uiSerNum = pRxMessage->Data[0];
+                memset(&gt_TxMessage,0,sizeof (CanTxMsg));
+
+                gt_TxMessage.StdId = 0x00;
+                gt_TxMessage.RTR = CAN_RTR_DATA;
+                gt_TxMessage.IDE = CAN_ID_EXT;;
+                gt_TxMessage.DLC = 8;
+                gt_TxMessage.Data[0] = pRxMessage->Data[0];
+
+                gt_TxMessage.Data[2] = 0;
+                gt_TxMessage.Data[3] = WRITE_CARD_STATUS;
+                gt_TxMessage.Data[4] = 0;
+                gt_TxMessage.Data[5] = 0;
+                gt_TxMessage.Data[6] = 0;
+                gt_TxMessage.Data[7] = 0;
+
+
+                if(pRxMessage->Data[0] == 0x01)
+                {
+                    gt_TxMessage.ExtId = 0x7811;
+                    gt_TxMessage.Data[1] = 0x02;
+                }
+                else if (pRxMessage->Data[0] == 0x02)
+                {
+                    gt_TxMessage.ExtId = 0x7812;
+                    gt_TxMessage.Data[1] = 0x01;
+                }
+                else if (pRxMessage->Data[0] == 0x03)
+                {
+                    gt_TxMessage.ExtId = 0x7813;
+                    gt_TxMessage.Data[1] = 0x04;
+                }
+                else if (pRxMessage->Data[0] == 0x04)
+                {
+                    gt_TxMessage.ExtId = 0x7814;
+                    gt_TxMessage.Data[1] = 0x03;
+                }
+
+                TransmitMailbox = CAN_Transmit(CAN1,&gt_TxMessage);
+                i = 0;
+                while((CAN_TransmitStatus(CAN1,TransmitMailbox) != CANTXOK) && (i != 0xFF))
+                {
+                    i++;
+                }
+
+                i = 0;
+                while((CAN_MessagePending(CAN1,CAN_FIFO0) < 1) && (i != 0xFF))
+                {
+                    i++;
+                }
+                g_uiSerNum++;                               // 保持帧序号不变,将数据回复
+
+
                 return 0;
             }
             g_ucDeviceIsReady = 0;      // 按键发卡流程开始之后，再次按键不再响应
-            GENERAL_TIM_Init ();
+            //GENERAL_TIM_Init ();
             DEBUG_printf ("%s\r\n",(char *)CheckPriMsg(CARD_KEY_PRESS));
             if (pRxMessage->Data[2] == 1)
             {
@@ -313,9 +368,10 @@ CPU_INT08U  AnalyzeCANFrame ( void * p_arg )
 
             if (pRxMessage->Data[4] == 0x10) // 如果设备为运行态且有卡
             {
-              myCANTransmit(&gt_TxMessage, pRxMessage->Data[1], pRxMessage->Data[2], WRITE_CARD_STATUS, CARD_IS_OK, 0, 0, NO_FAIL);
-              copyMenu (pRxMessage->Data[1], KEY_PRESS, 0, 7, 4);
-              // copyStatusMsg (pRxMessage->Data[1], (count++) % 10 ? CARD_IS_OK : CARD_IS_BAD, 0, 12, 4);
+                g_uiSerNum = pRxMessage->Data[0];                               // 保持帧序号不变,将数据回复
+                myCANTransmit(&gt_TxMessage, pRxMessage->Data[1], pRxMessage->Data[2], WRITE_CARD_STATUS, CARD_IS_OK, 0, 0, NO_FAIL);
+                copyMenu (pRxMessage->Data[1], KEY_PRESS, 0, 7, 4);
+                // copyStatusMsg (pRxMessage->Data[1], (count++) % 10 ? CARD_IS_OK : CARD_IS_BAD, 0, 12, 4);
             }
             printf ("%s\n",(char *)&g_tCardKeyPressFrame);
             break;
@@ -323,27 +379,20 @@ CPU_INT08U  AnalyzeCANFrame ( void * p_arg )
             dacSet(DATA_quka,SOUND_LENGTH_quka);
             copyMenu (pRxMessage->Data[1], CARD_SPIT_NOTICE, 0, 7, 4);
             copyStatusMsg (pRxMessage->Data[1], 0xfe, 0, 12, 4);            //
-
+            g_uiSerNum = pRxMessage->Data[0];                               // 保持帧序号不变,将数据回复
+            myCANTransmit(&gt_TxMessage, pRxMessage->Data[1], 0, CARD_SPIT_NOTICE_ACK, 0, 0, 0, NO_FAIL);
             break;
         case CARD_TAKE_AWAY_NOTICE: // 卡已被取走通知
-            g_ucDeviceIsReady = 1;
             dacSet(DATA_xiexie,SOUND_LENGTH_xiexie);
             copyMenu (pRxMessage->Data[1], CARD_TAKE_AWAY_NOTICE, 0, 7, 4);
             copyStatusMsg (pRxMessage->Data[1], 0xfe, 0, 12, 4);
+            g_uiSerNum = pRxMessage->Data[0];                               // 保持帧序号不变,将数据回复
+            myCANTransmit(&gt_TxMessage, pRxMessage->Data[1], 0, CARD_TAKE_AWAY_NOTICE_ACK, 0, 0, 0, NO_FAIL);
+            g_ucDeviceIsReady = 1;      // 表明卡已经被取走,置位状态
             break;
         case CARD_IS_READY:
             copyMenu (pRxMessage->Data[1], CARD_IS_READY, 0, 7, 6);
             copyStatusMsg (pRxMessage->Data[1], 0xfe, 0, 13, 3);
-            break;
-        case SERCH_CARD_MECHINE_ACK:// 查询卡机的回复
-            g_usCurID = pRxMessage->Data[5] << 8 | pRxMessage->Data[6];
-            sprintf(str_id,"%x  ",g_usCurID);
-            n = check_menu (DLG_CARD_ID);
-            for (i = 0; i < 6; i++)
-            {
-                g_dlg[n].MsgRow[1][i + 10] = str_id[i];
-            }
-            g_ucIsUpdateMenu = 1;      // 更新界面
             break;
         case MECHINE_WARNING:    // 报警
             if (pRxMessage->Data[1] <= 2) // 表明是上工位故障

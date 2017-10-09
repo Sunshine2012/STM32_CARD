@@ -693,7 +693,7 @@ void doShowIdSetMenu (unsigned char dlg_id, unsigned char isNotRow, void * p_par
                         {
                             id_h = 0x78 ;
                             id_l = 0x11 + i;
-                            myCANTransmit(&gt_TxMessage, i, i, SEARCH_CARD_MECHINE, i, id_h, id_l, NO_FAIL);
+                            //myCANTransmit(&gt_TxMessage, i, i, SEARCH_CARD_MECHINE, i, id_h, id_l, NO_FAIL);
                         }
                         break;
                     //case 2:
@@ -987,7 +987,6 @@ void doShowDebugTwo (unsigned char dlg_id, unsigned char isNotRow, void * p_parm
         if (g_ucKeyContinu == 0xff)
         {
             g_ucKeyContinu = 1;             // 松开按键之后,给卡机发送停止命令
-            myCANTransmit(&gt_TxMessage, num, num, STOP_DEBUG, num, id_h, id_l, NO_FAIL);
         }
         if (g_ucKeyValues == KEY_QUIT)      // 按QUIT键,直接退到主界面,避免连续的刷屏,退出,并保持按键值不变
         {
