@@ -116,7 +116,7 @@ unsigned char myCANTransmit (void * p_Msg, unsigned char mechine_id, unsigned ch
     {
         i++;
     }
-    g_uiSerNum++;
+    g_uiSerNum++;           // ÷°–Ú∫≈√ø¥Œº”1
     return 0;
 }
 

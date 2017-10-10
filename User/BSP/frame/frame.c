@@ -257,22 +257,22 @@ CPU_INT08U  AnalyzeCANFrame ( void * p_arg )
                 gt_TxMessage.Data[7] = 0;
 
 
-                if(pRxMessage->Data[0] == 0x01)
+                if(pRxMessage->Data[1] == 0x01)
                 {
                     gt_TxMessage.ExtId = 0x7811;
                     gt_TxMessage.Data[1] = 0x02;
                 }
-                else if (pRxMessage->Data[0] == 0x02)
+                else if (pRxMessage->Data[1] == 0x02)
                 {
                     gt_TxMessage.ExtId = 0x7812;
                     gt_TxMessage.Data[1] = 0x01;
                 }
-                else if (pRxMessage->Data[0] == 0x03)
+                else if (pRxMessage->Data[1] == 0x03)
                 {
                     gt_TxMessage.ExtId = 0x7813;
                     gt_TxMessage.Data[1] = 0x04;
                 }
-                else if (pRxMessage->Data[0] == 0x04)
+                else if (pRxMessage->Data[1] == 0x04)
                 {
                     gt_TxMessage.ExtId = 0x7814;
                     gt_TxMessage.Data[1] = 0x03;
@@ -410,14 +410,20 @@ CPU_INT08U  AnalyzeCANFrame ( void * p_arg )
                 myCANTransmit(&gt_TxMessage, (unsigned char)(g_usDownBackingID & 0x000f), 0, SET_MECHINE_STATUS, BACKING_STATUS, 0, 0, NO_FAIL);   // 设置备份态
 
             }
-
             if(pRxMessage->Data[4] == 0x11)   // 无卡报警
             {
                 g_ucaFaultCode[pRxMessage->Data[1] - 1][0] = FAULT_NO_CARD;
             }
             else if (pRxMessage->Data[4] == 0x21)
             {
-                g_ucaFaultCode[pRxMessage->Data[1] - 1][0] = pRxMessage->Data[7];
+                if(pRxMessage->Data[7] <= FAULT_CODE0C)
+                {
+                    g_ucaFaultCode[pRxMessage->Data[1] - 1][0] = pRxMessage->Data[7];
+                }
+                else if (pRxMessage->Data[7] == 0x11)
+                {
+                    g_ucaFaultCode[pRxMessage->Data[1] - 1][0] = FAULT_CODE0E;
+                }
             }
             g_ucIsUpdateMenu = 1;      // 更新界面
             break;

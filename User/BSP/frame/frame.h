@@ -299,6 +299,7 @@ typedef enum FAULT_CODE
     FAULT_CODE0B                = 0x0b,                 /* 工作时翻卡电机不转 */
     FAULT_CODE0C                = 0x0c,                 /* 通讯故障 */
     FAULT_NO_CARD               = 0x0d,                 /* 无卡 */
+    FAULT_CODE0E                = 0x0e,                 /* CAN总线故障 */
 
     CLEAR_FAULT                 = 0x21
 

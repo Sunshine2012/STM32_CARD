@@ -166,6 +166,7 @@ u8 matrix_update_key(void)
         {
             if(GPIO_ReadInputDataBit(matrix_key_input[j].GPIO_x, matrix_key_input[j].GPIO_pin) == 0)
             {
+                OSTimeDly ( 1, OS_OPT_TIME_DLY, & err );
                 while(!GPIO_ReadInputDataBit(matrix_key_input[j].GPIO_x, matrix_key_input[j].GPIO_pin))
                 {
                     OSTimeDly ( 1, OS_OPT_TIME_DLY, & err );
