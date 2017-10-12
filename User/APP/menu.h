@@ -37,12 +37,12 @@ typedef struct Dlg
 
 extern Dlg           g_dlg[];
 extern Dlg g_dlg_fault_code[];
-extern unsigned char g_ucCurDlg;            // 当前显示的菜单ID
-extern unsigned short g_usCurID;            // 当前通信设备的ID,在设置设备ID时候使用
-extern unsigned short g_usUpWorkingID;       // 上工位工作卡机ID
-extern unsigned short g_usUpBackingID;       // 上工位备用卡机ID
-extern unsigned short g_usDownWorkingID;     // 下工位工作卡机ID
-extern unsigned short g_usDownBackingID;     // 下工位备用卡机ID
+extern unsigned char g_ucCurDlg;            // 当前显示的菜单号
+extern unsigned char g_ucCurID;             // 当前通信设备的号,在设置设备号时候使用
+extern unsigned char g_ucUpWorkingID;       // 上工位工作卡机号
+extern unsigned char g_ucUpBackingID;       // 上工位备用卡机号
+extern unsigned char g_ucDownWorkingID;     // 下工位工作卡机号
+extern unsigned char g_ucDownBackingID;     // 下工位备用卡机号
 extern unsigned char  g_ucaFaultCode[4][10];       // 卡机是否有未处理的故障
 
 

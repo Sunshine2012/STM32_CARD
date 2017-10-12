@@ -1,13 +1,13 @@
 #include <includes.h>
 #include "menu.h"
 
-unsigned char  g_ucCurDlg           = 0;            // 当前显示的菜单ID
-unsigned short g_usCurID            = 0x7811;       // 当前通信设备的ID
-unsigned short g_usUpWorkingID      = 0x7811;       // 上工位工作卡机ID
-unsigned short g_usUpBackingID      = 0x7812;       // 上工位备用卡机ID
-unsigned short g_usDownWorkingID    = 0x7813;       // 下工位工作卡机ID
-unsigned short g_usDownBackingID    = 0x7814;       // 下工位备用卡机ID
-unsigned char  g_ucaFaultCode[4][10]   = {0};       // 卡机是否有未处理的故障
+unsigned char g_ucCurDlg           = 0;            // 当前显示的菜单ID
+unsigned char g_ucCurID            = 1;            // 当前通信设备的号
+unsigned char g_ucUpWorkingID      = 1;            // 上工位工作卡机号
+unsigned char g_ucUpBackingID      = 2;            // 上工位备用卡机号
+unsigned char g_ucDownWorkingID    = 3;            // 下工位工作卡机号
+unsigned char g_ucDownBackingID    = 4;            // 下工位备用卡机号
+unsigned char g_ucaFaultCode[4][10]   = {0};       // 卡机是否有未处理的故障
 
 Dlg g_dlg[] = {
                         {DLG_CLEAR_LCD,      "                ", "                ", "                ", "                "},
@@ -78,50 +78,38 @@ void doShowStatusMenu (unsigned char dlg_id, unsigned char isNotRow, void * p_pa
     unsigned char master1[] = "工作";
     unsigned char master2[] = "备用";
 
-    if(g_usUpWorkingID = 0x7811 && g_usUpBackingID == 0x7812)
+    if(g_ucUpWorkingID == 1 && g_ucUpBackingID == 2)
     {
         for (i = 0; i < 4; i++)
         {
             g_dlg[dlgId].MsgRow[0][i + 2] = master1[i];
-        }
-        for (i = 0; i < 4; i++)
-        {
             g_dlg[dlgId].MsgRow[1][i + 2] = master2[i];
         }
     }
-    else if (g_usUpWorkingID = 0x7812 && g_usUpBackingID == 0x7811)
+    else if (g_ucUpWorkingID == 2 && g_ucUpBackingID == 1)
     {
         for (i = 0; i < 4; i++)
         {
             g_dlg[dlgId].MsgRow[0][i + 2] = master2[i];
-        }
-        for (i = 0; i < 4; i++)
-        {
             g_dlg[dlgId].MsgRow[1][i + 2] = master1[i];
         }
 
     }
-    if (g_usDownWorkingID = 0x7813 && g_usDownBackingID == 0x7814)
+    if (g_ucDownWorkingID == 3 && g_ucDownBackingID == 4)
     {
 
         for (i = 0; i < 4; i++)
         {
             g_dlg[dlgId].MsgRow[2][i + 2] = master1[i];
-        }
-        for (i = 0; i < 4; i++)
-        {
             g_dlg[dlgId].MsgRow[3][i + 2] = master2[i];
         }
 
     }
-    else if (g_usDownWorkingID = 0x7814 && g_usDownBackingID == 0x7813)
+    else if (g_ucDownWorkingID == 4 && g_ucDownBackingID == 3)
     {
         for (i = 0; i < 4; i++)
         {
             g_dlg[dlgId].MsgRow[2][i + 2] = master2[i];
-        }
-        for (i = 0; i < 4; i++)
-        {
             g_dlg[dlgId].MsgRow[3][i + 2] = master1[i];
         }
 
@@ -536,23 +524,23 @@ void doShowWorkingSet (unsigned char dlg_id, unsigned char isNotRow, void * p_pa
     unsigned char master3[] = "3:工作   4:备用 ";
     unsigned char master4[] = "3:备用   4:工作 ";
 
-    unsigned short id = 0x7811;      // CAN通信的ID
+    //unsigned short id = 0x7811;      // CAN通信的ID
 
-    if(g_usUpWorkingID = 0x7811 && g_usUpBackingID == 0x7812)
+    if(g_ucUpWorkingID == 1 && g_ucUpBackingID == 2)
     {
         for (i = 0; i < 16; i++)
         {
             g_dlg[dlgId].MsgRow[1][i] = master1[i];
         }
     }
-    else if (g_usUpWorkingID = 0x7812 && g_usUpBackingID == 0x7811)
+    else if (g_ucUpWorkingID == 2 && g_ucUpBackingID == 1)
     {
         for (i = 0; i < 16; i++)
         {
             g_dlg[dlgId].MsgRow[1][i] = master2[i];
         }
     }
-    if (g_usDownWorkingID = 0x7813 && g_usDownBackingID == 0x7814)
+    if (g_ucDownWorkingID == 3 && g_ucDownBackingID == 4)
     {
 
         for (i = 0; i < 16; i++)
@@ -560,7 +548,7 @@ void doShowWorkingSet (unsigned char dlg_id, unsigned char isNotRow, void * p_pa
             g_dlg[dlgId].MsgRow[2][i] = master3[i];
         }
     }
-    else if (g_usDownWorkingID = 0x7814 && g_usDownBackingID == 0x7813)
+    else if (g_ucDownWorkingID == 4 && g_ucDownBackingID == 3)
     {
         for (i = 0; i < 16; i++)
         {
@@ -599,16 +587,16 @@ void doShowWorkingSet (unsigned char dlg_id, unsigned char isNotRow, void * p_pa
                         {
                             g_dlg[dlgId].MsgRow[isNotRow][i] = master1[i];
                         }
-                        g_usUpWorkingID = 0x7811;
-                        g_usUpBackingID = 0x7812;
+                        g_ucUpWorkingID = 1;
+                        g_ucUpBackingID = 2;
                         break;
                     case 2:
                         for (i = 0; i < 16; i++)
                         {
                             g_dlg[dlgId].MsgRow[isNotRow][i] = master3[i];
                         }
-                        g_usDownWorkingID = 0x7813;
-                        g_usDownBackingID = 0x7814;
+                        g_ucDownWorkingID = 3;
+                        g_ucDownBackingID = 4;
                         break;
                     default:
                         break;
@@ -622,16 +610,16 @@ void doShowWorkingSet (unsigned char dlg_id, unsigned char isNotRow, void * p_pa
                         {
                             g_dlg[dlgId].MsgRow[isNotRow][i] = master2[i];
                         }
-                        g_usUpWorkingID = 0x7812;
-                        g_usUpBackingID = 0x7811;
+                        g_ucUpWorkingID = 2;
+                        g_ucUpBackingID = 1;
                         break;
                     case 2:
                         for (i = 0; i < 16; i++)
                         {
                             g_dlg[dlgId].MsgRow[isNotRow][i] = master4[i];
                         }
-                        g_usDownWorkingID = 0x7814;
-                        g_usDownBackingID = 0x7813;
+                        g_ucDownWorkingID = 4;
+                        g_ucDownBackingID = 3;
                     default:
                         break;
 
@@ -641,13 +629,13 @@ void doShowWorkingSet (unsigned char dlg_id, unsigned char isNotRow, void * p_pa
                 switch (isNotRow)
                 {
                     case 1:
-                        myCANTransmit(&gt_TxMessage, (unsigned char)(g_usUpWorkingID & 0x000f), 0, SET_MECHINE_STATUS, WORKING_STATUS, 0, 0, NO_FAIL);   // 设置工作态
-                        myCANTransmit(&gt_TxMessage, (unsigned char)(g_usUpBackingID & 0x000f), 0, SET_MECHINE_STATUS, BACKING_STATUS, 0, 0, NO_FAIL);   // 设置备用态
+                        myCANTransmit(&gt_TxMessage, g_ucUpWorkingID, 0, SET_MECHINE_STATUS, WORKING_STATUS, 0, 0, NO_FAIL);   // 设置工作态
+                        myCANTransmit(&gt_TxMessage, g_ucUpBackingID, 0, SET_MECHINE_STATUS, BACKING_STATUS, 0, 0, NO_FAIL);   // 设置备用态
                         isNotRow++;
                         break;
                     case 2:
-                        myCANTransmit(&gt_TxMessage, (unsigned char)(g_usDownWorkingID & 0x000f), 0, SET_MECHINE_STATUS, WORKING_STATUS, 0, 0, NO_FAIL);   // 设置工作态
-                        myCANTransmit(&gt_TxMessage, (unsigned char)(g_usDownBackingID & 0x000f), 0, SET_MECHINE_STATUS, BACKING_STATUS, 0, 0, NO_FAIL);   // 设置备用态
+                        myCANTransmit(&gt_TxMessage, g_ucDownWorkingID, 0, SET_MECHINE_STATUS, WORKING_STATUS, 0, 0, NO_FAIL);   // 设置工作态
+                        myCANTransmit(&gt_TxMessage, g_ucDownBackingID, 0, SET_MECHINE_STATUS, BACKING_STATUS, 0, 0, NO_FAIL);   // 设置备用态
                         isNotRow--;
                         break;
                     default:
@@ -678,7 +666,7 @@ void doShowWorkingSet (unsigned char dlg_id, unsigned char isNotRow, void * p_pa
     }
 }
 
-
+#if 0
 // ID设置菜单,如果有一行需要反显示,则设置当前行反显示,传递参数地址
 void doShowIdSetMenu (unsigned char dlg_id, unsigned char isNotRow, void * p_parm)
 {
@@ -691,9 +679,9 @@ void doShowIdSetMenu (unsigned char dlg_id, unsigned char isNotRow, void * p_par
     unsigned char str_id[10] = {0};
     unsigned char id_h = 0;          // CAN通信的ID高字节
     unsigned char id_l = 0;          // CAN通信的ID低字节
-    unsigned short id = 0x7811;      // CAN通信的ID
+    unsigned char id = 1;            // CAN通信的ID
     sprintf(str_num,"0%d      ",num);
-    sprintf(str_id,"%x   ",id);
+    sprintf(str_id,"%x   ",0x7810 | id);
     for (i = 0; i < 6; i++)
     {
         g_dlg[dlgId].MsgRow[2][i + 10] = str_num[i];
@@ -737,7 +725,7 @@ void doShowIdSetMenu (unsigned char dlg_id, unsigned char isNotRow, void * p_par
                         }
                         break;
                     case 3:
-                        if (0x7811 < id)
+                        if (1 < id)
                         {
                             num--;
                             id--;
@@ -758,7 +746,7 @@ void doShowIdSetMenu (unsigned char dlg_id, unsigned char isNotRow, void * p_par
                         }
                         break;
                     case 3:
-                        if (0x7814 > id)
+                        if (4 > id)
                         {
                             num++;
                             id++;
@@ -781,11 +769,11 @@ void doShowIdSetMenu (unsigned char dlg_id, unsigned char isNotRow, void * p_par
                         break;
                     //case 2:
                     case 3:
-                        if (1 <= num && num <=4 && 0x7811 <= id && id <= 0x7814)    // 设置搜索到的卡机的卡机号和ID号
+                        if (1 <= num && num <=4 && 1 <= id && id <= 4)    // 设置搜索到的卡机的卡机号和ID号
                         {
-                            id_h = ( g_usCurID >> 8 ) & 0xff;
-                            id_l = g_usCurID & 0xff;
-                            myCANTransmit(&gt_TxMessage, (id_l & 0x0f), (id_l & 0x0f), SET_MECHINE_ID, num, (id >> 8) & 0xff, id & 0xff, NO_FAIL);
+                            id_h = 0x78;
+                            id_l = g_ucCurID | 0x10;
+                            myCANTransmit(&gt_TxMessage, id_h, id_l, SET_MECHINE_ID, num, id_h, id_l, NO_FAIL);
                         }
                         break;
                     default:
@@ -807,7 +795,7 @@ void doShowIdSetMenu (unsigned char dlg_id, unsigned char isNotRow, void * p_par
         {
             g_ucIsUpdateMenu = 0;
             sprintf(str_num,"0%d      ",num);
-            sprintf(str_id,"%x   ",id);
+            sprintf(str_id,"%x   ",0x7810 | id );
             for (i = 0; i < 6; i++)
             {
                 g_dlg[dlgId].MsgRow[2][i + 10] = str_num[i];
@@ -825,7 +813,7 @@ void doShowIdSetMenu (unsigned char dlg_id, unsigned char isNotRow, void * p_par
         OSTimeDly ( 10, OS_OPT_TIME_DLY, & err );     //不断阻塞该任务
     }
 }
-
+#endif
 
 // 调试菜单主选择,如果有一行需要反显示,则设置当前行反显示,传递参数地址
 void doShowDebugMain (unsigned char dlg_id, unsigned char isNotRow, void * p_parm)

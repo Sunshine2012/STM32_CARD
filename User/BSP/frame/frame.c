@@ -3,7 +3,7 @@
 #include "WAV_C_xiexie.h"
 #include "WAV_C_quka.h"
 
-unsigned char  g_ucDeviceIsReady    = 1;                  // 两个卡机处于待机状态下,按键按下,主机收到两条按键信息,此时只处理主机的,如果只收到一条按键信息,则直接发卡
+unsigned char  g_ucDeviceIsSTBY   = 1;                  // 两个卡机处于待机(Standby)状态下,按键按下,主机收到两条按键信息,此时只处理主机的,如果只收到一条按键信息,则直接发卡
 
 unsigned short g_usaInitCardCount[5]    = {9999, 9998, 9997, 9996, 9995};    // 卡初始设置值,[0]为总卡数量,发1张卡,减1,[1~4]为每个卡机初始卡数量,发1张卡,减1.
 unsigned short g_usaSpitCardCount[5]    = {0, 0, 0, 0, 0};    // 出卡数量,[0]为出卡总数量,发1张卡,加1,[1~4]为每个卡机发卡数量,发1张卡,加1.
@@ -215,12 +215,12 @@ CPU_INT08U * CheckPriMsg (CPU_INT08U ch)
 
 CPU_INT08U  AnalyzeCANFrame ( void * p_arg )
 {
-    CanRxMsg *pRxMessage = (CanRxMsg *)p_arg;                // can数据接收缓存
+    CanRxMsg *pRxMessage = (CanRxMsg *)p_arg;                       // can数据接收缓存
     OS_ERR      err;
     unsigned char i, n;
     unsigned char str_id[10] = {0};
     static unsigned char count = 1;
-
+    g_uiSerNum = pRxMessage->Data[0];                               // 保持帧序号不变,将数据回复
     switch(pRxMessage->Data[3])
     {
         case MACHINE_CHECK_CARD:    // 指定工位验卡
@@ -230,13 +230,12 @@ CPU_INT08U  AnalyzeCANFrame ( void * p_arg )
             copyStatusMsg (pRxMessage->Data[1], (count++) % 10 ? CARD_IS_OK : CARD_IS_BAD, 0, 12, 4);
             if (!(count++) % 10)
             {
-                g_ucDeviceIsReady = 1;          // 如果为坏卡，则将清除标志，等待再次上报按键信息
+                g_ucDeviceIsSTBY = 1;          // 如果为坏卡，则将清除标志，等待再次上报按键信息
             }
-            g_uiSerNum = pRxMessage->Data[0];                               // 保持帧序号不变,将数据回复
             myCANTransmit(&gt_TxMessage, pRxMessage->Data[1], pRxMessage->Data[2], MACHINE_STATUES, (count) % 10 ? CARD_IS_OK : CARD_IS_BAD, 0, 0, NO_FAIL);
             break;
         case KEY_PRESS:             // 司机已按键
-            if (g_ucDeviceIsReady != 1)     // 如果卡没有被取走，按键不响应,直接退出
+            if (g_ucDeviceIsSTBY != 1)     // 如果卡没有被取走，按键不响应,直接退出
             {
                 u8 TransmitMailbox;
                 CanTxMsg TxMessage;
@@ -295,80 +294,15 @@ CPU_INT08U  AnalyzeCANFrame ( void * p_arg )
 
                 return 0;
             }
-            g_ucDeviceIsReady = 0;      // 按键发卡流程开始之后，再次按键不再响应
+            //if (pRxMessage->Data[1] == g_ucUpWorkingID || pRxMessage->Data[1] == g_ucDownWorkingID)
+            //{
+
+            //}
+            g_ucDeviceIsSTBY = 0;      // 按键发卡流程开始之后，再次按键不再响应
             //GENERAL_TIM_Init ();
             DEBUG_printf ("%s\r\n",(char *)CheckPriMsg(CARD_KEY_PRESS));
-            if (pRxMessage->Data[2] == 1)
-            {
-                switch (pRxMessage->Data[1])    // 更新主备机状态
-                {
-                    case 1:
-                        copyStatusMsg (1, IS_WORKING, 0, 2, 4);
-                        copyStatusMsg (2, IS_BACKING, 0, 2, 4);
-                        g_usUpWorkingID = 0x7811;
-                        g_usUpBackingID = 0x7812;
-                        break;
-                    case 2:
-                        copyStatusMsg (1, IS_BACKING, 0, 2, 4);
-                        copyStatusMsg (2, IS_WORKING, 0, 2, 4);
-                        g_usUpWorkingID = 0x7812;
-                        g_usUpBackingID = 0x7811;
-                        break;
-                    case 3:
-                        copyStatusMsg (3, IS_WORKING, 0, 2, 4);
-                        copyStatusMsg (4, IS_BACKING, 0, 2, 4);
-                        g_usDownWorkingID = 0x7813;
-                        g_usDownBackingID = 0x7814;
-                        break;
-                    case 4:
-                        copyStatusMsg (3, IS_BACKING, 0, 2, 4);
-                        copyStatusMsg (4, IS_WORKING, 0, 2, 4);
-                        g_usDownWorkingID = 0x7814;
-                        g_usDownBackingID = 0x7813;
-                        break;
-                    default:
-                        break;
-
-                }
-
-            }
-            else if (pRxMessage->Data[2] == 2)
-            {
-                switch (pRxMessage->Data[1])    // 更新主备机状态
-                {
-                    case 1:
-                        copyStatusMsg (1, IS_BACKING, 0, 2, 4);
-                        copyStatusMsg (2, IS_WORKING, 0, 2, 4);
-                        g_usUpWorkingID = 0x7812;
-                        g_usUpBackingID = 0x7811;
-                        break;
-                    case 2:
-                        copyStatusMsg (1, IS_WORKING, 0, 2, 4);
-                        copyStatusMsg (2, IS_BACKING, 0, 2, 4);
-                        g_usUpWorkingID = 0x7811;
-                        g_usUpBackingID = 0x7812;
-                        break;
-                    case 3:
-                        copyStatusMsg (3, IS_BACKING, 0, 2, 4);
-                        copyStatusMsg (4, IS_WORKING, 0, 2, 4);
-                        g_usDownWorkingID = 0x7814;
-                        g_usDownBackingID = 0x7813;
-                        break;
-                    case 4:
-                        copyStatusMsg (3, IS_WORKING, 0, 2, 4);
-                        copyStatusMsg (4, IS_BACKING, 0, 2, 4);
-                        g_usDownWorkingID = 0x7813;
-                        g_usDownBackingID = 0x7814;
-                        break;
-                    default:
-                        break;
-                }
-
-            }
-
             if (pRxMessage->Data[4] == 0x10) // 如果设备为运行态且有卡
             {
-                g_uiSerNum = pRxMessage->Data[0];                               // 保持帧序号不变,将数据回复
                 myCANTransmit(&gt_TxMessage, pRxMessage->Data[1], pRxMessage->Data[2], WRITE_CARD_STATUS, CARD_IS_OK, 0, 0, NO_FAIL);
                 copyMenu (pRxMessage->Data[1], KEY_PRESS, 0, 7, 4);
                 // copyStatusMsg (pRxMessage->Data[1], (count++) % 10 ? CARD_IS_OK : CARD_IS_BAD, 0, 12, 4);
@@ -379,39 +313,34 @@ CPU_INT08U  AnalyzeCANFrame ( void * p_arg )
             dacSet(DATA_quka,SOUND_LENGTH_quka);
             copyMenu (pRxMessage->Data[1], CARD_SPIT_NOTICE, 0, 7, 4);
             copyStatusMsg (pRxMessage->Data[1], 0xfe, 0, 12, 4);            //
-            g_uiSerNum = pRxMessage->Data[0];                               // 保持帧序号不变,将数据回复
             myCANTransmit(&gt_TxMessage, pRxMessage->Data[1], 0, CARD_SPIT_NOTICE_ACK, 0, 0, 0, NO_FAIL);
             break;
         case CARD_TAKE_AWAY_NOTICE: // 卡已被取走通知
             dacSet(DATA_xiexie,SOUND_LENGTH_xiexie);
             copyMenu (pRxMessage->Data[1], CARD_TAKE_AWAY_NOTICE, 0, 7, 4);
             copyStatusMsg (pRxMessage->Data[1], 0xfe, 0, 12, 4);
-            g_uiSerNum = pRxMessage->Data[0];                               // 保持帧序号不变,将数据回复
             myCANTransmit(&gt_TxMessage, pRxMessage->Data[1], 0, CARD_TAKE_AWAY_NOTICE_ACK, 0, 0, 0, NO_FAIL);
-            g_ucDeviceIsReady = 1;      // 表明卡已经被取走,置位状态
+            g_ucDeviceIsSTBY = 1;      // 表明卡已经被取走,置位状态
             break;
         case CARD_IS_READY:
             copyMenu (pRxMessage->Data[1], CARD_IS_READY, 0, 7, 6);
             copyStatusMsg (pRxMessage->Data[1], 0xfe, 0, 13, 3);
             break;
         case MECHINE_WARNING:    // 报警
+            myCANTransmit(&gt_TxMessage, pRxMessage->Data[1], 0, FAULT_CODE_ACK, 0, 0, 0, NO_FAIL);   // 回复故障码
             if (pRxMessage->Data[4] == 0x21 && pRxMessage->Data[7] <= FAULT_CODE11)
             {
                 g_ucaFaultCode[pRxMessage->Data[1] - 1][0] = pRxMessage->Data[7];  // 报告故障码
 
                 if (pRxMessage->Data[1] <= 2) // 表明是上工位故障,设置主备机
                 {
-                    g_usUpWorkingID = pRxMessage->Data[1] == 1 ? 0x7812 : 0x7811;
-                    g_usUpBackingID = pRxMessage->Data[1] == 1 ? 0x7811 : 0x7812;
-                    myCANTransmit(&gt_TxMessage, (unsigned char)(g_usUpWorkingID & 0x000f), 0, SET_MECHINE_STATUS, WORKING_STATUS, 0, 0, NO_FAIL);   // 设置工作态
-                    myCANTransmit(&gt_TxMessage, (unsigned char)(g_usUpBackingID & 0x000f), 0, SET_MECHINE_STATUS, BACKING_STATUS, 0, 0, NO_FAIL);   // 设置备份态
+                    g_ucUpWorkingID = pRxMessage->Data[1] == 1 ? 2 : 1;
+                    g_ucUpBackingID = pRxMessage->Data[1] == 1 ? 1 : 2;
                 }
                 else
                 {
-                    g_usDownWorkingID = pRxMessage->Data[1] == 3 ? 0x7814 : 0x7813;
-                    g_usDownBackingID = pRxMessage->Data[1] == 3 ? 0x7813 : 0x7814;
-                    myCANTransmit(&gt_TxMessage, (unsigned char)(g_usDownWorkingID & 0x000f), 0, SET_MECHINE_STATUS, WORKING_STATUS, 0, 0, NO_FAIL);   // 设置工作态
-                    myCANTransmit(&gt_TxMessage, (unsigned char)(g_usDownBackingID & 0x000f), 0, SET_MECHINE_STATUS, BACKING_STATUS, 0, 0, NO_FAIL);   // 设置备份态
+                    g_ucDownWorkingID = pRxMessage->Data[1] == 3 ? 4 : 3;
+                    g_ucDownBackingID = pRxMessage->Data[1] == 3 ? 3 : 4;
                 }
             }
             else if (pRxMessage->Data[7] > FAULT_CODE11)

@@ -175,6 +175,8 @@ typedef enum CMD
     SET_CARD_COUNT          = 0x16,                 /* ÉèÖÃIC¿¨ÊıÁ¿  */
     CLEAR_FAULT_CODE        = 0x17,                 /* Çå³ı±¨¾¯  */
 
+    FAULT_CODE_ACK          = 0x19,                 /* ±¨¾¯ĞÅÏ¢»Ø¸´  */
+
     // 20H--2FH£º¿¨»ú°å·¢ËÍÖÁÖ÷»ú°åĞÅÏ¢ÃüÁî
     MACHINE_CHECK_CARD      = 0x21,                 /* Ö¸¶¨¹¤Î»Ñé¿¨ */
     KEY_PRESS               = 0x22,                 /* Ë¾»úÒÑ°´¼ü */
@@ -328,7 +330,7 @@ extern PC_TO_CARD_MECHINE_FRAME         g_tPcQuetyCardMechineFrame;         /* ²
 extern PC_TO_CARD_MECHINE_FRAME         g_tPcQuetyCardCpipFrame;            /* ²éÑ¯¿¨¼Ğ(66H)Ö¡              5×Ö½Ú */
 extern PC_SET_CARD_NUM_FRAME            g_tPcSetCardNumFrame;               /* ÉèÖÃ¿¨¼Ğ¿¨Êı(67H)Ö¡          8×Ö½Ú */
 
-extern unsigned char  g_ucDeviceIsReady;        // Á½¸ö¿¨»ú´¦ÓÚ´ı»ú×´Ì¬ÏÂ,°´¼ü°´ÏÂ,Ö÷»úÊÕµ½°´¼üĞÅÏ¢·¢¿¨,Ö»ÒªÓĞ¿¨Ã»ÓĞ±»È¡×ß,¼´Ê¹ÊÕµ½°´¼üĞÅÏ¢,Ò²²»ÔÙ·¢¿¨.
+extern unsigned char  g_ucDeviceIsSTBY;        // Á½¸ö¿¨»ú´¦ÓÚ´ı»ú(Standby)×´Ì¬ÏÂ,°´¼ü°´ÏÂ,Ö÷»úÊÕµ½°´¼üĞÅÏ¢·¢¿¨,Ö»ÒªÓĞ¿¨Ã»ÓĞ±»È¡×ß,¼´Ê¹ÊÕµ½°´¼üĞÅÏ¢,Ò²²»ÔÙ·¢¿¨.
 extern unsigned short g_usaInitCardCount[5];    // ¿¨³õÊ¼ÉèÖÃÖµ,[0]Îª×Ü¿¨ÊıÁ¿,·¢1ÕÅ¿¨,¼õ1,[1~4]ÎªÃ¿¸ö¿¨»ú³õÊ¼¿¨ÊıÁ¿,·¢1ÕÅ¿¨,¼õ1.
 extern unsigned short g_usaSpitCardCount[5];    // ³ö¿¨ÊıÁ¿,[0]Îª³ö¿¨×ÜÊıÁ¿,·¢1ÕÅ¿¨,¼Ó1,[1~4]ÎªÃ¿¸ö¿¨»ú·¢¿¨ÊıÁ¿,·¢1ÕÅ¿¨,¼Ó1.
 
