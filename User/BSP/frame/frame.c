@@ -395,36 +395,30 @@ CPU_INT08U  AnalyzeCANFrame ( void * p_arg )
             copyStatusMsg (pRxMessage->Data[1], 0xfe, 0, 13, 3);
             break;
         case MECHINE_WARNING:    // 报警
-            if (pRxMessage->Data[1] <= 2) // 表明是上工位故障
+            if (pRxMessage->Data[4] == 0x21 && pRxMessage->Data[7] <= FAULT_CODE11)
             {
-                g_usUpWorkingID = pRxMessage->Data[1] == 1 ? 0x7812 : 0x7811;
-                g_usUpBackingID = pRxMessage->Data[1] == 1 ? 0x7811 : 0x7812;
-                myCANTransmit(&gt_TxMessage, (unsigned char)(g_usUpWorkingID & 0x000f), 0, SET_MECHINE_STATUS, WORKING_STATUS, 0, 0, NO_FAIL);   // 设置工作态
-                myCANTransmit(&gt_TxMessage, (unsigned char)(g_usUpBackingID & 0x000f), 0, SET_MECHINE_STATUS, BACKING_STATUS, 0, 0, NO_FAIL);   // 设置备份态
-            }
-            else
-            {
-                g_usDownWorkingID = pRxMessage->Data[1] == 3 ? 0x7814 : 0x7813;
-                g_usDownBackingID = pRxMessage->Data[1] == 3 ? 0x7813 : 0x7814;
-                myCANTransmit(&gt_TxMessage, (unsigned char)(g_usDownWorkingID & 0x000f), 0, SET_MECHINE_STATUS, WORKING_STATUS, 0, 0, NO_FAIL);   // 设置工作态
-                myCANTransmit(&gt_TxMessage, (unsigned char)(g_usDownBackingID & 0x000f), 0, SET_MECHINE_STATUS, BACKING_STATUS, 0, 0, NO_FAIL);   // 设置备份态
+                g_ucaFaultCode[pRxMessage->Data[1] - 1][0] = pRxMessage->Data[7];  // 报告故障码
 
-            }
-            if(pRxMessage->Data[4] == 0x11)   // 无卡报警
-            {
-                g_ucaFaultCode[pRxMessage->Data[1] - 1][0] = FAULT_NO_CARD;
-            }
-            else if (pRxMessage->Data[4] == 0x21)
-            {
-                if(pRxMessage->Data[7] <= FAULT_CODE0C)
+                if (pRxMessage->Data[1] <= 2) // 表明是上工位故障,设置主备机
                 {
-                    g_ucaFaultCode[pRxMessage->Data[1] - 1][0] = pRxMessage->Data[7];
+                    g_usUpWorkingID = pRxMessage->Data[1] == 1 ? 0x7812 : 0x7811;
+                    g_usUpBackingID = pRxMessage->Data[1] == 1 ? 0x7811 : 0x7812;
+                    myCANTransmit(&gt_TxMessage, (unsigned char)(g_usUpWorkingID & 0x000f), 0, SET_MECHINE_STATUS, WORKING_STATUS, 0, 0, NO_FAIL);   // 设置工作态
+                    myCANTransmit(&gt_TxMessage, (unsigned char)(g_usUpBackingID & 0x000f), 0, SET_MECHINE_STATUS, BACKING_STATUS, 0, 0, NO_FAIL);   // 设置备份态
                 }
-                else if (pRxMessage->Data[7] == 0x11)
+                else
                 {
-                    g_ucaFaultCode[pRxMessage->Data[1] - 1][0] = FAULT_CODE0E;
+                    g_usDownWorkingID = pRxMessage->Data[1] == 3 ? 0x7814 : 0x7813;
+                    g_usDownBackingID = pRxMessage->Data[1] == 3 ? 0x7813 : 0x7814;
+                    myCANTransmit(&gt_TxMessage, (unsigned char)(g_usDownWorkingID & 0x000f), 0, SET_MECHINE_STATUS, WORKING_STATUS, 0, 0, NO_FAIL);   // 设置工作态
+                    myCANTransmit(&gt_TxMessage, (unsigned char)(g_usDownBackingID & 0x000f), 0, SET_MECHINE_STATUS, BACKING_STATUS, 0, 0, NO_FAIL);   // 设置备份态
                 }
             }
+            else if (pRxMessage->Data[7] > FAULT_CODE11)
+            {
+                g_ucaFaultCode[pRxMessage->Data[1] - 1][0] = FAULT_CODE11 + 1;  // 报告故障码
+            }
+
             g_ucIsUpdateMenu = 1;      // 更新界面
             break;
         default:

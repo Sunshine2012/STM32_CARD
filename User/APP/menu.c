@@ -45,10 +45,13 @@ Dlg g_dlg_fault_code[] = {
                         {FAULT_CODE0A,       "    号卡机故障  ", "故障码:(0AH)    ", "说明: 工作时勾卡", "电机不转        "},
                         {FAULT_CODE0B,       "    号卡机故障  ", "故障码:(0BH)    ", "说明: 工作时翻卡", "电机不转        "},
                         {FAULT_CODE0C,       "    号卡机故障  ", "故障码:(0CH)    ", "说明: 通讯故障  ", "                "},
-                        {FAULT_NO_CARD,      "    号卡机故障  ", "说明: 卡机中无卡", "请装载IC卡      ", "                "},
-                        {FAULT_CODE0E,       "    号卡机故障  ", "故障码:(11H)    ", "说明:CAN总线故障", "                "},
+                        {FAULT_CODE0D,       "    号卡机故障  ", "故障码:(未知)   ", "                ", "                "},
+                        {FAULT_CODE0E,       "    号卡机故障  ", "故障码:(未知)   ", "                ", "                "},
+                        {FAULT_CODE0F,       "    号卡机故障  ", "故障码:(未知)   ", "                ", "                "},
+                        {FAULT_CODE10,       "    号卡机故障  ", "说明: 卡机中无卡", "请装载IC卡      ", "                "},
+                        {FAULT_CODE11,       "    号卡机故障  ", "故障码:(11H)    ", "说明:CAN总线故障", "                "},
 
-                        {255,                "    未知故障    ", "故障码:(未知)   ", "                ", "                "},
+                        {FAULT_CODE11+1,     "    号卡机故障  ", "故障码:(未知)   ", "                ", "                "},
                      };
 
 // 找到显示的菜单ID,并返回其在数组中的索引
@@ -72,6 +75,57 @@ void doShowStatusMenu (unsigned char dlg_id, unsigned char isNotRow, void * p_pa
     unsigned char i;
     unsigned char dlgId = check_menu(dlg_id);
     unsigned char key = KEY_NUL;
+    unsigned char master1[] = "工作";
+    unsigned char master2[] = "备用";
+
+    if(g_usUpWorkingID = 0x7811 && g_usUpBackingID == 0x7812)
+    {
+        for (i = 0; i < 4; i++)
+        {
+            g_dlg[dlgId].MsgRow[0][i + 2] = master1[i];
+        }
+        for (i = 0; i < 4; i++)
+        {
+            g_dlg[dlgId].MsgRow[1][i + 2] = master2[i];
+        }
+    }
+    else if (g_usUpWorkingID = 0x7812 && g_usUpBackingID == 0x7811)
+    {
+        for (i = 0; i < 4; i++)
+        {
+            g_dlg[dlgId].MsgRow[0][i + 2] = master2[i];
+        }
+        for (i = 0; i < 4; i++)
+        {
+            g_dlg[dlgId].MsgRow[1][i + 2] = master1[i];
+        }
+
+    }
+    if (g_usDownWorkingID = 0x7813 && g_usDownBackingID == 0x7814)
+    {
+
+        for (i = 0; i < 4; i++)
+        {
+            g_dlg[dlgId].MsgRow[2][i + 2] = master1[i];
+        }
+        for (i = 0; i < 4; i++)
+        {
+            g_dlg[dlgId].MsgRow[3][i + 2] = master2[i];
+        }
+
+    }
+    else if (g_usDownWorkingID = 0x7814 && g_usDownBackingID == 0x7813)
+    {
+        for (i = 0; i < 4; i++)
+        {
+            g_dlg[dlgId].MsgRow[2][i + 2] = master2[i];
+        }
+        for (i = 0; i < 4; i++)
+        {
+            g_dlg[dlgId].MsgRow[3][i + 2] = master1[i];
+        }
+
+    }
     for (i = 0; i < 4; i++)
     {
         display_GB2312_string (0, i * 2, g_dlg[dlgId].MsgRow[i], i == isNotRow ? 1 : 0);
@@ -477,7 +531,6 @@ void doShowWorkingSet (unsigned char dlg_id, unsigned char isNotRow, void * p_pa
     unsigned char num = 1;      // 卡机号
     unsigned char str_num[10] = {0};
     unsigned char str_id[10] = {0};
-
     unsigned char master1[] = "1:工作   2:备用 ";
     unsigned char master2[] = "1:备用   2:工作 ";
     unsigned char master3[] = "3:工作   4:备用 ";
@@ -485,6 +538,35 @@ void doShowWorkingSet (unsigned char dlg_id, unsigned char isNotRow, void * p_pa
 
     unsigned short id = 0x7811;      // CAN通信的ID
 
+    if(g_usUpWorkingID = 0x7811 && g_usUpBackingID == 0x7812)
+    {
+        for (i = 0; i < 16; i++)
+        {
+            g_dlg[dlgId].MsgRow[1][i] = master1[i];
+        }
+    }
+    else if (g_usUpWorkingID = 0x7812 && g_usUpBackingID == 0x7811)
+    {
+        for (i = 0; i < 16; i++)
+        {
+            g_dlg[dlgId].MsgRow[1][i] = master2[i];
+        }
+    }
+    if (g_usDownWorkingID = 0x7813 && g_usDownBackingID == 0x7814)
+    {
+
+        for (i = 0; i < 16; i++)
+        {
+            g_dlg[dlgId].MsgRow[2][i] = master3[i];
+        }
+    }
+    else if (g_usDownWorkingID = 0x7814 && g_usDownBackingID == 0x7813)
+    {
+        for (i = 0; i < 16; i++)
+        {
+            g_dlg[dlgId].MsgRow[2][i] = master4[i];
+        }
+    }
     for (i = 0; i < 4; i++)
     {
         display_GB2312_string (0, i * 2, g_dlg[dlgId].MsgRow[i], i == isNotRow ? 1 : 0);
@@ -515,7 +597,7 @@ void doShowWorkingSet (unsigned char dlg_id, unsigned char isNotRow, void * p_pa
                     case 1:
                         for (i = 0; i < 16; i++)
                         {
-                            g_dlg[dlgId].MsgRow[1][i] = master1[i];
+                            g_dlg[dlgId].MsgRow[isNotRow][i] = master1[i];
                         }
                         g_usUpWorkingID = 0x7811;
                         g_usUpBackingID = 0x7812;
@@ -523,7 +605,7 @@ void doShowWorkingSet (unsigned char dlg_id, unsigned char isNotRow, void * p_pa
                     case 2:
                         for (i = 0; i < 16; i++)
                         {
-                            g_dlg[dlgId].MsgRow[2][i] = master3[i];
+                            g_dlg[dlgId].MsgRow[isNotRow][i] = master3[i];
                         }
                         g_usDownWorkingID = 0x7813;
                         g_usDownBackingID = 0x7814;
@@ -538,7 +620,7 @@ void doShowWorkingSet (unsigned char dlg_id, unsigned char isNotRow, void * p_pa
                     case 1:
                         for (i = 0; i < 16; i++)
                         {
-                            g_dlg[dlgId].MsgRow[1][i] = master2[i];
+                            g_dlg[dlgId].MsgRow[isNotRow][i] = master2[i];
                         }
                         g_usUpWorkingID = 0x7812;
                         g_usUpBackingID = 0x7811;
@@ -546,7 +628,7 @@ void doShowWorkingSet (unsigned char dlg_id, unsigned char isNotRow, void * p_pa
                     case 2:
                         for (i = 0; i < 16; i++)
                         {
-                            g_dlg[dlgId].MsgRow[2][i] = master4[i];
+                            g_dlg[dlgId].MsgRow[isNotRow][i] = master4[i];
                         }
                         g_usDownWorkingID = 0x7814;
                         g_usDownBackingID = 0x7813;
@@ -1069,7 +1151,7 @@ while_label:
                 break;
             case KEY_CANCEL:
                 //g_ucaFaultCode[faultCodeIndex][0] = 0;
-                myCANTransmit(&gt_TxMessage, num, NO_FAIL, CLEAR_FAULT_CODE, CLEAR_FAULT, NO_FAIL, NO_FAIL, NO_FAIL);
+                myCANTransmit(&gt_TxMessage, num, NO_FAIL, CLEAR_FAULT_CODE, CLEAR_FAULT, NO_FAIL, NO_FAIL, faultCode);
                 g_ucIsUpdateMenu = 1;
                 return;
                 break;
