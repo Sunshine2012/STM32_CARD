@@ -626,6 +626,7 @@ void doShowWorkingSet (unsigned char dlg_id, unsigned char isNotRow, void * p_pa
                 }
                 break;
             case KEY_OK:
+                g_ucDeviceIsSTBY = 1;       // 每次设置主备机,复位状态
                 switch (isNotRow)
                 {
                     case 1:
@@ -957,6 +958,7 @@ void doShowDebugOne (unsigned char dlg_id, unsigned char isNotRow, void * p_parm
     while (DEF_TRUE)
     {                            //任务体,通常写成一个死循环
         key = g_ucKeyValues;
+        g_ucDeviceIsSTBY = 1;
         switch (key)
         {
             case KEY_UP:
@@ -1025,6 +1027,7 @@ void doShowDebugTwo (unsigned char dlg_id, unsigned char isNotRow, void * p_parm
     while (DEF_TRUE)
     {                            //任务体,通常写成一个死循环
         key = g_ucKeyValues;
+        g_ucDeviceIsSTBY = 1;
         switch (key)
         {
             case KEY_UP:
@@ -1140,6 +1143,7 @@ while_label:
             case KEY_CANCEL:
                 //g_ucaFaultCode[faultCodeIndex][0] = 0;
                 myCANTransmit(&gt_TxMessage, num, NO_FAIL, CLEAR_FAULT_CODE, CLEAR_FAULT, NO_FAIL, NO_FAIL, faultCode);
+                g_ucDeviceIsSTBY = 1;  // 故障解除之后,清除标志,进入等待状态,等待正常的发卡流程
                 g_ucIsUpdateMenu = 1;
                 return;
                 break;
