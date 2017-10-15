@@ -15,6 +15,8 @@ typedef enum {FAILED = 0, PASSED = !FAILED} TestStatus;
 
 unsigned char myCANTransmit (void * p_Msg, unsigned char mechine_id, unsigned char boxNum, unsigned char cmd, unsigned char status,
                       unsigned char data_H, unsigned char data_L, unsigned char errNum);
+unsigned char myCANTransmit_ID(void * p_Msg, unsigned char targetID, unsigned char mechineID, unsigned char boxNum, unsigned char cmd, unsigned char status,
+                      unsigned char data_H, unsigned char data_L, unsigned char errNum);
 
 static void CAN_RCC_Config(void);
 static void CAN_GPIO_Config(void);

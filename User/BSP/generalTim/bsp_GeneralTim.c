@@ -14,11 +14,11 @@ void  GENERAL_TIM_IRQHandler (void)
     {
         TIM_ClearITPendingBit(GENERAL_TIM , TIM_FLAG_Update);       // 清中断
         time++;
-        if (time == 3000)
+        if (time == 100)
         {
             time = 0;
             g_ucDeviceIsSTBY = 1;
-            //TIM_ITConfig(GENERAL_TIM,TIM_IT_Update,DISABLE);            // 关闭中断
+            TIM_ITConfig(GENERAL_TIM,TIM_IT_Update,DISABLE);            // 关闭中断
         }
 
     }

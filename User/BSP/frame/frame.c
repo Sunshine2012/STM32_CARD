@@ -235,79 +235,68 @@ CPU_INT08U  AnalyzeCANFrame ( void * p_arg )
             myCANTransmit(&gt_TxMessage, pRxMessage->Data[1], pRxMessage->Data[2], MACHINE_STATUES, (count) % 10 ? CARD_IS_OK : CARD_IS_BAD, 0, 0, NO_FAIL);
             break;
         case KEY_PRESS:             // 司机已按键
-            if (g_ucDeviceIsSTBY != 1)     // 如果卡没有被取走，按键不响应,直接退出
+            if (g_ucDeviceIsSTBY == 1 && pRxMessage->Data[4] == 0x10)      // 未进入发卡流程,且有卡
             {
-                u8 TransmitMailbox;
-                CanTxMsg TxMessage;
-                g_uiSerNum = pRxMessage->Data[0];
-                memset(&gt_TxMessage,0,sizeof (CanTxMsg));
+                DEBUG_printf ("%s\r\n",(char *)CheckPriMsg(CARD_KEY_PRESS));
+                printf ("%s\n",(char *)&g_tCardKeyPressFrame);
 
-                gt_TxMessage.StdId = 0x00;
-                gt_TxMessage.RTR = CAN_RTR_DATA;
-                gt_TxMessage.IDE = CAN_ID_EXT;;
-                gt_TxMessage.DLC = 8;
-                gt_TxMessage.Data[0] = pRxMessage->Data[0];
+                g_ucDeviceIsSTBY = 0;      // 按键发卡流程开始之后，再次按键不再响应
 
-                gt_TxMessage.Data[2] = 0;
-                gt_TxMessage.Data[3] = WRITE_CARD_STATUS;
-                gt_TxMessage.Data[4] = 0;
-                gt_TxMessage.Data[5] = 0;
-                gt_TxMessage.Data[6] = 0;
-                gt_TxMessage.Data[7] = 0;
-
-
-                if(pRxMessage->Data[1] == 0x01)
-                {
-                    gt_TxMessage.ExtId = 0x7811;
-                    gt_TxMessage.Data[1] = 0x02;
-                }
-                else if (pRxMessage->Data[1] == 0x02)
-                {
-                    gt_TxMessage.ExtId = 0x7812;
-                    gt_TxMessage.Data[1] = 0x01;
-                }
-                else if (pRxMessage->Data[1] == 0x03)
-                {
-                    gt_TxMessage.ExtId = 0x7813;
-                    gt_TxMessage.Data[1] = 0x04;
-                }
-                else if (pRxMessage->Data[1] == 0x04)
-                {
-                    gt_TxMessage.ExtId = 0x7814;
-                    gt_TxMessage.Data[1] = 0x03;
-                }
-
-                TransmitMailbox = CAN_Transmit(CAN1,&gt_TxMessage);
-                i = 0;
-                while((CAN_TransmitStatus(CAN1,TransmitMailbox) != CANTXOK) && (i != 0xFF))
-                {
-                    i++;
-                }
-
-                i = 0;
-                while((CAN_MessagePending(CAN1,CAN_FIFO0) < 1) && (i != 0xFF))
-                {
-                    i++;
-                }
-                g_uiSerNum++;                               // 保持帧序号不变,将数据回复
-
-
-                return 0;
-            }
-            //if (pRxMessage->Data[1] == g_ucUpWorkingID || pRxMessage->Data[1] == g_ucDownWorkingID)
-            //{
-
-            //}
-            g_ucDeviceIsSTBY = 0;      // 按键发卡流程开始之后，再次按键不再响应
-            //GENERAL_TIM_Init ();
-            DEBUG_printf ("%s\r\n",(char *)CheckPriMsg(CARD_KEY_PRESS));
-            if (pRxMessage->Data[4] == 0x10) // 如果设备为运行态且有卡
-            {
-                myCANTransmit(&gt_TxMessage, pRxMessage->Data[1], pRxMessage->Data[2], WRITE_CARD_STATUS, CARD_IS_OK, 0, 0, NO_FAIL);
+                myCANTransmit_ID(&gt_TxMessage, pRxMessage->Data[1], pRxMessage->Data[1], 0, WRITE_CARD_STATUS, CARD_IS_OK, 0, 0, NO_FAIL);
                 copyMenu (pRxMessage->Data[1], KEY_PRESS, 0, 7, 4);
-                // copyStatusMsg (pRxMessage->Data[1], (count++) % 10 ? CARD_IS_OK : CARD_IS_BAD, 0, 12, 4);
+/*
+                if (pRxMessage->Data[1] == g_ucUpWorkingID)
+                {
+                    g_ucDeviceIsSTBY = 0;      // 按键发卡流程开始之后，再次按键不再响应
+
+                    myCANTransmit_ID(&gt_TxMessage, g_ucUpWorkingID, g_ucUpWorkingID, 0, WRITE_CARD_STATUS, CARD_IS_OK, 0, 0, NO_FAIL);
+                    copyMenu (g_ucUpWorkingID, KEY_PRESS, 0, 7, 4);
+
+                }
+                else if (pRxMessage->Data[1] == g_ucDownWorkingID)
+                {
+                    g_ucDeviceIsSTBY = 0;      // 按键发卡流程开始之后，再次按键不再响应
+
+                    myCANTransmit_ID(&gt_TxMessage, g_ucDownWorkingID, g_ucDownWorkingID, 0, WRITE_CARD_STATUS, CARD_IS_OK, 0, 0, NO_FAIL);
+                    copyMenu (g_ucDownWorkingID, KEY_PRESS, 0, 7, 4);
+                }
+                else if (pRxMessage->Data[1] == g_ucUpBackingID)
+                {
+                    g_ucDeviceIsSTBY = 0;      // 按键发卡流程开始之后，再次按键不再响应
+
+                    myCANTransmit_ID(&gt_TxMessage, g_ucUpBackingID, g_ucUpBackingID, 0, WRITE_CARD_STATUS, CARD_IS_OK, 0, 0, NO_FAIL);
+                    copyMenu (g_ucUpBackingID, KEY_PRESS, 0, 7, 4);
+                }
+                else if (pRxMessage->Data[1] == g_ucDownBackingID)
+                {
+                    g_ucDeviceIsSTBY = 0;      // 按键发卡流程开始之后，再次按键不再响应
+
+                    myCANTransmit_ID(&gt_TxMessage, g_ucDownBackingID, g_ucDownBackingID, 0, WRITE_CARD_STATUS, CARD_IS_OK, 0, 0, NO_FAIL);
+                    copyMenu (g_ucDownBackingID, KEY_PRESS, 0, 7, 4);
+                }
+*/
             }
-            printf ("%s\n",(char *)&g_tCardKeyPressFrame);
+            else if (g_ucDeviceIsSTBY == 0 && pRxMessage->Data[4] == 0x10)    // 已经进入发卡流程,且有卡
+            {
+                //DEBUG_printf ("%s\r\n",(char *)CheckPriMsg(CARD_KEY_PRESS));
+                //printf ("%s\n",(char *)&g_tCardKeyPressFrame);
+                if (pRxMessage->Data[1] == g_ucUpWorkingID)
+                {
+                    myCANTransmit_ID(&gt_TxMessage, g_ucUpWorkingID, g_ucUpBackingID, 0, WRITE_CARD_STATUS, CARD_IS_OK, 0, 0, NO_FAIL);
+                }
+                else if (pRxMessage->Data[1] == g_ucDownWorkingID)
+                {
+                    myCANTransmit_ID(&gt_TxMessage, g_ucDownWorkingID, g_ucDownBackingID, 0, WRITE_CARD_STATUS, CARD_IS_OK, 0, 0, NO_FAIL);
+                }
+                else if (pRxMessage->Data[1] == g_ucUpBackingID)
+                {
+                    myCANTransmit_ID(&gt_TxMessage, g_ucUpBackingID, g_ucUpWorkingID, 0, WRITE_CARD_STATUS, CARD_IS_OK, 0, 0, NO_FAIL);
+                }
+                else if (pRxMessage->Data[1] == g_ucDownBackingID)
+                {
+                    myCANTransmit_ID(&gt_TxMessage, g_ucDownBackingID, g_ucDownWorkingID, 0, WRITE_CARD_STATUS, CARD_IS_OK, 0, 0, NO_FAIL);
+                }
+            }
             break;
         case CARD_SPIT_NOTICE:      // 出卡通知
             dacSet(DATA_quka,SOUND_LENGTH_quka);

@@ -79,6 +79,44 @@ void CAN_RCC_Config(void)
     RCC_APB1PeriphClockCmd(RCC_APB1Periph_CAN1, ENABLE);
 }
 
+unsigned char myCANTransmit_ID(void * p_Msg, unsigned char targetID, unsigned char mechineID, unsigned char boxNum, unsigned char cmd, unsigned char status,
+                      unsigned char data_H, unsigned char data_L, unsigned char errNum)
+{
+    u32 i = 0;
+    //static u8 uCount = 0;
+    u8 TransmitMailbox;
+    CanTxMsg *p_TxMessage = (CanTxMsg *)p_Msg;
+    CanTxMsg TxMessage;
+    memset(p_TxMessage,0,sizeof (CanTxMsg));
+    p_TxMessage->StdId = 0x00;
+    p_TxMessage->ExtId = 0x7810 | targetID;
+    p_TxMessage->RTR = CAN_RTR_DATA;
+    p_TxMessage->IDE = CAN_ID_EXT;;
+    p_TxMessage->DLC = 8;
+    p_TxMessage->Data[0] = g_uiSerNum;
+    p_TxMessage->Data[1] = mechineID;
+    p_TxMessage->Data[2] = boxNum;
+    p_TxMessage->Data[3] = cmd;
+    p_TxMessage->Data[4] = status;
+    p_TxMessage->Data[5] = data_H;
+    p_TxMessage->Data[6] = data_L;
+    p_TxMessage->Data[7] = errNum;
+
+    TransmitMailbox = CAN_Transmit(CAN1,p_TxMessage);
+    i = 0;
+    while((CAN_TransmitStatus(CAN1,TransmitMailbox) != CANTXOK) && (i != 0xFF))
+    {
+        i++;
+    }
+
+    i = 0;
+    while((CAN_MessagePending(CAN1,CAN_FIFO0) < 1) && (i != 0xFF))
+    {
+        i++;
+    }
+    g_uiSerNum++;           // Ö¡ÐòºÅÃ¿´Î¼Ó1
+    return 0;
+}
 
 
 unsigned char myCANTransmit (void * p_Msg, unsigned char mechine_id, unsigned char boxNum, unsigned char cmd, unsigned char status,
