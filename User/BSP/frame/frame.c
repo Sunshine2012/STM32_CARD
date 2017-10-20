@@ -3,10 +3,8 @@
 #include "WAV_C_xiexie.h"
 #include "WAV_C_quka.h"
 
-unsigned char  g_ucDeviceIsSTBY   = 1;                  // 两个卡机处于待机(Standby)状态下,按键按下,主机收到两条按键信息,此时只处理主机的,如果只收到一条按键信息,则直接发卡
-
-unsigned short g_usaInitCardCount[5]    = {9999, 9998, 9997, 9996, 9995};    // 卡初始设置值,[0]为总卡数量,发1张卡,减1,[1~4]为每个卡机初始卡数量,发1张卡,减1.
-unsigned short g_usaSpitCardCount[5]    = {0, 0, 0, 0, 0};    // 出卡数量,[0]为出卡总数量,发1张卡,加1,[1~4]为每个卡机发卡数量,发1张卡,加1.
+unsigned int g_uiaInitCardCount[5]    = {9999, 9998, 9997, 9996, 9995};    // 卡初始设置值,[0]为总卡数量,发1张卡,减1,[1~4]为每个卡机初始卡数量,发1张卡,减1.
+unsigned int g_uiaSpitCardCount[5]    = {0, 0, 0, 0, 0};    // 出卡数量,[0]为出卡总数量,发1张卡,加1,[1~4]为每个卡机发卡数量,发1张卡,加1.
 
 
 CPU_INT08U g_ucSerNum = '0';  // 帧序号   全局
@@ -205,139 +203,176 @@ CPU_INT08U * CheckPriMsg (CPU_INT08U ch)
     {
         if(g_taPri_msg[i].CTL == ch)
         {
-            return (CPU_INT08U *)g_taPri_msg[i].Msg;
-        }
-    }
-    return (CPU_INT08U *)g_taPri_msg[0].Msg;
-}
+             return (CPU_INT08U *)g_taPri_msg[i].Msg;
+         }
+     }
+     return (CPU_INT08U *)g_taPri_msg[0].Msg;
+ }
 
 
 
-CPU_INT08U  AnalyzeCANFrame ( void * p_arg )
-{
-    CanRxMsg *pRxMessage = (CanRxMsg *)p_arg;                       // can数据接收缓存
-    OS_ERR      err;
-    unsigned char i, n;
-    unsigned char str_id[10] = {0};
-    static unsigned char count = 1;
-    g_uiSerNum = pRxMessage->Data[0];                               // 保持帧序号不变,将数据回复
-    switch(pRxMessage->Data[3])
-    {
-        case MACHINE_CHECK_CARD:    // 指定工位验卡
-            DEBUG_printf ("%s\r\n",(char *)CheckPriMsg(CARD_KEY_PRESS));
-            printf ("%s\n",(char *)&g_tCardKeyPressFrame);
-            copyMenu (pRxMessage->Data[1], MACHINE_CHECK_CARD, 0, 7, 4);
-            copyStatusMsg (pRxMessage->Data[1], (count++) % 10 ? CARD_IS_OK : CARD_IS_BAD, 0, 12, 4);
-            if (!(count++) % 10)
-            {
-                g_ucDeviceIsSTBY = 1;          // 如果为坏卡，则将清除标志，等待再次上报按键信息
+ CPU_INT08U  AnalyzeCANFrame ( void * p_arg )
+ {
+     CanRxMsg *pRxMessage = (CanRxMsg *)p_arg;                       // can数据接收缓存
+     OS_ERR      err;
+     unsigned char i, n;
+     unsigned char ID_temp = 0;
+     unsigned char str_id[10] = {0};
+     static unsigned char count = 1;
+     g_uiSerNum = pRxMessage->Data[0];                               // 保持帧序号不变,将数据回复
+     OSTimeDly ( 5, OS_OPT_TIME_DLY, & err );
+     switch(pRxMessage->Data[3])
+     {
+         case KEY_PRESS:             // 司机已按键
+             if (g_ucaDeviceIsSTBY[0] == 1 && g_ucaDeviceIsSTBY[1] == 1
+                 && g_ucaDeviceIsSTBY[2] == 1 && g_ucaDeviceIsSTBY[3] == 1
+                 || pRxMessage->Data[2] == 0xff)
+             {
+                 if (pRxMessage->Data[4] == 0x10)      // 未进入发卡流程,且有卡
+                 {
+                     DEBUG_printf ("%s\r\n",(char *)CheckPriMsg(CARD_KEY_PRESS));
+                     printf ("%s\n",(char *)&g_tCardKeyPressFrame);
+
+                     g_ucaDeviceIsSTBY[pRxMessage->Data[1] - 1] = 0;      // 按键发卡流程开始之后，再次按键不再响应
+
+                     myCANTransmit(&gt_TxMessage, pRxMessage->Data[1], 0, WRITE_CARD_STATUS, CARD_IS_OK, 0, 0, NO_FAIL);
+                     copyMenu (pRxMessage->Data[1], KEY_PRESS, 0, 7, 4);
+                     OSTimeDly ( 5, OS_OPT_TIME_DLY, & err );
+
+                 }
+                 else
+                 {
+                     myCANTransmit(&gt_TxMessage, pRxMessage->Data[1], 0, WRITE_CARD_STATUS, 0x10, 0, 0, NO_FAIL);
+                     g_ucaDeviceIsSTBY[pRxMessage->Data[1] - 1] = 1;
+                 }
+             }
+             else
+             {
+                 myCANTransmit(&gt_TxMessage, pRxMessage->Data[1], 0, WRITE_CARD_STATUS, 0x10, 0, 0, NO_FAIL);
+             }
+             break;
+         case CARD_SPIT_NOTICE:      // 出卡通知
+             myCANTransmit(&gt_TxMessage, pRxMessage->Data[1], 0, CARD_SPIT_NOTICE_ACK, 0, 0, 0, NO_FAIL);
+             dacSet(DATA_quka,SOUND_LENGTH_quka);
+             copyMenu (pRxMessage->Data[1], CARD_SPIT_NOTICE, 0, 7, 4);
+             copyStatusMsg (pRxMessage->Data[1], 0xfe, 0, 12, 4);            //
+             break;
+         case CARD_TAKE_AWAY_NOTICE: // 卡已被取走通知
+             myCANTransmit(&gt_TxMessage, pRxMessage->Data[1], 0, CARD_TAKE_AWAY_NOTICE_ACK, 0, 0, 0, NO_FAIL);
+             dacSet(DATA_xiexie,SOUND_LENGTH_xiexie);
+             copyMenu (pRxMessage->Data[1], CARD_TAKE_AWAY_NOTICE, 0, 7, 4);
+             copyStatusMsg (pRxMessage->Data[1], 0xfe, 0, 12, 4);
+             g_ucaDeviceIsSTBY[pRxMessage->Data[1] - 1] = 1;      // 表明卡已经被取走,置位状态
+             switch (pRxMessage->Data[1])
+             {
+                 case 1:
+                     if (g_ucaFaultCode[1] == 0)
+                     {
+                        g_ucUpWorkingID = 2;
+                        g_ucUpBackingID = 1;
+                        myCANTransmit(&gt_TxMessage, g_ucUpWorkingID, 0, SET_MECHINE_STATUS, WORKING_STATUS, 0, 0, NO_FAIL);
+                        myCANTransmit(&gt_TxMessage, g_ucUpBackingID, 0, SET_MECHINE_STATUS, BACKING_STATUS, 0, 0, NO_FAIL);   // 设置工作态
+                    }
+                    break;
+                case 2:
+                    if (g_ucaFaultCode[0] == 0)
+                    {
+                        g_ucUpWorkingID = 1;
+                        g_ucUpBackingID = 2;
+                        myCANTransmit(&gt_TxMessage, g_ucUpWorkingID, 0, SET_MECHINE_STATUS, WORKING_STATUS, 0, 0, NO_FAIL);
+                        myCANTransmit(&gt_TxMessage, g_ucUpBackingID, 0, SET_MECHINE_STATUS, BACKING_STATUS, 0, 0, NO_FAIL);   // 设置工作态
+                    }
+                    break;
+                case 3:
+                    if (g_ucaFaultCode[3] == 0)
+                    {
+                        g_ucDownWorkingID = 4;
+                        g_ucDownBackingID = 3;
+                        myCANTransmit(&gt_TxMessage, g_ucDownWorkingID, 0, SET_MECHINE_STATUS, WORKING_STATUS, 0, 0, NO_FAIL);
+                        myCANTransmit(&gt_TxMessage, g_ucDownBackingID, 0, SET_MECHINE_STATUS, BACKING_STATUS, 0, 0, NO_FAIL);   // 设置工作态
+                    }
+                    break;
+                case 4:
+                    if (g_ucaFaultCode[2] == 0)
+                    {
+                        g_ucDownWorkingID = 3;
+                        g_ucDownBackingID = 4;
+                        myCANTransmit(&gt_TxMessage, g_ucDownWorkingID, 0, SET_MECHINE_STATUS, WORKING_STATUS, 0, 0, NO_FAIL);
+                        myCANTransmit(&gt_TxMessage, g_ucDownBackingID, 0, SET_MECHINE_STATUS, BACKING_STATUS, 0, 0, NO_FAIL);   // 设置工作态
+                    }
+                    break;
+                default:
+                    break;
             }
-            myCANTransmit(&gt_TxMessage, pRxMessage->Data[1], pRxMessage->Data[2], MACHINE_STATUES, (count) % 10 ? CARD_IS_OK : CARD_IS_BAD, 0, 0, NO_FAIL);
+            myCANTransmit(&gt_TxMessage, 8, g_ucaFaultCode[0], g_ucaFaultCode[1], g_ucaFaultCode[2], g_ucaFaultCode[3], 0xff, 0xff);   // 设置工作态
+            g_ucIsUpdateMenu = 1;      // 更新界面
             break;
-        case KEY_PRESS:             // 司机已按键
-            if (g_ucDeviceIsSTBY == 1 && pRxMessage->Data[4] == 0x10)      // 未进入发卡流程,且有卡
-            {
-                DEBUG_printf ("%s\r\n",(char *)CheckPriMsg(CARD_KEY_PRESS));
-                printf ("%s\n",(char *)&g_tCardKeyPressFrame);
-
-                g_ucDeviceIsSTBY = 0;      // 按键发卡流程开始之后，再次按键不再响应
-
-                myCANTransmit_ID(&gt_TxMessage, pRxMessage->Data[1], pRxMessage->Data[1], 0, WRITE_CARD_STATUS, CARD_IS_OK, 0, 0, NO_FAIL);
-                copyMenu (pRxMessage->Data[1], KEY_PRESS, 0, 7, 4);
-/*
-                if (pRxMessage->Data[1] == g_ucUpWorkingID)
-                {
-                    g_ucDeviceIsSTBY = 0;      // 按键发卡流程开始之后，再次按键不再响应
-
-                    myCANTransmit_ID(&gt_TxMessage, g_ucUpWorkingID, g_ucUpWorkingID, 0, WRITE_CARD_STATUS, CARD_IS_OK, 0, 0, NO_FAIL);
-                    copyMenu (g_ucUpWorkingID, KEY_PRESS, 0, 7, 4);
-
-                }
-                else if (pRxMessage->Data[1] == g_ucDownWorkingID)
-                {
-                    g_ucDeviceIsSTBY = 0;      // 按键发卡流程开始之后，再次按键不再响应
-
-                    myCANTransmit_ID(&gt_TxMessage, g_ucDownWorkingID, g_ucDownWorkingID, 0, WRITE_CARD_STATUS, CARD_IS_OK, 0, 0, NO_FAIL);
-                    copyMenu (g_ucDownWorkingID, KEY_PRESS, 0, 7, 4);
-                }
-                else if (pRxMessage->Data[1] == g_ucUpBackingID)
-                {
-                    g_ucDeviceIsSTBY = 0;      // 按键发卡流程开始之后，再次按键不再响应
-
-                    myCANTransmit_ID(&gt_TxMessage, g_ucUpBackingID, g_ucUpBackingID, 0, WRITE_CARD_STATUS, CARD_IS_OK, 0, 0, NO_FAIL);
-                    copyMenu (g_ucUpBackingID, KEY_PRESS, 0, 7, 4);
-                }
-                else if (pRxMessage->Data[1] == g_ucDownBackingID)
-                {
-                    g_ucDeviceIsSTBY = 0;      // 按键发卡流程开始之后，再次按键不再响应
-
-                    myCANTransmit_ID(&gt_TxMessage, g_ucDownBackingID, g_ucDownBackingID, 0, WRITE_CARD_STATUS, CARD_IS_OK, 0, 0, NO_FAIL);
-                    copyMenu (g_ucDownBackingID, KEY_PRESS, 0, 7, 4);
-                }
-*/
-            }
-            else if (g_ucDeviceIsSTBY == 0 && pRxMessage->Data[4] == 0x10)    // 已经进入发卡流程,且有卡
-            {
-                //DEBUG_printf ("%s\r\n",(char *)CheckPriMsg(CARD_KEY_PRESS));
-                //printf ("%s\n",(char *)&g_tCardKeyPressFrame);
-                if (pRxMessage->Data[1] == g_ucUpWorkingID)
-                {
-                    myCANTransmit_ID(&gt_TxMessage, g_ucUpWorkingID, g_ucUpBackingID, 0, WRITE_CARD_STATUS, CARD_IS_OK, 0, 0, NO_FAIL);
-                }
-                else if (pRxMessage->Data[1] == g_ucDownWorkingID)
-                {
-                    myCANTransmit_ID(&gt_TxMessage, g_ucDownWorkingID, g_ucDownBackingID, 0, WRITE_CARD_STATUS, CARD_IS_OK, 0, 0, NO_FAIL);
-                }
-                else if (pRxMessage->Data[1] == g_ucUpBackingID)
-                {
-                    myCANTransmit_ID(&gt_TxMessage, g_ucUpBackingID, g_ucUpWorkingID, 0, WRITE_CARD_STATUS, CARD_IS_OK, 0, 0, NO_FAIL);
-                }
-                else if (pRxMessage->Data[1] == g_ucDownBackingID)
-                {
-                    myCANTransmit_ID(&gt_TxMessage, g_ucDownBackingID, g_ucDownWorkingID, 0, WRITE_CARD_STATUS, CARD_IS_OK, 0, 0, NO_FAIL);
-                }
-            }
-            break;
-        case CARD_SPIT_NOTICE:      // 出卡通知
-            dacSet(DATA_quka,SOUND_LENGTH_quka);
-            copyMenu (pRxMessage->Data[1], CARD_SPIT_NOTICE, 0, 7, 4);
-            copyStatusMsg (pRxMessage->Data[1], 0xfe, 0, 12, 4);            //
-            myCANTransmit(&gt_TxMessage, pRxMessage->Data[1], 0, CARD_SPIT_NOTICE_ACK, 0, 0, 0, NO_FAIL);
-            break;
-        case CARD_TAKE_AWAY_NOTICE: // 卡已被取走通知
-            dacSet(DATA_xiexie,SOUND_LENGTH_xiexie);
-            copyMenu (pRxMessage->Data[1], CARD_TAKE_AWAY_NOTICE, 0, 7, 4);
-            copyStatusMsg (pRxMessage->Data[1], 0xfe, 0, 12, 4);
-            myCANTransmit(&gt_TxMessage, pRxMessage->Data[1], 0, CARD_TAKE_AWAY_NOTICE_ACK, 0, 0, 0, NO_FAIL);
-            g_ucDeviceIsSTBY = 1;      // 表明卡已经被取走,置位状态
-            break;
-        case CARD_IS_READY:
+        case CARD_IS_READY:             // 卡就绪
+            myCANTransmit(&gt_TxMessage, pRxMessage->Data[1], 0, CARD_READY_ACK, 0, 0, 0, NO_FAIL);
             copyMenu (pRxMessage->Data[1], CARD_IS_READY, 0, 7, 6);
             copyStatusMsg (pRxMessage->Data[1], 0xfe, 0, 13, 3);
+            g_ucaCardIsReady[pRxMessage->Data[1] - 1] = 1;
             break;
         case MECHINE_WARNING:    // 报警
             myCANTransmit(&gt_TxMessage, pRxMessage->Data[1], 0, FAULT_CODE_ACK, 0, 0, 0, NO_FAIL);   // 回复故障码
-            if (pRxMessage->Data[4] == 0x21 && pRxMessage->Data[7] <= FAULT_CODE11)
+            if ((pRxMessage->Data[4] == 0x21) && (pRxMessage->Data[7] <= FAULT_CODE11))
             {
-                g_ucaFaultCode[pRxMessage->Data[1] - 1][0] = pRxMessage->Data[7];  // 报告故障码
-
-                if (pRxMessage->Data[1] <= 2) // 表明是上工位故障,设置主备机
+                switch (pRxMessage->Data[1])
                 {
-                    g_ucUpWorkingID = pRxMessage->Data[1] == 1 ? 2 : 1;
-                    g_ucUpBackingID = pRxMessage->Data[1] == 1 ? 1 : 2;
+                    case 1:
+                        //if (g_ucaCardIsReady[1] == 1 && g_ucaFaultCode[1] == 0)
+                        if (g_ucaFaultCode[1] == 0)
+                        {
+                            g_ucUpWorkingID = 2;
+                            g_ucUpBackingID = 1;
+                            myCANTransmit(&gt_TxMessage, g_ucUpWorkingID, 0, SET_MECHINE_STATUS, WORKING_STATUS, 0, 0, NO_FAIL);
+                            myCANTransmit(&gt_TxMessage, g_ucUpBackingID, 0, SET_MECHINE_STATUS, BACKING_STATUS, 0, 0, NO_FAIL);   // 设置工作态
+                        }
+                        break;
+                    case 2:
+                        //if (g_ucaCardIsReady[0] == 1 && g_ucaFaultCode[0] == 0)
+                        if (g_ucaFaultCode[0] == 0)
+                        {
+                            g_ucUpWorkingID = 1;
+                            g_ucUpBackingID = 2;
+                            myCANTransmit(&gt_TxMessage, g_ucUpWorkingID, 0, SET_MECHINE_STATUS, WORKING_STATUS, 0, 0, NO_FAIL);
+                            myCANTransmit(&gt_TxMessage, g_ucUpBackingID, 0, SET_MECHINE_STATUS, BACKING_STATUS, 0, 0, NO_FAIL);   // 设置工作态
+                        }
+                        break;
+                    case 3:
+                        //if (g_ucaCardIsReady[3] == 1 && g_ucaFaultCode[3] == 0)
+                        if (g_ucaFaultCode[3] == 0)
+                        {
+                            g_ucDownWorkingID = 4;
+                            g_ucDownBackingID = 3;
+                            myCANTransmit(&gt_TxMessage, g_ucDownWorkingID, 0, SET_MECHINE_STATUS, WORKING_STATUS, 0, 0, NO_FAIL);
+                            myCANTransmit(&gt_TxMessage, g_ucDownBackingID, 0, SET_MECHINE_STATUS, BACKING_STATUS, 0, 0, NO_FAIL);   // 设置工作态
+                        }
+                        break;
+                    case 4:
+                        //if (g_ucaCardIsReady[2] == 1 && g_ucaFaultCode[2] == 0)
+                        if (g_ucaFaultCode[2] == 0)
+                        {
+                            g_ucDownWorkingID = 3;
+                            g_ucDownBackingID = 4;
+                            myCANTransmit(&gt_TxMessage, g_ucDownWorkingID, 0, SET_MECHINE_STATUS, WORKING_STATUS, 0, 0, NO_FAIL);
+                            myCANTransmit(&gt_TxMessage, g_ucDownBackingID, 0, SET_MECHINE_STATUS, BACKING_STATUS, 0, 0, NO_FAIL);   // 设置工作态
+                        }
+                        break;
+                    default:
+                        break;
                 }
-                else
-                {
-                    g_ucDownWorkingID = pRxMessage->Data[1] == 3 ? 4 : 3;
-                    g_ucDownBackingID = pRxMessage->Data[1] == 3 ? 3 : 4;
-                }
+                g_ucaFaultCode[pRxMessage->Data[1] - 1] = pRxMessage->Data[7];  // 报告故障码
             }
             else if (pRxMessage->Data[7] > FAULT_CODE11)
             {
-                g_ucaFaultCode[pRxMessage->Data[1] - 1][0] = FAULT_CODE11 + 1;  // 报告故障码
+                g_ucaFaultCode[pRxMessage->Data[1] - 1] = FAULT_CODE11 + 1;  // 报告故障码
             }
-
             g_ucIsUpdateMenu = 1;      // 更新界面
+            break;
+        case CYCLE_ACK:
+            break;
+        case CARD_MACHINE_INIT_ACK:
             break;
         default:
             //OLED_ShowStr(0,0,p_arg,1);
@@ -355,7 +390,7 @@ CPU_INT08U  AnalyzeUartFrame ( void * p_arg )
     CPU_INT08U ucSerNum = 0;
     CPU_INT08U ucNum = *((CPU_INT08U *)p_arg + 1);
     CPU_INT08U type_frame = *((CPU_INT08U *)p_arg + 2);
-
+    //printf ("%s\n",(char *)&g_tCardKeyPressFrame);
     if (POSITIVE_ACK == type_frame)    // 正应答帧
     {
         return 0;
@@ -398,9 +433,13 @@ CPU_INT08U  AnalyzeUartFrame ( void * p_arg )
                 OLED_ShowStr(0,0,p_arg,1);   /* 设置卡夹卡数(67H)帧 */
                 display_GB2312_string (0, 2, "设置卡夹", 0);
                 break;
+            case PC_TICK:
+                OLED_ShowStr(0,0,p_arg,1);   /* 心跳帧 */
+                display_GB2312_string (0, 2, "心跳", 0);
+                break;
             default:
+                OLED_ShowStr(0,0,p_arg,1);   /* 心跳帧 */
                 display_GB2312_string (0, 2, "无效信息", 0);
-                printf("错误信息帧！\n");
                 break;
         }
     }

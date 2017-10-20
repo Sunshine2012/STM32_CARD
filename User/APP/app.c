@@ -340,7 +340,7 @@ static  void  AppTaskTmr ( void * p_arg )
     while (DEF_TRUE)
     {                            //任务体，通常写成一个死循环
 
-        OSTimeDly ( 1000, OS_OPT_TIME_DLY, & err ); //不断阻塞该任务
+        OSTimeDly ( 100, OS_OPT_TIME_DLY, & err ); //不断阻塞该任务
 
     }
 }
@@ -392,7 +392,7 @@ static  void AppTaskOLED ( void * p_arg )
             doShowStatusMenu(DLG_STATUS, 5, NULL);      // 显示菜单,需要反显示的行号
         }
 
-        if (g_ucaFaultCode[0][0] != 0 || g_ucaFaultCode[1][0] != 0 || g_ucaFaultCode[2][0] != 0 || g_ucaFaultCode[3][0] != 0)
+        if (g_ucaFaultCode[0] != 0 || g_ucaFaultCode[1] != 0 || g_ucaFaultCode[2] != 0 || g_ucaFaultCode[3] != 0)
         {
             doShowFaultCode (DLG_CLEAR_LCD, 5, NULL);
         }
@@ -420,6 +420,16 @@ void  AppTaskCanFrame ( void * p_arg )
     OS_MSG_SIZE    msg_size;
     CPU_INT08U * pMsg = NULL;
     CanRxMsg *ptRxMessage = NULL;                // can数据接收缓存
+    OSTimeDly ( 100, OS_OPT_TIME_DLY, & err ); //不断阻塞该任务
+    //myCANTransmit(&gt_TxMessage, g_ucUpWorkingID, 0, 1, 0, 0, 0, NO_FAIL);   // 设置工作态
+    //myCANTransmit(&gt_TxMessage, g_ucUpBackingID, 0, 1, 0, 0, 0, NO_FAIL);   // 设置备用态
+    //myCANTransmit(&gt_TxMessage, g_ucDownWorkingID, 0, 1, 0, 0, 0, NO_FAIL);   // 设置工作态
+    //myCANTransmit(&gt_TxMessage, g_ucDownBackingID, 0, 1, 0, 0, 0, NO_FAIL);   // 设置备用态
+
+    myCANTransmit(&gt_TxMessage, g_ucUpWorkingID, 0, SET_MECHINE_STATUS, WORKING_STATUS, 0, 0, NO_FAIL);   // 设置工作态
+    myCANTransmit(&gt_TxMessage, g_ucUpBackingID, 0, SET_MECHINE_STATUS, BACKING_STATUS, 0, 0, NO_FAIL);   // 设置备用态
+    myCANTransmit(&gt_TxMessage, g_ucDownWorkingID, 0, SET_MECHINE_STATUS, WORKING_STATUS, 0, 0, NO_FAIL);   // 设置工作态
+    myCANTransmit(&gt_TxMessage, g_ucDownBackingID, 0, SET_MECHINE_STATUS, BACKING_STATUS, 0, 0, NO_FAIL);   // 设置备用态
 
     while (DEF_TRUE)
     {                            //任务体，通常写成一个死循环
@@ -428,7 +438,7 @@ void  AppTaskCanFrame ( void * p_arg )
         /* 请求消息队列 queue 的消息 */
         ptRxMessage = OSQPend ((OS_Q         *)&queue_can,            //消息变量指针
                         (OS_TICK       )10,                    //等待时长
-                        (OS_OPT        )OS_OPT_PEND_NON_BLOCKING,  //如果没有获取到信号量就不等待
+                        (OS_OPT        )OS_OPT_PEND_BLOCKING,  //如果没有获取到信号量就不等待
                         (OS_MSG_SIZE  *)&msg_size,             //获取消息的字节大小
                         (CPU_TS       *)0,                     //获取任务发送时的时间戳
                         (OS_ERR       *)&err);                 //返回错误
@@ -438,7 +448,7 @@ void  AppTaskCanFrame ( void * p_arg )
             AnalyzeCANFrame((void *)ptRxMessage);
             // printf ("%s",(char *)ptRxMessage);
         }
-        OSTimeDly ( 10, OS_OPT_TIME_DLY, & err ); //不断阻塞该任务
+        OSTimeDly ( 1, OS_OPT_TIME_DLY, & err ); //不断阻塞该任务
     }
 }
 
@@ -464,7 +474,7 @@ void  AppTaskUartFrame ( void * p_arg )
     {                            //任务体，通常写成一个死循环
         pMsg = OSQPend ((OS_Q         *)&queue_uart,            //消息变量指针
                         (OS_TICK       )10,                     //等待时长
-                        (OS_OPT        )OS_OPT_PEND_NON_BLOCKING,   //如果没有获取到信号量就不等待
+                        (OS_OPT        )OS_OPT_PEND_BLOCKING,   //如果没有获取到信号量就不等待
                         (OS_MSG_SIZE  *)&msg_size,              //获取消息的字节大小
                         (CPU_TS       *)0,                      //获取任务发送时的时间戳
                         (OS_ERR       *)&err);                  //返回错误
@@ -478,7 +488,7 @@ void  AppTaskUartFrame ( void * p_arg )
         {
             //OLED_ShowStr(0,0,pMsg,1);
         }
-        OSTimeDly ( 10, OS_OPT_TIME_DLY, & err );     //不断阻塞该任务
+        OSTimeDly ( 1, OS_OPT_TIME_DLY, & err );     //不断阻塞该任务
     }
 }
 

@@ -29,6 +29,7 @@ typedef enum FRAME
     PC_QUERY_CARD_MECHINE   = 'e',      /* ²éÑ¯¿¨»ú×´Ì¬(65H)Ö¡          5×Ö½Ú */
     PC_QUERY_CARD_CLIP      = 'f',      /* ²éÑ¯¿¨¼Ğ(66H)Ö¡              5×Ö½Ú */
     PC_SET_CARD_NUM         = 'g',      /* ÉèÖÃ¿¨¼Ğ¿¨Êı(67H)Ö¡          8×Ö½Ú */
+    PC_TICK                 = 't',      /* ĞÄÌø */
     FRAME_END               = '>',      /* Ö¡½áÊø */
 }FRAME;
 
@@ -172,7 +173,7 @@ typedef enum CMD
     WRITE_CARD_STATUS       = 0x13,                 /* Ğ´¿¨Çé¿ö£¬ÄÚÈİÔÚ×´Ì¬ÂëÄÚ */
     CARD_SPIT_NOTICE_ACK    = 0x14,                 /* ³ö¿¨Í¨Öª»Ø¸´  */
     CARD_TAKE_AWAY_NOTICE_ACK= 0x15,                /* ¿¨±»È¡×ß»Ø¸´  */
-    SET_CARD_COUNT          = 0x16,                 /* ÉèÖÃIC¿¨ÊıÁ¿  */
+    CARD_READY_ACK          = 0x16,                 /* ¿¨¾ÍĞ÷ */
     CLEAR_FAULT_CODE        = 0x17,                 /* Çå³ı±¨¾¯  */
 
     FAULT_CODE_ACK          = 0x19,                 /* ±¨¾¯ĞÅÏ¢»Ø¸´  */
@@ -330,9 +331,8 @@ extern PC_TO_CARD_MECHINE_FRAME         g_tPcQuetyCardMechineFrame;         /* ²
 extern PC_TO_CARD_MECHINE_FRAME         g_tPcQuetyCardCpipFrame;            /* ²éÑ¯¿¨¼Ğ(66H)Ö¡              5×Ö½Ú */
 extern PC_SET_CARD_NUM_FRAME            g_tPcSetCardNumFrame;               /* ÉèÖÃ¿¨¼Ğ¿¨Êı(67H)Ö¡          8×Ö½Ú */
 
-extern unsigned char  g_ucDeviceIsSTBY;        // Á½¸ö¿¨»ú´¦ÓÚ´ı»ú(Standby)×´Ì¬ÏÂ,°´¼ü°´ÏÂ,Ö÷»úÊÕµ½°´¼üĞÅÏ¢·¢¿¨,Ö»ÒªÓĞ¿¨Ã»ÓĞ±»È¡×ß,¼´Ê¹ÊÕµ½°´¼üĞÅÏ¢,Ò²²»ÔÙ·¢¿¨.
-extern unsigned short g_usaInitCardCount[5];    // ¿¨³õÊ¼ÉèÖÃÖµ,[0]Îª×Ü¿¨ÊıÁ¿,·¢1ÕÅ¿¨,¼õ1,[1~4]ÎªÃ¿¸ö¿¨»ú³õÊ¼¿¨ÊıÁ¿,·¢1ÕÅ¿¨,¼õ1.
-extern unsigned short g_usaSpitCardCount[5];    // ³ö¿¨ÊıÁ¿,[0]Îª³ö¿¨×ÜÊıÁ¿,·¢1ÕÅ¿¨,¼Ó1,[1~4]ÎªÃ¿¸ö¿¨»ú·¢¿¨ÊıÁ¿,·¢1ÕÅ¿¨,¼Ó1.
+extern unsigned int g_uiaInitCardCount[5];    // ¿¨³õÊ¼ÉèÖÃÖµ,[0]Îª×Ü¿¨ÊıÁ¿,·¢1ÕÅ¿¨,¼õ1,[1~4]ÎªÃ¿¸ö¿¨»ú³õÊ¼¿¨ÊıÁ¿,·¢1ÕÅ¿¨,¼õ1.
+extern unsigned int g_uiaSpitCardCount[5];    // ³ö¿¨ÊıÁ¿,[0]Îª³ö¿¨×ÜÊıÁ¿,·¢1ÕÅ¿¨,¼Ó1,[1~4]ÎªÃ¿¸ö¿¨»ú·¢¿¨ÊıÁ¿,·¢1ÕÅ¿¨,¼Ó1.
 
 CPU_INT08U  AnalyzeCANFrame ( void * p_arg );
 CPU_INT08U  AnalyzeUartFrame ( void * p_arg );

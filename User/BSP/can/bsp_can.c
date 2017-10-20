@@ -123,7 +123,7 @@ unsigned char myCANTransmit (void * p_Msg, unsigned char mechine_id, unsigned ch
                       unsigned char data_H, unsigned char data_L, unsigned char errNum)
 {
     u32 i = 0;
-    //static u8 uCount = 0;
+    OS_ERR      err;
     u8 TransmitMailbox;
     CanTxMsg *p_TxMessage = (CanTxMsg *)p_Msg;
     CanTxMsg TxMessage;
@@ -141,7 +141,7 @@ unsigned char myCANTransmit (void * p_Msg, unsigned char mechine_id, unsigned ch
     p_TxMessage->Data[5] = data_H;
     p_TxMessage->Data[6] = data_L;
     p_TxMessage->Data[7] = errNum;
-
+    //OSTimeDly ( 10, OS_OPT_TIME_DLY, & err );
     TransmitMailbox = CAN_Transmit(CAN1,p_TxMessage);
     i = 0;
     while((CAN_TransmitStatus(CAN1,TransmitMailbox) != CANTXOK) && (i != 0xFF))
@@ -155,6 +155,7 @@ unsigned char myCANTransmit (void * p_Msg, unsigned char mechine_id, unsigned ch
         i++;
     }
     g_uiSerNum++;           // 帧序号每次加1
+    OSTimeDly ( 30, OS_OPT_TIME_DLY, & err );
     return 0;
 }
 
@@ -254,11 +255,11 @@ void CAN_Interrupt(void)
   CAN_InitStructure.CAN_RFLM=DISABLE;
   CAN_InitStructure.CAN_TXFP=DISABLE;
   CAN_InitStructure.CAN_Mode=CAN_Mode_Normal;
-  // 波特率为   36MHz / CAN_Prescaler / (CAN_SJW + CAN_BS1 + CAN_BS2)    = 500kps    aiwesky 20170704
+  // 波特率为   36MHz / CAN_Prescaler / (CAN_SJW + CAN_BS1 + CAN_BS2)    = 50kps    aiwesky 20171022
   CAN_InitStructure.CAN_SJW=CAN_SJW_1tq;
-  CAN_InitStructure.CAN_BS1=CAN_BS1_6tq;
-  CAN_InitStructure.CAN_BS2=CAN_BS2_5tq;
-  CAN_InitStructure.CAN_Prescaler=6;
+  CAN_InitStructure.CAN_BS1=CAN_BS1_10tq;           // CAN_BS1_6tq ------> CAN_BS1_10tq
+  CAN_InitStructure.CAN_BS2=CAN_BS2_7tq;            // CAN_BS1_5tq ------> CAN_BS1_7tq
+  CAN_InitStructure.CAN_Prescaler=40;               // 6 -----> 40
   CAN_Init(CAN1,&CAN_InitStructure);
 
   /* CAN filter init */

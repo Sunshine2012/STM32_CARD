@@ -7,9 +7,11 @@ unsigned char g_ucUpWorkingID      = 1;            // 上工位工作卡机号
 unsigned char g_ucUpBackingID      = 2;            // 上工位备用卡机号
 unsigned char g_ucDownWorkingID    = 3;            // 下工位工作卡机号
 unsigned char g_ucDownBackingID    = 4;            // 下工位备用卡机号
-unsigned char g_ucaFaultCode[4][10]   = {0};       // 卡机是否有未处理的故障
+unsigned char g_ucaCardIsReady[4]  = {1, 1, 1, 1};    // 卡就绪
+unsigned char g_ucaFaultCode[4]    = {0};          // 卡机是否有未处理的故障
+unsigned char g_ucaDeviceIsSTBY[4] = {1, 1, 1, 1}; // 两个卡机处于待机(Standby)状态下,按键按下,主机收到两条按键信息,此时只处理主机的,如果只收到一条按键信息,则直接发卡
 
-Dlg g_dlg[] = {
+Dlg g_dlg[] =           {
                         {DLG_CLEAR_LCD,      "                ", "                ", "                ", "                "},
 
                         {DLG_LOGO,           "    ****电子    ", " www.*****.com  ", "   ****发卡机   ", "   版本: V1.0   "},
@@ -213,7 +215,7 @@ void doShowCardCountSet (unsigned char dlg_id, unsigned char isNotRow, void * p_
     unsigned char str_aCardCount[4][6] = {0};                     // 所有卡机初始化卡数量缓存显示字符串
     for (i = 0; i < 4; i++)
     {
-        usaCardCount[i] = g_usaInitCardCount[i + 1];    // 复制初始化卡数量到缓存，以供修改
+        usaCardCount[i] = g_uiaInitCardCount[i + 1];    // 复制初始化卡数量到缓存，以供修改
     }
     for (i = 0; i < 4; i++)
     {
@@ -362,7 +364,7 @@ void doShowCardCountSet (unsigned char dlg_id, unsigned char isNotRow, void * p_
             case KEY_OK:
                 isSetMode = 0;      // 退出设置模式
                 seek = 0;                   // 归零当前调节的数据位置
-                g_usaInitCardCount[isNotRow + 1] = usaCardCount[isNotRow];
+                g_uiaInitCardCount[isNotRow + 1] = usaCardCount[isNotRow];
                 for (i = 0; i < 4; i++)     // 复制修改过的卡数量到显示缓存
                 {
                     for (j = 0; j < 4; j++)
@@ -626,7 +628,10 @@ void doShowWorkingSet (unsigned char dlg_id, unsigned char isNotRow, void * p_pa
                 }
                 break;
             case KEY_OK:
-                g_ucDeviceIsSTBY = 1;       // 每次设置主备机,复位状态
+                for (i = 0; i < 4; i++) // 每次设置主备机,复位状态
+                {
+                    g_ucaDeviceIsSTBY[i] = 1;
+                }
                 switch (isNotRow)
                 {
                     case 1:
@@ -958,7 +963,10 @@ void doShowDebugOne (unsigned char dlg_id, unsigned char isNotRow, void * p_parm
     while (DEF_TRUE)
     {                            //任务体,通常写成一个死循环
         key = g_ucKeyValues;
-        g_ucDeviceIsSTBY = 1;
+        for (i = 0; i < 4; i++)
+        {
+            g_ucaDeviceIsSTBY[i] = 1;
+        }
         switch (key)
         {
             case KEY_UP:
@@ -1027,7 +1035,10 @@ void doShowDebugTwo (unsigned char dlg_id, unsigned char isNotRow, void * p_parm
     while (DEF_TRUE)
     {                            //任务体,通常写成一个死循环
         key = g_ucKeyValues;
-        g_ucDeviceIsSTBY = 1;
+        for (i = 0; i < 4; i++)
+        {
+            g_ucaDeviceIsSTBY[i] = 1;
+        }
         switch (key)
         {
             case KEY_UP:
@@ -1102,11 +1113,11 @@ void doShowFaultCode (unsigned char dlg_id, unsigned char isNotRow, void * p_par
     {
         for (j = 0; j < (sizeof (g_dlg_fault_code) / sizeof (g_dlg_fault_code[0])); j++)
         {
-            if (g_ucaFaultCode[i][0] != 0 && g_ucaFaultCode[i][0] == g_dlg_fault_code[j].ID) // 查找故障码对应的显示界面
+            if (g_ucaFaultCode[i] != 0 && g_ucaFaultCode[i] == g_dlg_fault_code[j].ID) // 查找故障码对应的显示界面
             {
-                faultCode = g_ucaFaultCode[i][0];   // 记下当前的未处理的故障和卡机号
+                faultCode = g_ucaFaultCode[i];   // 记下当前的未处理的故障和卡机号
                 faultCodeIndex = i;
-                g_ucaFaultCode[i][0] = 0;
+                //g_ucaFaultCode[i] = 0;
                 num = i + 1;        // 记住是哪个卡机有故障,以清除故障
                 sprintf(str_num,"%02d",num);
                 for (n = 0; n < 2; n++)
@@ -1121,15 +1132,7 @@ void doShowFaultCode (unsigned char dlg_id, unsigned char isNotRow, void * p_par
             }
         }
     }
-/*
-    if (i == 4)
-    {
-        for (n = 0; n < 4; n++)
-        {
-            display_GB2312_string (0, n * 2, g_dlg_fault_code[12].MsgRow[n], 0);     // 显示故障界面
-        }
-    }
-*/
+
 while_label:
     while (DEF_TRUE)
     {                            //任务体,通常写成一个死循环
@@ -1137,13 +1140,16 @@ while_label:
         switch (key)
         {
             case KEY_ENTRY:     // 在故障码显示界面,按菜单键可以进入设置界面,且不清除按键值
-                g_ucaFaultCode[faultCodeIndex][0] = faultCode; // 保存当前未处理的故障,以免下次再次处理
+                g_ucaFaultCode[faultCodeIndex] = faultCode; // 保存当前未处理的故障,以免下次再次处理
                 return;
                 break;
             case KEY_CANCEL:
-                //g_ucaFaultCode[faultCodeIndex][0] = 0;
+                g_ucaFaultCode[faultCodeIndex] = 0;
                 myCANTransmit(&gt_TxMessage, num, NO_FAIL, CLEAR_FAULT_CODE, CLEAR_FAULT, NO_FAIL, NO_FAIL, faultCode);
-                g_ucDeviceIsSTBY = 1;  // 故障解除之后,清除标志,进入等待状态,等待正常的发卡流程
+                for (i = 0; i < 4; i++)     // 故障解除之后,清除标志,进入等待状态,等待正常的发卡流程
+                {
+                    g_ucaDeviceIsSTBY[i] = 1;
+                }
                 g_ucIsUpdateMenu = 1;
                 return;
                 break;
