@@ -301,7 +301,7 @@ void TmrCallback (OS_TMR *p_tmr, void *p_arg) //软件定时器MyTmr的回调函数
 
     ts_end = OS_TS_GET() - ts_start;     //获取定时后的时间戳（以CPU时钟进行计数的一个计数值）
                                          //，并计算定时时间。
-    OS_CRITICAL_ENTER();                 //进入临界段，不希望下面串口打印遭到中断
+    OS_CRITICAL_ENTER();                 //进入临界段，不希望下面语句遭到中断
 
     //printf ( "\r\n定时2s，通过时间戳测得定时 %07d us，即 %04d ms。\r\n",
     //                    ts_end / ( cpu_clk_freq / 1000000 ),     //将定时时间折算成 us
@@ -419,7 +419,8 @@ void  AppTaskCanFrame ( void * p_arg )
     OS_ERR      err;
     OS_MSG_SIZE    msg_size;
     CPU_INT08U * pMsg = NULL;
-    CanRxMsg *ptRxMessage = NULL;                // can数据接收缓存
+    CanRxMsg *ptRxMessage = NULL;                   // can数据接收缓存
+    CanRxMsg tRxMessage;                            // can数据缓存
     OSTimeDly ( 100, OS_OPT_TIME_DLY, & err ); //不断阻塞该任务
     //myCANTransmit(&gt_TxMessage, g_ucUpWorkingID, 0, 1, 0, 0, 0, NO_FAIL);   // 设置工作态
     //myCANTransmit(&gt_TxMessage, g_ucUpBackingID, 0, 1, 0, 0, 0, NO_FAIL);   // 设置备用态
@@ -434,19 +435,19 @@ void  AppTaskCanFrame ( void * p_arg )
     while (DEF_TRUE)
     {                            //任务体，通常写成一个死循环
 
-        //OS_CRITICAL_ENTER();                 //进入临界段，不希望下面串口打印遭到中断
+        //OS_CRITICAL_ENTER();                 // 进入临界段，不希望下面语句遭到中断
         /* 请求消息队列 queue 的消息 */
-        ptRxMessage = OSQPend ((OS_Q         *)&queue_can,            //消息变量指针
-                        (OS_TICK       )10,                    //等待时长
-                        (OS_OPT        )OS_OPT_PEND_BLOCKING,  //如果没有获取到信号量就不等待
-                        (OS_MSG_SIZE  *)&msg_size,             //获取消息的字节大小
-                        (CPU_TS       *)0,                     //获取任务发送时的时间戳
-                        (OS_ERR       *)&err);                 //返回错误
+        ptRxMessage =   OSQPend ((OS_Q        *)&queue_can,            //消息变量指针
+                                (OS_TICK       )20,                    //等待时长
+                                (OS_OPT        )OS_OPT_PEND_BLOCKING,  //如果没有获取到信号量就不等待
+                                (OS_MSG_SIZE  *)&msg_size,             //获取消息的字节大小
+                                (CPU_TS       *)0,                     //获取任务发送时的时间戳
+                                (OS_ERR       *)&err);                 //返回错误
         //OS_CRITICAL_EXIT();
         if(ptRxMessage != NULL)
         {
-            AnalyzeCANFrame((void *)ptRxMessage);
-            // printf ("%s",(char *)ptRxMessage);
+            tRxMessage = *(CanRxMsg *)ptRxMessage;
+            AnalyzeCANFrame(tRxMessage);
         }
         OSTimeDly ( 1, OS_OPT_TIME_DLY, & err ); //不断阻塞该任务
     }
@@ -463,7 +464,7 @@ void  AppTaskUartFrame ( void * p_arg )
     //CPU_INT08U ucaMsg[30] = "aiwesky uC/OS-III";
 
     OSTimeDly ( 1000, OS_OPT_TIME_DLY, & err ); //等待1S
-    OS_CRITICAL_ENTER();                 //进入临界段，不希望下面串口打印遭到中断
+    OS_CRITICAL_ENTER();                 // 进入临界段，不希望下面语句遭到中断
     DEBUG_printf ("%s\r\n","你好,欢迎使用乐为电子板卡系统");
 
     printf("%s", (char *)&g_tCardMechinePowerOnFrame);      // 上电信息
@@ -473,7 +474,7 @@ void  AppTaskUartFrame ( void * p_arg )
     while (DEF_TRUE)
     {                            //任务体，通常写成一个死循环
         pMsg = OSQPend ((OS_Q         *)&queue_uart,            //消息变量指针
-                        (OS_TICK       )10,                     //等待时长
+                        (OS_TICK       )20,                     //等待时长
                         (OS_OPT        )OS_OPT_PEND_BLOCKING,   //如果没有获取到信号量就不等待
                         (OS_MSG_SIZE  *)&msg_size,              //获取消息的字节大小
                         (CPU_TS       *)0,                      //获取任务发送时的时间戳
@@ -482,7 +483,7 @@ void  AppTaskUartFrame ( void * p_arg )
         //macLED2_TOGGLE ();
         if (pMsg != NULL)
         {
-            AnalyzeUartFrame((void *)pMsg);
+            AnalyzeUartFrame((void *)pMsg, msg_size);
         }
         if(pMsg != NULL)
         {

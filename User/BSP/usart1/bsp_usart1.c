@@ -82,7 +82,7 @@ void USART1_Config(void)
     USART_InitStructure.USART_Mode = USART_Mode_Rx | USART_Mode_Tx;
     // 完成串口的初始化配置
     USART_Init(macUSART1, &USART_InitStructure);
-    USART_Cmd(macUSART1, ENABLE);
+
     // 串口中断优先级配置
     UART1_NVIC_Configuration();
 
@@ -159,11 +159,18 @@ void USART1_nSendString(USART_TypeDef * pUSARTx,char *str,int n)
 ///重定向c库函数printf到串口，重定向后可使用printf函数
 int fputc(int ch, FILE *f)
 {
-        /* 发送一个字节数据到串口 */
-        USART_SendData(macUSART1, (uint8_t) ch);
+    u32 i = 100000000;
+	/* 发送一个字节数据到串口 */
+	USART_SendData(macUSART1, (uint8_t) ch);
 
-        /* 等待发送完毕 */
-        while (USART_GetFlagStatus(macUSART1, USART_FLAG_TXE) == RESET);
+	/* 等待发送完毕 */
+	while (USART_GetFlagStatus(macUSART1, USART_FLAG_TXE) == RESET)
+    {
+        if (i-- == 0)
+        {
+            break;
+        }
+    }
 
         return (ch);
 }
@@ -171,10 +178,16 @@ int fputc(int ch, FILE *f)
 ///重定向c库函数scanf到串口，重写向后可使用scanf、getchar等函数
 int fgetc(FILE *f)
 {
-        /* 等待串口1输入数据 */
-        while (USART_GetFlagStatus(macUSART1, USART_FLAG_RXNE) == RESET);
-
-        return (int)USART_ReceiveData(macUSART1);
+    u32 i = 100000000;
+	/* 等待串口输入数据 */
+	while (USART_GetFlagStatus(macUSART1, USART_FLAG_RXNE) == RESET)
+	{
+		if (i-- == 0)
+        {
+            break;
+        }
+    }
+	return (int)USART_ReceiveData(macUSART1);
 }
 /*********************************************END OF FILE**********************/
 #endif

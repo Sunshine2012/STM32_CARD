@@ -1,11 +1,11 @@
 /**
   ******************************************************************************
-  * @file    Project/STM32F10x_StdPeriph_Template/stm32f10x_it.c 
+  * @file    Project/STM32F10x_StdPeriph_Template/stm32f10x_it.c
   * @author  MCD Application Team
   * @version V3.5.0
   * @date    08-April-2011
   * @brief   Main Interrupt Service Routines.
-  *          This file provides template for all exceptions handler and 
+  *          This file provides template for all exceptions handler and
   *          peripherals interrupt service routine.
   ******************************************************************************
   * @attention
@@ -14,7 +14,7 @@
   * WITH CODING INFORMATION REGARDING THEIR PRODUCTS IN ORDER FOR THEM TO SAVE
   * TIME. AS A RESULT, STMICROELECTRONICS SHALL NOT BE HELD LIABLE FOR ANY
   * DIRECT, INDIRECT OR CONSEQUENTI
-  
+
   AL DAMAGES WITH RESPECT TO ANY CLAIMS ARISING
   * FROM THE CONTENT OF SUCH FIRMWARE AND/OR THE USE MADE BY CUSTOMERS OF THE
   * CODING INFORMATION CONTAINED HEREIN IN CONNECTION WITH THEIR PRODUCTS.
@@ -156,19 +156,17 @@ void macUSART1_IRQHandler(void)
     CPU_SR_ALLOC();      //使用到临界段（在关/开中断时）时必需该宏，该宏声明和定义一个局部变
                                              //量，用于保存关中断前的 CPU 状态寄存器 SR（临界段关中断只需保存SR）
                                              //，开中断时将该值还原。
-    OS_CRITICAL_ENTER();                 //进入临界段，不希望下面串口打印遭到中断
+    OS_CRITICAL_ENTER();                 // 进入临界段，不希望下面语句遭到中断
     if(USART_GetITStatus(macUSART1,USART_IT_RXNE)!=RESET)
     {
         g_rx_buf[g_num] = USART_ReceiveData(macUSART1);
-        //USART4_SendByte(macUSART4,g_rx_buf[g_num]);
         if(g_rx_buf[g_num] == FRAME_START)
         {
             g_rx_buf[0] = g_rx_buf[g_num];
             g_num = 0;
             g_num++;
         }
-        // 当接收到的值等于0XFF时，把值发送回去
-        else if( g_rx_buf[g_num] == FRAME_END)
+        else if( g_rx_buf[g_num] == FRAME_END)  // 当接收到的值等于'>'时，结束一帧数据
         {
             g_rx_buf[g_num + 1] = 0;
             /* 发布消息到消息队列 queue */
@@ -183,9 +181,9 @@ void macUSART1_IRQHandler(void)
         else
         {
             g_num++;
-            if (g_num > 50) //
+            if (g_num > 50) //一帧数据最大50字节,超出则丢弃
             {
-                g_num = 0;    
+                g_num = 0;
             }
         }
     }
@@ -200,11 +198,10 @@ void macUSART4_IRQHandler(void)
     CPU_SR_ALLOC();      //使用到临界段（在关/开中断时）时必需该宏，该宏声明和定义一个局部变
                                              //量，用于保存关中断前的 CPU 状态寄存器 SR（临界段关中断只需保存SR）
                                              //，开中断时将该值还原。
-    OS_CRITICAL_ENTER();                 //进入临界段，不希望下面串口打印遭到中断
+    OS_CRITICAL_ENTER();                 // 进入临界段，不希望下面语句遭到中断
     if(USART_GetITStatus(macUSART4,USART_IT_RXNE)!=RESET)
     {
         g_rx_buf[g_num] = USART_ReceiveData(macUSART4);
-        //USART4_SendByte(macUSART4,g_rx_buf[g_num]);
         if(g_rx_buf[g_num] == FRAME_START)
         {
             g_rx_buf[0] = g_rx_buf[g_num];
@@ -214,22 +211,21 @@ void macUSART4_IRQHandler(void)
         // 当接收到的值等于0XFF时，把值发送回去
         else if( g_rx_buf[g_num] == FRAME_END)
         {
-            g_rx_buf[g_num + 1] = 0;
+            g_rx_buf[g_num + 1] = '\r';
             /* 发布消息到消息队列 queue */
             OSQPost ((OS_Q        *)&queue_uart,                            //消息变量指针
                      (void        *)g_rx_buf,                               //要发送的数据的指针，将内存块首地址通过队列"发送出去"
                      (OS_MSG_SIZE  )strlen ( (const char*)g_rx_buf ),       //数据字节大小
                      (OS_OPT       )OS_OPT_POST_FIFO | OS_OPT_POST_ALL,     //先进先出和发布给全部任务的形式
                      (OS_ERR      *)&err);                                  //返回错误类型
-
         }
         // 当值不等时候，则继续接收下一个
         else
         {
             g_num++;
-            if (g_num > 50) //
+            if (g_num > 50) //一帧数据最大50字节,超出则丢弃
             {
-                g_num = 0;    
+                g_num = 0;
             }
         }
     }
@@ -247,7 +243,7 @@ void macUSART4_IRQHandler(void)
 
 /**
   * @}
-  */ 
+  */
 
 
 /******************* (C) COPYRIGHT 2011 STMicroelectronics *****END OF FILE****/

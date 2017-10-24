@@ -29,7 +29,10 @@ typedef enum FRAME
     PC_QUERY_CARD_MECHINE   = 'e',      /* ²éÑ¯¿¨»ú×´Ì¬(65H)Ö¡          5×Ö½Ú */
     PC_QUERY_CARD_CLIP      = 'f',      /* ²éÑ¯¿¨¼Ð(66H)Ö¡              5×Ö½Ú */
     PC_SET_CARD_NUM         = 'g',      /* ÉèÖÃ¿¨¼Ð¿¨Êý(67H)Ö¡          8×Ö½Ú */
-    PC_TICK                 = 't',      /* ÐÄÌø */
+    PC_CAR_HAS_COMING       = 'h',      /* ³µÒÔÀ´ÐÅÏ¢ */
+    PC_CAR_HAS_GONE         = 'i',      /* ³µÒÑ×ßÐÅÏ¢ */
+
+    PC_GET_DIST             = 't',      /* ²â¾à */
     FRAME_END               = '>',      /* Ö¡½áÊø */
 }FRAME;
 
@@ -334,8 +337,8 @@ extern PC_SET_CARD_NUM_FRAME            g_tPcSetCardNumFrame;               /* É
 extern unsigned int g_uiaInitCardCount[5];    // ¿¨³õÊ¼ÉèÖÃÖµ,[0]Îª×Ü¿¨ÊýÁ¿,·¢1ÕÅ¿¨,¼õ1,[1~4]ÎªÃ¿¸ö¿¨»ú³õÊ¼¿¨ÊýÁ¿,·¢1ÕÅ¿¨,¼õ1.
 extern unsigned int g_uiaSpitCardCount[5];    // ³ö¿¨ÊýÁ¿,[0]Îª³ö¿¨×ÜÊýÁ¿,·¢1ÕÅ¿¨,¼Ó1,[1~4]ÎªÃ¿¸ö¿¨»ú·¢¿¨ÊýÁ¿,·¢1ÕÅ¿¨,¼Ó1.
 
-CPU_INT08U  AnalyzeCANFrame ( void * p_arg );
-CPU_INT08U  AnalyzeUartFrame ( void * p_arg );
+CPU_INT08U  AnalyzeCANFrame ( CanRxMsg arg );
+CPU_INT08U  AnalyzeUartFrame ( CPU_INT08U argv[], OS_MSG_SIZE size );
 CPU_INT08U * CheckShowStatusMsg (CPU_INT08U ch);
 CPU_INT08U * CheckShowMsg (CPU_INT08U ch);
 CPU_INT08U * CheckPriMsg (CPU_INT08U ch);

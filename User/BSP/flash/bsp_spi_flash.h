@@ -85,11 +85,11 @@
 /*ÐÅÏ¢Êä³ö*/
 #define FLASH_DEBUG_ON         1
 
-#define FLASH_INFO(fmt,arg...)           printf("<<-FLASH-INFO->> "fmt"\n",##arg)
-#define FLASH_ERROR(fmt,arg...)          printf("<<-FLASH-ERROR->> "fmt"\n",##arg)
+#define FLASH_INFO(fmt,arg...)           printf("<<-SPI-FLASH-INFO->> "fmt"\n",##arg)
+#define FLASH_ERROR(fmt,arg...)          printf("<<-SPI-FLASH-DEBUG->> "fmt"\n",##arg)
 #define FLASH_DEBUG(fmt,arg...)          do{\
                                             if(FLASH_DEBUG_ON)\
-                                            printf("<<-FLASH-DEBUG->> [%d]"fmt"\n",__LINE__, ##arg);\
+                                            printf("<<-SPI-FLASH-DEBUG->> [%d]"fmt"\n",__LINE__, ##arg);\
                                             }while(0)
 
 void SPI_FLASH_init(void);

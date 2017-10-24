@@ -349,7 +349,7 @@
             <uSurpInc>0</uSurpInc>
             <VariousControls>
               <MiscControls></MiscControls>
-              <Define>STM32F10X_HD,USE_STDPERIPH_DRIVER,OLED,uart4</Define>
+              <Define>STM32F10X_HD,USE_STDPERIPH_DRIVER,OLED,uart1</Define>
               <Undefine></Undefine>
               <IncludePath>..\..\Libraries\CMSIS;..\..\Libraries\FWlib\inc;..\..\User;..\..\User\APP;..\..\User\BSP;..\..\User\BSP\led;..\..\User\BSP\usart1;..\..\User\uC-CPU;..\..\User\uC-CPU\ARM-Cortex-M3\RealView;..\..\User\uC-LIB;..\..\User\uCOS-III\Source;..\..\User\uCOS-III\Ports\ARM-Cortex-M3\Generic\RealView;..\..\User\BSP\lcd;..\..\User\BSP\frame;..\..\User\BSP\usart4;..\..\User\BSP\can;..\..\User\BSP\flash;..\..\User\BSP\fontFlash;..\..\User\BSP\dacVoice;..\..\User\BSP\Key;..\..\User\BSP\generalTim</IncludePath>
             </VariousControls>

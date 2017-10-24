@@ -49,4 +49,4 @@ void USART1_nSendString( USART_TypeDef * pUSARTx, char *str,int n);
 void USART1_SendString( USART_TypeDef * pUSARTx, char *str);
 void USART1_SendHalfWord( USART_TypeDef * pUSARTx, uint16_t ch);
 
-#endif /* __USART1_H */
+#endif /* __USART_H */

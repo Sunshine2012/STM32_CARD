@@ -122,11 +122,15 @@ unsigned char myCANTransmit_ID(void * p_Msg, unsigned char targetID, unsigned ch
 unsigned char myCANTransmit (void * p_Msg, unsigned char mechine_id, unsigned char boxNum, unsigned char cmd, unsigned char status,
                       unsigned char data_H, unsigned char data_L, unsigned char errNum)
 {
+    CPU_SR_ALLOC();      //使用到临界段（在关/开中断时）时必需该宏，该宏声明和定义一个局部变
+                             //量，用于保存关中断前的 CPU 状态寄存器 SR（临界段关中断只需保存SR）
+                             //，开中断时将该值还原.
     u32 i = 0;
     OS_ERR      err;
     u8 TransmitMailbox;
     CanTxMsg *p_TxMessage = (CanTxMsg *)p_Msg;
     CanTxMsg TxMessage;
+    OS_CRITICAL_ENTER();                 // 进入临界段，不希望下面语句遭到中断
     memset(p_TxMessage,0,sizeof (CanTxMsg));
     p_TxMessage->StdId = 0x00;
     p_TxMessage->ExtId = 0x7810 | mechine_id;
@@ -141,21 +145,20 @@ unsigned char myCANTransmit (void * p_Msg, unsigned char mechine_id, unsigned ch
     p_TxMessage->Data[5] = data_H;
     p_TxMessage->Data[6] = data_L;
     p_TxMessage->Data[7] = errNum;
-    //OSTimeDly ( 10, OS_OPT_TIME_DLY, & err );
     TransmitMailbox = CAN_Transmit(CAN1,p_TxMessage);
     i = 0;
-    while((CAN_TransmitStatus(CAN1,TransmitMailbox) != CANTXOK) && (i != 0xFF))
+    while((CAN_TransmitStatus(CAN1,TransmitMailbox) != CANTXOK) && (i != 0xFFFF))
     {
         i++;
     }
 
     i = 0;
-    while((CAN_MessagePending(CAN1,CAN_FIFO0) < 1) && (i != 0xFF))
+    while((CAN_MessagePending(CAN1,CAN_FIFO0) < 1) && (i != 0xFFFF))
     {
         i++;
     }
     g_uiSerNum++;           // 帧序号每次加1
-    OSTimeDly ( 30, OS_OPT_TIME_DLY, & err );
+    OS_CRITICAL_EXIT();
     return 0;
 }
 
@@ -302,7 +305,7 @@ void USB_LP_CAN1_RX0_IRQHandler(void)
                                              //，开中断时将该值还原。
     OS_ERR      err;
 
-    OS_CRITICAL_ENTER();                 //进入临界段，不希望下面串口打印遭到中断
+    OS_CRITICAL_ENTER();                 // 进入临界段，不希望下面语句遭到中断
     CAN_Receive(CAN1,CAN_FIFO0, &gt_RxMessage);
     // CANTransmit (&gt_RxMessage);
     // macLED1_TOGGLE ();

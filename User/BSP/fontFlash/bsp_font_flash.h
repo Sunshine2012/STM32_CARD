@@ -85,11 +85,11 @@
 /*ÐÅÏ¢Êä³ö*/
 #define FLASH_DEBUG_ON         1
 
-#define FONT_FLASH_INFO(fmt,arg...)           printf("<<-FLASH-INFO->> "fmt"\n",##arg)
-#define FONT_FLASH_ERROR(fmt,arg...)          printf("<<-FLASH-ERROR->> "fmt"\n",##arg)
+#define FONT_FLASH_INFO(fmt,arg...)           printf("<<-FONT-FLASH-INFO->> "fmt"\n",##arg)
+#define FONT_FLASH_ERROR(fmt,arg...)          printf("<<-FONT-FLASH-ERROR->> "fmt"\n",##arg)
 #define FONT_FLASH_DEBUG(fmt,arg...)          do{\
                                             if(FLASH_DEBUG_ON)\
-                                            printf("<<-FLASH-DEBUG->> [%d]"fmt"\n",__LINE__, ##arg);\
+                                            printf("<<-FONT-FLASH-DEBUG->> [%d]"fmt"\n",__LINE__, ##arg);\
                                             }while(0)
 
 void FONT_SPI_FLASH_Init(void);

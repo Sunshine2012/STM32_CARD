@@ -43,11 +43,11 @@ static __IO uint32_t  IICTimeout = IICT_LONG_TIMEOUT;
 /*信息输出*/
 #define IIC_DEBUG_ON         1
 
-#define IIC_INFO(fmt,arg...)           printf("<<-FLASH-INFO->> "fmt"\n",##arg)
-#define IIC_ERROR(fmt,arg...)          printf("<<-FLASH-ERROR->> "fmt"\n",##arg)
+#define IIC_INFO(fmt,arg...)           printf("<<-IIC-FLASH-INFO->> "fmt"\n",##arg)
+#define IIC_ERROR(fmt,arg...)          printf("<<-IIC-FLASH-ERROR->> "fmt"\n",##arg)
 #define IIC_DEBUG(fmt,arg...)          do{\
                                             if(IIC_DEBUG_ON)\
-                                            printf("<<-FLASH-DEBUG->> [%d]"fmt"\n",__LINE__, ##arg);\
+                                            printf("<<-IIC-FLASH-DEBUG->> [%d]"fmt"\n",__LINE__, ##arg);\
                                             }while(0)
 
 
@@ -98,6 +98,10 @@ void I2C_Configuration(void)
   */
 void I2C_WriteByte(uint8_t addr,uint8_t data)
 {
+    CPU_SR_ALLOC();      //使用到临界段（在关/开中断时）时必需该宏，该宏声明和定义一个局部变
+                                 //量，用于保存关中断前的 CPU 状态寄存器 SR（临界段关中断只需保存SR）
+                                 //，开中断时将该值还原.
+    OS_CRITICAL_ENTER();                 // 进入临界段，不希望下面语句遭到中断
     IICTimeout = IICT_LONG_TIMEOUT;
     while(I2C_GetFlagStatus(I2C1, I2C_FLAG_BUSY))
     {
@@ -158,6 +162,7 @@ void I2C_WriteByte(uint8_t addr,uint8_t data)
 
 fault:
     I2C_GenerateSTOP(I2C1, ENABLE);//关闭I2C1总线
+    OS_CRITICAL_EXIT();
 }
 
 
@@ -335,7 +340,7 @@ void OLED_ShowStr(unsigned char x, unsigned char y, unsigned char ch[], unsigned
         }break;
     }
 #else
-    OS_CRITICAL_ENTER();                 //进入临界段，不希望下面串口打印遭到中断
+    OS_CRITICAL_ENTER();                 // 进入临界段，不希望下面语句遭到中断
     printf ("%s",ch);
     OS_CRITICAL_EXIT();
 #endif
@@ -464,6 +469,6 @@ void OLED_DrawBMP(unsigned char x0,unsigned char y0,unsigned char x1,unsigned ch
 static  uint16_t IIC_TIMEOUT_UserCallback(uint8_t errorCode)
 {
     /* 等待超时后的处理,输出错误信息 */
-    IIC_ERROR("SPI 等待超时!errorCode = %d",errorCode);
+    IIC_ERROR("IIC 等待超时!errorCode = %d",errorCode);
     return 0;
 }
