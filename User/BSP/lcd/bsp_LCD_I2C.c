@@ -38,8 +38,6 @@
 #include "delay.h"
 #include "codetab.h"
 
-static __IO uint32_t  IICTimeout = IICT_LONG_TIMEOUT;
-
 /*信息输出*/
 #define IIC_DEBUG_ON         1
 
@@ -101,67 +99,12 @@ void I2C_WriteByte(uint8_t addr,uint8_t data)
     CPU_SR_ALLOC();      //使用到临界段（在关/开中断时）时必需该宏，该宏声明和定义一个局部变
                                  //量，用于保存关中断前的 CPU 状态寄存器 SR（临界段关中断只需保存SR）
                                  //，开中断时将该值还原.
-    OS_CRITICAL_ENTER();                 // 进入临界段，不希望下面语句遭到中断
-    IICTimeout = IICT_LONG_TIMEOUT;
-    while(I2C_GetFlagStatus(I2C1, I2C_FLAG_BUSY))
-    {
-        if ((IICTimeout--) == 0) // 超时退出
-        {
-           IIC_TIMEOUT_UserCallback(0);
-           goto fault;
-        }
-    }
-
-    I2C_GenerateSTART(I2C1, ENABLE);//开启I2C1
-
-    IICTimeout = IICT_LONG_TIMEOUT;
-    while(!I2C_CheckEvent(I2C1, I2C_EVENT_MASTER_MODE_SELECT))/*EV5,主模式*/
-    {
-        if ((IICTimeout--) == 0)
-        {
-           IIC_TIMEOUT_UserCallback(0);
-           goto fault;
-        }
-    }
-
-    I2C_Send7bitAddress(I2C1, OLED_ADDRESS, I2C_Direction_Transmitter);//器件地址 -- 默认0x78
-
-    IICTimeout = IICT_LONG_TIMEOUT;
-    while(!I2C_CheckEvent(I2C1, I2C_EVENT_MASTER_TRANSMITTER_MODE_SELECTED))
-    {
-        if ((IICTimeout--) == 0)
-        {
-           IIC_TIMEOUT_UserCallback(0);
-           goto fault;
-        }
-    }
-
-    I2C_SendData(I2C1, addr);//寄存器地址
-
-    IICTimeout = IICT_LONG_TIMEOUT;
-    while (!I2C_CheckEvent(I2C1, I2C_EVENT_MASTER_BYTE_TRANSMITTED))
-    {
-        if ((IICTimeout--) == 0)
-        {
-           IIC_TIMEOUT_UserCallback(0);
-           goto fault;
-        }
-    }
-
-    I2C_SendData(I2C1, data);//发送数据
-
-    IICTimeout = IICT_LONG_TIMEOUT;
-    while (!I2C_CheckEvent(I2C1, I2C_EVENT_MASTER_BYTE_TRANSMITTED))
-    {
-        if ((IICTimeout--) == 0)
-        {
-           IIC_TIMEOUT_UserCallback(0);
-           goto fault;
-        }
-    }
-
-fault:
-    I2C_GenerateSTOP(I2C1, ENABLE);//关闭I2C1总线
+    OS_CRITICAL_ENTER();         // 进入临界段，不希望下面语句遭到中断
+    start_flag();
+    transfer (OLED_ADDRESS);
+    transfer (addr);
+    transfer (data);
+    stop_flag();
     OS_CRITICAL_EXIT();
 }
 
@@ -293,10 +236,6 @@ void OLED_OFF(void)
   */
 void OLED_ShowStr(unsigned char x, unsigned char y, unsigned char ch[], unsigned char TextSize)
 {
-    CPU_SR_ALLOC();      //使用到临界段（在关/开中断时）时必需该宏，该宏声明和定义一个局部变
-                                 //量，用于保存关中断前的 CPU 状态寄存器 SR（临界段关中断只需保存SR）
-                                 //，开中断时将该值还原.
-#ifdef OLED
     unsigned char c = 0,i = 0,j = 0;
     OLED_Fill(0);
     switch(TextSize)
@@ -339,11 +278,6 @@ void OLED_ShowStr(unsigned char x, unsigned char y, unsigned char ch[], unsigned
             }
         }break;
     }
-#else
-    OS_CRITICAL_ENTER();                 // 进入临界段，不希望下面语句遭到中断
-    printf ("%s",ch);
-    OS_CRITICAL_EXIT();
-#endif
 }
 
  /**
@@ -472,3 +406,125 @@ static  uint16_t IIC_TIMEOUT_UserCallback(uint8_t errorCode)
     IIC_ERROR("IIC 等待超时!errorCode = %d",errorCode);
     return 0;
 }
+
+void delay ( int i )
+{
+    int j, k;
+
+    for ( j = 0; j < i; j++ )
+    {
+        for ( k = 0; k < 990; k++ )
+        {
+            ;
+        }
+    }
+}
+
+
+void LCD_GPIO_Config ( void )
+{
+    GPIO_InitTypeDef GPIO_InitStructure;
+
+    /* Configure I2C1 pins: SCL and SDA */
+    GPIO_InitStructure.GPIO_Pin = GPIO_Pin_6 | GPIO_Pin_7;
+    GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+    GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_OD;
+    GPIO_Init ( GPIOB, &GPIO_InitStructure );
+    GPIO_InitStructure.GPIO_Pin = GPIO_Pin_5;
+    GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+    GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;
+    GPIO_Init ( GPIOB, &GPIO_InitStructure );
+    GPIO_InitStructure.GPIO_Pin = GPIO_Pin_8;
+    GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+    GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;
+    GPIO_Init ( GPIOB, &GPIO_InitStructure );
+    LCD_BKLIGHT_HIGH ();
+    LCD_RESET_LOW ();
+    delay ( 1000 );
+    LCD_RESET_HIGH ();
+    delay ( 1000 );
+    initial_lcd ();
+    LCD_BKLIGHT_LOW ();
+    //clear_screen ();                                //clear all dots
+}
+
+
+//--------------wait a switch,jump out if P2.0 get a signal"0"------------------
+void transfer ( int data1 )
+{
+    int i;
+
+    for ( i = 0; i < 8; i++ )
+    {
+        LCD_SCLK_LOW ();                            //scl=0;
+        LCD_SCLK_LOW ();                            //scl=0;
+
+        if ( data1 & 0x80 )
+        {
+            LCD_SDA_HIGH ();                        //sda=1;
+        }
+        else
+        {
+            LCD_SDA_LOW ();                         //sda=0;
+        }
+
+        LCD_SCLK_LOW ();                            //scl=0;
+        LCD_SCLK_HIGH ();                           //scl=1;
+        LCD_SCLK_HIGH ();                           //scl=1;
+        LCD_SCLK_LOW ();                            //scl=0;
+        data1 = data1 << 1;
+    }
+
+    LCD_SDA_LOW ();                                 //sda=0;
+    LCD_SDA_LOW ();                                 //sda=0;
+    LCD_SCLK_HIGH ();                               //scl=1;
+    LCD_SCLK_HIGH ();                               //scl=1;
+    LCD_SCLK_LOW ();                                //scl=0;
+    LCD_SCLK_LOW ();                                //scl=0;
+}
+
+
+void start_flag ()
+{
+    LCD_SCLK_HIGH ();                               //scl=1;
+    LCD_SCLK_HIGH ();                               //scl=1;
+    LCD_SCLK_HIGH ();                               //scl=1;
+    LCD_SCLK_HIGH ();                               //scl=1;
+    LCD_SDA_HIGH ();                                //sda=1;
+    LCD_SDA_HIGH ();                                //sda=1;
+    LCD_SDA_HIGH ();                                //sda=1;
+    LCD_SDA_HIGH ();                                //sda=1;
+    LCD_SDA_LOW ();                                 //sda=0;
+    LCD_SDA_LOW ();                                 //sda=0;
+    LCD_SDA_LOW ();                                 //sda=0;
+    LCD_SDA_LOW ();                                 //sda=0;
+}
+
+
+void stop_flag ()
+{
+    LCD_SCLK_HIGH ();                               //scl=1;
+    LCD_SCLK_HIGH ();                               //scl=1;
+    LCD_SDA_LOW ();                                 //sda=0;
+    LCD_SDA_LOW ();                                 //sda=0;
+    LCD_SDA_HIGH ();                                //sda=1;
+    LCD_SDA_HIGH ();                                //sda=1;
+}
+
+void initial_lcd ()
+{
+    start_flag ();                                  //开始标志
+    transfer ( 0x7e );                              //选择SLAVE ADDRESS
+    transfer ( 0x00 );                              //表示以下传输的字节是指令*/
+    transfer ( 0x3b );                              //功能设置：MX=1,MY=1,PD=0,H1=1,H0=1,
+    transfer ( 0x03 );                              //软件复位*/
+    transfer ( 0x38 );                              //功能设置：MX=1,MY=1,PD=0,H1=0,H0=0,
+    transfer ( 0x05 );                              //设置VLCD的范围：0X05表示高电压 0X04表示低电压
+    transfer ( 0x0c );                              //打开显示
+    transfer ( 0x39 );                              //功能设置：MX=1,MY=1,PD=0,H1=0,H0=1,
+    transfer ( 0x08 );                              //显示配置：DO=0,V=0,(Top/bottom row mode set data order)
+    transfer ( 0x10 );                              //BIAS设置为：0x10:1/11,0x11:1/10,0x12:1/9
+    transfer ( 0xff );                              //对比度设置：最低是0x80，最高是0xff，数值越大对比度就越高
+    stop_flag ();                                    //结束标志
+}
+

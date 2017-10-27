@@ -167,7 +167,7 @@ typedef enum CMD
     CYCLE_ASK               = 0x03,                 /* 定时询问 */
     CYCLE_ACK               = 0x04,                 /* 定时回复 */
     SET_MECHINE_STATUS      = 0x05,                 /* 卡机工作状态设置 */
-    CAR_NOTIFICATION        = 0x06,                 /* 来车去车通知 */
+    SET_MECHINE_STATUS_ACK  = 0x06,                 /* 卡机工作状态设置回复 */
 
     // 10H--1FH：主机板发送至卡机板信息命令
     SET_MECHINE_ID          = 0x10,                 /* 设置卡机的ID号 */

@@ -161,17 +161,17 @@ CPU_INT32U  BSP_CPU_ClkFreq_MHz;
 void  BSP_Init (void)
 {
     LED_Init ();        //初始化 LED
-	
+
     USART1_Config ();   //初始化 USART1
     USART4_Config ();   //初始化 USART4
-    
-    I2C_Configuration();    // 初始化IIC
-    FONT_SPI_FLASH_Init();
+
     CAN_init();             // 初始化CAN通信
     //SPI_FLASH_init();       // 初始化SPI1接口的flash
     DAC_init();
     matrix_keyboard_init ();
-
+    FONT_SPI_FLASH_Init();
+    //I2C_Configuration();    // 初始化IIC
+    LCD_GPIO_Config();        // 初始化屏幕
 }
 
 

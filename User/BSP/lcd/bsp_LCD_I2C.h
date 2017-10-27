@@ -21,9 +21,20 @@
 #define             macOLED_RESET_TOGGLE()                        GPIO_ReadOutputDataBit ( macOLED_RESET_GPIO_PORT, macLED1_GPIO_PIN ) ? \
                                                                   GPIO_ResetBits ( macOLED_RESET_GPIO_PORT, macOLED_RESET_GPIO_PIN ) : GPIO_SetBits ( macOLED_RESET_GPIO_PORT, macOLED_RESET_GPIO_PIN )
 
-/*等待超时时间*/
-#define IICT_FLAG_TIMEOUT         ((uint32_t)0x1000)
-#define IICT_LONG_TIMEOUT         ((uint32_t)(10 * IICT_FLAG_TIMEOUT))
+#define LCD_BKLIGHT_LOW()              GPIO_ResetBits(GPIOB, GPIO_Pin_8)
+#define LCD_BKLIGHT_HIGH()             GPIO_SetBits(GPIOB, GPIO_Pin_8)
+#define LCD_RESET_LOW()                GPIO_ResetBits(GPIOB, GPIO_Pin_5)
+#define LCD_RESET_HIGH()               GPIO_SetBits(GPIOB, GPIO_Pin_5)
+#define LCD_SCLK_LOW()                 GPIO_ResetBits(GPIOB, GPIO_Pin_6)
+#define LCD_SCLK_HIGH()                GPIO_SetBits(GPIOB, GPIO_Pin_6)
+#define LCD_SDA_LOW()                  GPIO_ResetBits(GPIOB, GPIO_Pin_7)
+#define LCD_SDA_HIGH()                 GPIO_SetBits(GPIOB, GPIO_Pin_7)
+void LCD_GPIO_Config ( void );
+void initial_lcd ();
+void delay ( int i );
+void transfer ( int data1 );
+void start_flag ();
+void stop_flag ();
 
 void I2C_Configuration(void);
 void I2C_WriteByte(uint8_t addr,uint8_t data);

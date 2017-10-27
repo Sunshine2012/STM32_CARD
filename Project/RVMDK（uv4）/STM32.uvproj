@@ -828,11 +828,6 @@
               <FilePath>..\..\User\BSP\lcd\bsp_LCD_I2C.c</FilePath>
             </File>
             <File>
-              <FileName>delay.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\User\BSP\lcd\delay.c</FilePath>
-            </File>
-            <File>
               <FileName>frame.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\..\User\BSP\frame\frame.c</FilePath>

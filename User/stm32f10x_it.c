@@ -162,7 +162,8 @@ void macUSART1_IRQHandler(void)
         g_rx_buf[g_num] = USART_ReceiveData(macUSART1);
         if(g_rx_buf[g_num] == FRAME_START)
         {
-            g_rx_buf[0] = g_rx_buf[g_num];
+            memset(g_rx_buf, 0, sizeof (g_rx_buf));
+            g_rx_buf[0] = FRAME_START;
             g_num = 0;
             g_num++;
         }
@@ -204,14 +205,15 @@ void macUSART4_IRQHandler(void)
         g_rx_buf[g_num] = USART_ReceiveData(macUSART4);
         if(g_rx_buf[g_num] == FRAME_START)
         {
-            g_rx_buf[0] = g_rx_buf[g_num];
+            memset(g_rx_buf, 0, sizeof (g_rx_buf));
+            g_rx_buf[0] = FRAME_START;
             g_num = 0;
             g_num++;
         }
         // 当接收到的值等于0XFF时，把值发送回去
         else if( g_rx_buf[g_num] == FRAME_END)
         {
-            g_rx_buf[g_num + 1] = '\r';
+            g_rx_buf[g_num + 1] = 0;
             /* 发布消息到消息队列 queue */
             OSQPost ((OS_Q        *)&queue_uart,                            //消息变量指针
                      (void        *)g_rx_buf,                               //要发送的数据的指针，将内存块首地址通过队列"发送出去"
