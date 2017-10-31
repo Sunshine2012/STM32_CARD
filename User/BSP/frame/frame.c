@@ -234,9 +234,10 @@ CPU_INT08U * CheckPriMsg (CPU_INT08U ch)
                 if ( mtRxMessage.Data[4] == 0x10 ) // 未进入发卡流程,且有卡
                 {
                     DEBUG_printf ( "%s\r\n", ( char * ) CheckPriMsg ( CARD_KEY_PRESS ) );
+                    g_tCardKeyPressFrame.MECHINE_ID = mtRxMessage.Data[1] + '0';
                     printf ( "%s\n", ( char * ) &g_tCardKeyPressFrame );
                     g_ucaDeviceIsSTBY[mtRxMessage.Data[1] -1] = 0; // 按键发卡流程开始之后，再次按键不再响应
-                    myCANTransmit ( &gt_TxMessage, mtRxMessage.Data[1], 0, WRITE_CARD_STATUS, CARD_IS_OK, 0, 0, NO_FAIL );
+                    //myCANTransmit ( &gt_TxMessage, mtRxMessage.Data[1], 0, WRITE_CARD_STATUS, CARD_IS_OK, 0, 0, NO_FAIL );
                     copyMenu ( mtRxMessage.Data[1], KEY_PRESS, 0, 7, 4 );
                     OSTimeDly ( 5, OS_OPT_TIME_DLY, &err );
                 }
@@ -265,8 +266,10 @@ CPU_INT08U * CheckPriMsg (CPU_INT08U ch)
             switch ( mtRxMessage.Data[1] )
             {
                 case 1:
-                    if ( g_ucaFaultCode[1] == 0 )
+                    if ( g_ucaFaultCode[1] == 0 && g_ucaMechineExist[1] == 1)   // 无故障,且通信正常
                     {
+                        g_ucaMechineExist[0] = 0;
+                        g_ucaMechineExist[1] = 0;
                         g_ucUpWorkingID     = 2;
                         g_ucUpBackingID     = 1;
                         myCANTransmit ( &gt_TxMessage, g_ucUpWorkingID, 0, SET_MECHINE_STATUS, WORKING_STATUS, 0, 0, NO_FAIL );
@@ -274,8 +277,10 @@ CPU_INT08U * CheckPriMsg (CPU_INT08U ch)
                     }
                     break;
                 case 2:
-                    if ( g_ucaFaultCode[0] == 0 )
+                    if ( g_ucaFaultCode[0] == 0 && g_ucaMechineExist[0] == 1)   // 无故障,且通信正常
                     {
+                        g_ucaMechineExist[0] = 0;
+                        g_ucaMechineExist[1] = 0;
                         g_ucUpWorkingID     = 1;
                         g_ucUpBackingID     = 2;
                         myCANTransmit ( &gt_TxMessage, g_ucUpWorkingID, 0, SET_MECHINE_STATUS, WORKING_STATUS, 0, 0, NO_FAIL );
@@ -283,8 +288,10 @@ CPU_INT08U * CheckPriMsg (CPU_INT08U ch)
                     }
                     break;
                 case 3:
-                    if ( g_ucaFaultCode[3] == 0 )
+                    if ( g_ucaFaultCode[3] == 0 && g_ucaMechineExist[3] == 1)   // 无故障,且通信正常
                     {
+                        g_ucaMechineExist[2] = 0;
+                        g_ucaMechineExist[3] = 0;
                         g_ucDownWorkingID   = 4;
                         g_ucDownBackingID   = 3;
                         myCANTransmit ( &gt_TxMessage, g_ucDownWorkingID, 0, SET_MECHINE_STATUS, WORKING_STATUS, 0, 0, NO_FAIL );
@@ -292,8 +299,10 @@ CPU_INT08U * CheckPriMsg (CPU_INT08U ch)
                     }
                     break;
                 case 4:
-                    if ( g_ucaFaultCode[2] == 0 )
+                    if ( g_ucaFaultCode[2] == 0 && g_ucaMechineExist[2] == 1)   // 无故障,且通信正常
                     {
+                        g_ucaMechineExist[2] = 0;
+                        g_ucaMechineExist[3] = 0;
                         g_ucDownWorkingID   = 3;
                         g_ucDownBackingID   = 4;
                         myCANTransmit ( &gt_TxMessage, g_ucDownWorkingID, 0, SET_MECHINE_STATUS, WORKING_STATUS, 0, 0, NO_FAIL );
@@ -305,6 +314,7 @@ CPU_INT08U * CheckPriMsg (CPU_INT08U ch)
             }
 
             DEBUG_printf ( "%s\r\n", ( char * ) CheckPriMsg ( CARD_TAKE_AWAY ) );
+            g_tCardKeyPressFrame.MECHINE_ID = mtRxMessage.Data[1] + '0';
             printf ( "%s\n", ( char * ) &g_tCardTakeAwayFrame );
             dacSet ( DATA_xiexie, SOUND_LENGTH_xiexie );
             copyMenu ( mtRxMessage.Data[1], CARD_TAKE_AWAY_NOTICE, 0, 7, 4 );
@@ -329,7 +339,7 @@ CPU_INT08U * CheckPriMsg (CPU_INT08U ch)
                 switch ( mtRxMessage.Data[1] )
                 {
                     case 1:
-                        if ( g_ucaFaultCode[1] == 0 )
+                        if ( g_ucaFaultCode[1] == 0 && g_ucaMechineExist[1] == 1)   // 无故障,且通信正常
                         {
                             g_ucUpWorkingID     = 2;
                             g_ucUpBackingID     = 1;
@@ -338,7 +348,7 @@ CPU_INT08U * CheckPriMsg (CPU_INT08U ch)
                         }
                         break;
                     case 2:
-                        if ( g_ucaFaultCode[0] == 0 )
+                        if ( g_ucaFaultCode[0] == 0 && g_ucaMechineExist[0] == 1)   // 无故障,且通信正常
                         {
                             g_ucUpWorkingID     = 1;
                             g_ucUpBackingID     = 2;
@@ -347,7 +357,7 @@ CPU_INT08U * CheckPriMsg (CPU_INT08U ch)
                         }
                         break;
                     case 3:
-                        if ( g_ucaFaultCode[3] == 0 )
+                        if ( g_ucaFaultCode[3] == 0 && g_ucaMechineExist[3] == 1)   // 无故障,且通信正常
                         {
                             g_ucDownWorkingID   = 4;
                             g_ucDownBackingID   = 3;
@@ -356,7 +366,7 @@ CPU_INT08U * CheckPriMsg (CPU_INT08U ch)
                         }
                         break;
                     case 4:
-                        if ( g_ucaFaultCode[2] == 0 )
+                        if ( g_ucaFaultCode[2] == 0 && g_ucaMechineExist[2] == 1)   // 无故障,且通信正常
                         {
                             g_ucDownWorkingID   = 3;
                             g_ucDownBackingID   = 4;
@@ -375,9 +385,13 @@ CPU_INT08U * CheckPriMsg (CPU_INT08U ch)
             }
             g_ucIsUpdateMenu    = 1;                        // 更新界面
             break;
-        case CYCLE_ACK:
-            break;
         case CARD_MACHINE_INIT_ACK:
+            g_ucaMechineExist[mtRxMessage.Data[1] - 1] = 1;    // 如果主机开机,对设备进行设置,卡机有回复,则表明几个卡机存在,并通信正常
+            break;
+        case CYCLE_ACK:                 // 定时轮询回复
+            break;
+        case SET_MECHINE_STATUS_ACK:    // 如果每次设置卡机的主备机状态成功,卡机则会回复此状态,并置状态位为1
+            g_ucaMechineExist[mtRxMessage.Data[1] - 1] = 1;    // 如果主机开机,对设备进行设置,卡机有回复,则表明几个卡机存在,并通信正常
             break;
         default:
             break;
@@ -430,7 +444,7 @@ CPU_INT08U  AnalyzeUartFrame ( CPU_INT08U argv[] , OS_MSG_SIZE size)
                     copyStatusMsg ( argv[3] - '0', 0xfe, 0, 12, 4 ); //
                 }
                 break;
-            case PC_BAD_CARD:                  /* 坏卡信息(63H)帧 */
+            case PC_BAD_CARD:                /* 坏卡信息(63H)帧 */
                 OLED_ShowStr(0,0,argv,1);
                 display_GB2312_string (0, 2, "坏卡", 0);
                 if ( argv[3] )
@@ -438,7 +452,7 @@ CPU_INT08U  AnalyzeUartFrame ( CPU_INT08U argv[] , OS_MSG_SIZE size)
                     myCANTransmit ( &gt_TxMessage, argv[3] - '0', 0, WRITE_CARD_STATUS, CARD_IS_BAD, 0, 0, NO_FAIL );
                 }
                 break;
-            case PC_QUERY_CARD_MECHINE:         /* 查询卡机状态(65H)帧 */
+            case PC_QUERY_CARD_MECHINE:      /* 查询卡机状态(65H)帧 */
                 OLED_ShowStr(0,0,argv,1);
                 display_GB2312_string (0, 2, "查询卡机", 0);
                 break;

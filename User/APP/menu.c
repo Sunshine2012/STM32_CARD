@@ -7,9 +7,10 @@ unsigned char g_ucUpWorkingID      = 1;            // 上工位工作卡机号
 unsigned char g_ucUpBackingID      = 2;            // 上工位备用卡机号
 unsigned char g_ucDownWorkingID    = 3;            // 下工位工作卡机号
 unsigned char g_ucDownBackingID    = 4;            // 下工位备用卡机号
-unsigned char g_ucaCardIsReady[4]  = {1, 1, 1, 1};    // 卡就绪
-unsigned char g_ucaFaultCode[4]    = {0};          // 卡机是否有未处理的故障
+unsigned char g_ucaCardIsReady[4]  = {1, 1, 1, 1}; // 卡就绪
+unsigned char g_ucaFaultCode[4]    = {0, 0, 0, 0}; // 卡机是否有未处理的故障
 unsigned char g_ucaDeviceIsSTBY[4] = {1, 1, 1, 1}; // 两个卡机处于待机(Standby)状态下,按键按下,主机收到两条按键信息,此时只处理主机的,如果只收到一条按键信息,则直接发卡
+unsigned char g_ucaMechineExist[4] = {0, 0, 0, 0}; // 卡机是否存在并通信正常
 
 Dlg g_dlg[] =           {
                         {DLG_CLEAR_LCD,      "                ", "                ", "                ", "                "},

@@ -44,8 +44,9 @@ extern unsigned char g_ucUpBackingID;       // 上工位备用卡机号
 extern unsigned char g_ucDownWorkingID;     // 下工位工作卡机号
 extern unsigned char g_ucDownBackingID;     // 下工位备用卡机号
 extern unsigned char g_ucaCardIsReady[4];   // 卡就绪
-extern unsigned char g_ucaFaultCode[4];       // 卡机是否有未处理的故障
-extern unsigned char g_ucaDeviceIsSTBY[4];    // 两个卡机处于待机(Standby)状态下,按键按下,主机收到按键信息发卡,只要有卡没有被取走,即使收到按键信息,也不再发卡.
+extern unsigned char g_ucaFaultCode[4];     // 卡机是否有未处理的故障
+extern unsigned char g_ucaDeviceIsSTBY[4];  // 两个卡机处于待机(Standby)状态下,按键按下,主机收到按键信息发卡,只要有卡没有被取走,即使收到按键信息,也不再发卡.
+extern unsigned char g_ucaMechineExist[4];  // 卡机是否存在并通信正常
 
 
 

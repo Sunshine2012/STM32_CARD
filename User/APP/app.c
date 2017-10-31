@@ -192,7 +192,7 @@ static  void  AppTaskStart (void *p_arg)
     /* 创建消息队列 queue */
     OSQCreate   ((OS_Q       *)&queue_uart,         //指向消息队列的指针
                 (CPU_CHAR    *)"uart Frame",        //队列的名字
-                (OS_MSG_QTY   )30,                  //最多可存放消息的数目
+                (OS_MSG_QTY   )100,                 //最多可存放消息的数目
                 (OS_ERR      *)&err);               //返回错误类型
 
     /* 创建消息队列 queue */
@@ -427,18 +427,21 @@ void  AppTaskCanFrame ( void * p_arg )
     while (DEF_TRUE)
     {                            //任务体，通常写成一个死循环
 
-        OS_CRITICAL_ENTER();                 // 进入临界段，不希望下面语句遭到中断
-         /* 请求消息队列 queue 的消息 */
+        //OS_CRITICAL_ENTER();                 // 进入临界段，不希望下面语句遭到中断
+        /* 请求消息队列 queue 的消息 */
         ptRxMessage =   OSQPend ((OS_Q        *)&queue_can,            //消息变量指针
                                 (OS_TICK       )20,                    //等待时长
                                 (OS_OPT        )OS_OPT_PEND_BLOCKING,  //如果没有获取到信号量就不等待
                                 (OS_MSG_SIZE  *)&msg_size,             //获取消息的字节大小
                                 (CPU_TS       *)0,                     //获取任务发送时的时间戳
                                 (OS_ERR       *)&err);                 //返回错误
-        OS_CRITICAL_EXIT();
-        tRxMessage = *(CanRxMsg *)ptRxMessage;
-        AnalyzeCANFrame(tRxMessage);
-        OSTimeDly ( 5, OS_OPT_TIME_DLY, & err ); //不断阻塞该任务
+        //OS_CRITICAL_EXIT();
+        if (!ptRxMessage)
+        {
+            tRxMessage = *(CanRxMsg *)ptRxMessage;
+            AnalyzeCANFrame(tRxMessage);
+        }
+        OSTimeDly ( 1, OS_OPT_TIME_DLY, & err ); //不断阻塞该任务
     }
 }
 
@@ -469,13 +472,12 @@ void  AppTaskUartFrame ( void * p_arg )
                         (OS_MSG_SIZE  *)&msg_size,              //获取消息的字节大小
                         (CPU_TS       *)0,                      //获取任务发送时的时间戳
                         (OS_ERR       *)&err);                  //返回错误
-
-        if (pMsg != NULL)
+        if (!pMsg)
         {
             strcpy(ucaMsg, pMsg);
-            //OS_CRITICAL_EXIT();
             AnalyzeUartFrame(ucaMsg, msg_size);
         }
+        //OS_CRITICAL_EXIT();
         OSTimeDly ( 10, OS_OPT_TIME_DLY, & err );     //不断阻塞该任务
     }
 }
