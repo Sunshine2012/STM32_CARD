@@ -858,11 +858,9 @@ void doShowDebugMain (unsigned char dlg_id, unsigned char isNotRow, void * p_par
                         key = KEY_NUL;
                         break;
                     case 1:
-                        myCANTransmit(&gt_TxMessage, num, num, ENTER_DEBUG, num, id_h, id_l, NO_FAIL);
                         doShowDebugOne (DLG_DEBUG_ONE, 5, &num);
                         break;
                     case 2:
-                        myCANTransmit(&gt_TxMessage, num, num, ENTER_DEBUG, num, id_h, id_l, NO_FAIL);
                         doShowDebugTwo (DLG_DEBUG_TWO, 5, &num);
                         break;
                     default:
@@ -987,10 +985,8 @@ void doShowDebugOne (unsigned char dlg_id, unsigned char isNotRow, void * p_parm
                 myCANTransmit(&gt_TxMessage, num, num, CYCLE_SPIT_ONE_CARD, num, id_h, id_l, NO_FAIL);
                 break;
             case KEY_QUIT:
-                myCANTransmit(&gt_TxMessage, num, num, QUIT_DEBUG, num, id_h, id_l, NO_FAIL);
                 break;
             case KEY_CANCEL:
-                myCANTransmit(&gt_TxMessage, num, num, QUIT_DEBUG, num, id_h, id_l, NO_FAIL);   // 退出调试
                 return;
                 break;
             default:
@@ -1059,11 +1055,9 @@ void doShowDebugTwo (unsigned char dlg_id, unsigned char isNotRow, void * p_parm
                 myCANTransmit(&gt_TxMessage, num, num, HOOK_MOTOR_NEGATIVE_STEP, num, id_h, id_l, NO_FAIL);
                 break;
             case KEY_QUIT:
-                myCANTransmit(&gt_TxMessage, num, num, QUIT_DEBUG, num, id_h, id_l, NO_FAIL);
                 break;
             case KEY_CANCEL:
                 g_ucKeyContinu = 0;             // 退出单动模式
-                myCANTransmit(&gt_TxMessage, num, num, QUIT_DEBUG, num, id_h, id_l, NO_FAIL);
                 return;
                 break;
             default:

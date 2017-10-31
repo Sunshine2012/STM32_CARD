@@ -261,7 +261,7 @@ static  void  AppTaskStart (void *p_arg)
                  (OS_OPT      )(OS_OPT_TASK_STK_CHK | OS_OPT_TASK_STK_CLR), //任务选项
                  (OS_ERR     *)&err);
 
-        /* 创建 AppTaskKeyScan 任务 */
+    /* 创建 AppTaskKeyScan 任务 */
     OSTaskCreate((OS_TCB     *)&AppTaskKeyScanTCB,                          //任务控制块地址
                  (CPU_CHAR   *)"Key_Scan",                                  //任务名称
                  (OS_TASK_PTR ) AppTaskKeyScan,                             //任务函数
@@ -291,7 +291,7 @@ void TmrCallback (OS_TMR *p_tmr, void *p_arg) //软件定时器MyTmr的回调函数
     CPU_SR_ALLOC();      //使用到临界段（在关/开中断时）时必需该宏，该宏声明和定义一个局部变
                                              //量，用于保存关中断前的 CPU 状态寄存器 SR（临界段关中断只需保存SR）
                                              //，开中断时将该值还原。
-    CPU_INT32U       cpu_clk_freq;
+    CPU_INT32U       cpu_clk_freq = 0;
 
     g_tCardMechineStatusFrame.RSCTL = (g_ucSerNum++ % 10) + '0';
 
@@ -316,8 +316,8 @@ void TmrCallback (OS_TMR *p_tmr, void *p_arg) //软件定时器MyTmr的回调函数
 
 static  void  AppTaskTmr ( void * p_arg )
 {
-    OS_ERR      err;
-    OS_TMR      my_tmr;   //声明软件定时器对象
+    OS_ERR      err = 0;
+    OS_TMR      my_tmr = {0};   //声明软件定时器对象
 
     (void)p_arg;
 
@@ -333,7 +333,7 @@ static  void  AppTaskTmr ( void * p_arg )
 
     /* 启动软件定时器 */
     OSTmrStart ((OS_TMR   *)&my_tmr, //软件定时器对象
-              (OS_ERR   *)err);    //返回错误类型
+               (OS_ERR   *)err);    //返回错误类型
 
     ts_start = OS_TS_GET();                       //获取定时前时间戳
 
@@ -351,9 +351,9 @@ static  void AppTaskOLED ( void * p_arg )
                                  //量，用于保存关中断前的 CPU 状态寄存器 SR（临界段关中断只需保存SR）
                                  //，开中断时将该值还原.
     char *pcMsg = NULL;
-    OS_MSG_SIZE    msg_size;
-    OS_ERR         err;
-    CPU_TS         ts;
+    OS_MSG_SIZE    msg_size = 0;
+    OS_ERR         err = 0;
+    CPU_TS         ts = 0;
     unsigned char key = KEY_NUL;
 
     doShowStatusMenu(DLG_STATUS, 5, NULL);      // 显示菜单,需要反显示的行
@@ -408,12 +408,13 @@ void  AppTaskCanFrame ( void * p_arg )
     CPU_SR_ALLOC();      //使用到临界段（在关/开中断时）时必需该宏，该宏声明和定义一个局部变
                                      //量，用于保存关中断前的 CPU 状态寄存器 SR（临界段关中断只需保存SR）
                                      //，开中断时将该值还原.
-    OS_ERR      err;
-    OS_MSG_SIZE    msg_size;
+    OS_ERR      err = 0;
+    CPU_TS      ts  = 0;
+    OS_MSG_SIZE    msg_size = 0;
     CPU_INT08U * pMsg = NULL;
     CanRxMsg *ptRxMessage = NULL;                   // can数据接收缓存
-    CanRxMsg tRxMessage;                            // can数据缓存
-    OSTimeDly ( 100, OS_OPT_TIME_DLY, & err ); //不断阻塞该任务
+    CanRxMsg tRxMessage = {0};                      // can数据缓存
+    OSTimeDly ( 100, OS_OPT_TIME_DLY, & err );                          //不断阻塞该任务
     //myCANTransmit(&gt_TxMessage, g_ucUpWorkingID, 0, 1, 0, 0, 0, NO_FAIL);   // 设置工作态
     //myCANTransmit(&gt_TxMessage, g_ucUpBackingID, 0, 1, 0, 0, 0, NO_FAIL);   // 设置备用态
     //myCANTransmit(&gt_TxMessage, g_ucDownWorkingID, 0, 1, 0, 0, 0, NO_FAIL);   // 设置工作态
@@ -427,19 +428,17 @@ void  AppTaskCanFrame ( void * p_arg )
     while (DEF_TRUE)
     {                            //任务体，通常写成一个死循环
 
-        //OS_CRITICAL_ENTER();                 // 进入临界段，不希望下面语句遭到中断
         /* 请求消息队列 queue 的消息 */
         ptRxMessage =   OSQPend ((OS_Q        *)&queue_can,            //消息变量指针
-                                (OS_TICK       )20,                    //等待时长
+                                (OS_TICK       )5,                     //等待时长
                                 (OS_OPT        )OS_OPT_PEND_BLOCKING,  //如果没有获取到信号量就不等待
                                 (OS_MSG_SIZE  *)&msg_size,             //获取消息的字节大小
-                                (CPU_TS       *)0,                     //获取任务发送时的时间戳
+                                (CPU_TS       *)&ts,                   //获取任务发送时的时间戳
                                 (OS_ERR       *)&err);                 //返回错误
-        //OS_CRITICAL_EXIT();
-        if (!ptRxMessage)
+        if (ptRxMessage)
         {
             tRxMessage = *(CanRxMsg *)ptRxMessage;
-            AnalyzeCANFrame(tRxMessage);
+            analyzeCANFrame(tRxMessage);
         }
         OSTimeDly ( 1, OS_OPT_TIME_DLY, & err ); //不断阻塞该任务
     }
@@ -450,35 +449,34 @@ void  AppTaskUartFrame ( void * p_arg )
     CPU_SR_ALLOC();      //使用到临界段（在关/开中断时）时必需该宏，该宏声明和定义一个局部变
                                      //量，用于保存关中断前的 CPU 状态寄存器 SR（临界段关中断只需保存SR）
                                      //，开中断时将该值还原.
-    OS_ERR      err;
-    OS_MSG_SIZE    msg_size;
+    OS_ERR      err = 0;
+    CPU_TS      ts  = 0;
+    OS_MSG_SIZE    msg_size = 0;
     CPU_INT08U * pMsg = NULL;
     CPU_INT08U ucaMsg[30] = "aiwesky uC/OS-III";
 
-    OSTimeDly ( 1000, OS_OPT_TIME_DLY, & err ); //等待1S
-    OS_CRITICAL_ENTER();                 // 进入临界段，不希望下面语句遭到中断
-    DEBUG_printf ("%s\r\n","你好,欢迎使用乐为电子板卡系统");
+    OSTimeDly ( 1000, OS_OPT_TIME_DLY, & err );                 //等待1S
+    OS_CRITICAL_ENTER();                                        // 进入临界段，不希望下面语句遭到中断
+    DEBUG_printf ("%s\n","你好,欢迎使用乐为电子板卡系统");
 
-    printf("%s", (char *)&g_tCardMechinePowerOnFrame);      // 上电信息
+    printf("%s\n", (char *)&g_tCardMechinePowerOnFrame);          // 上电信息
 
     OS_CRITICAL_EXIT();
 
     while (DEF_TRUE)
-    {                            //任务体，通常写成一个死循环
-        //OS_CRITICAL_ENTER();                 // 进入临界段，不希望下面语句遭到中断
+    {                                                           //任务体，通常写成一个死循环
         pMsg = OSQPend ((OS_Q         *)&queue_uart,            //消息变量指针
-                        (OS_TICK       )20,                     //等待时长
+                        (OS_TICK       )5,                      //等待时长
                         (OS_OPT        )OS_OPT_PEND_BLOCKING,   //如果没有获取到信号量就不等待
                         (OS_MSG_SIZE  *)&msg_size,              //获取消息的字节大小
-                        (CPU_TS       *)0,                      //获取任务发送时的时间戳
+                        (CPU_TS       *)&ts,                    //获取任务发送时的时间戳
                         (OS_ERR       *)&err);                  //返回错误
-        if (!pMsg)
+        if (pMsg)
         {
             strcpy(ucaMsg, pMsg);
-            AnalyzeUartFrame(ucaMsg, msg_size);
+            analyzeUartFrame(ucaMsg, msg_size);
         }
-        //OS_CRITICAL_EXIT();
-        OSTimeDly ( 10, OS_OPT_TIME_DLY, & err );     //不断阻塞该任务
+        OSTimeDly ( 1, OS_OPT_TIME_DLY, & err );                //不断阻塞该任务
     }
 }
 
@@ -493,8 +491,8 @@ void  AppTaskKeyScan ( void * p_arg )
     OS_MSG_SIZE    msg_size;
 
     while (DEF_TRUE)
-    {                            //任务体，通常写成一个死循环
-        matrix_update_key();                // 扫描按键
-        OSTimeDly ( 10, OS_OPT_TIME_DLY, & err );     //不断阻塞该任务
+    {                                                   //任务体，通常写成一个死循环
+        matrix_update_key();                            // 扫描按键
+        OSTimeDly ( 10, OS_OPT_TIME_DLY, & err );       //不断阻塞该任务
     }
 }

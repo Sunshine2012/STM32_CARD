@@ -306,23 +306,32 @@ void USB_LP_CAN1_RX0_IRQHandler(void)
     OS_ERR      err;
 
     OS_CRITICAL_ENTER();                 // 进入临界段，不希望下面语句遭到中断
+    //CAN_ITConfig(CAN1,CAN_IT_FMP0, DISABLE);
     CAN_Receive(CAN1,CAN_FIFO0, &gt_RxMessage);
     // CANTransmit (&gt_RxMessage);
     // macLED1_TOGGLE ();
     if(((0x0000ff00 & gt_RxMessage.ExtId) == 0x00007800) && (gt_RxMessage.IDE == CAN_ID_EXT))
     {
+        if (gt_RxMessage.Data[3] == 0x06)
+        {
+            g_ucaMechineExist[gt_RxMessage.Data[1] - 1] = 1;
+        }
+        else
+        {
         /* 发布消息到消息队列 queue */
         OSQPost ((OS_Q        *)&queue_can,                             //消息变量指针
                 (void        *)&gt_RxMessage,                           //要发送的数据的指针，将内存块首地址通过队列"发送出去"
                 (OS_MSG_SIZE  )sizeof (gt_RxMessage) ,                  //数据字节大小
                 (OS_OPT       )OS_OPT_POST_FIFO | OS_OPT_POST_ALL,      //先进先出和发布给全部任务的形式
                 (OS_ERR      *)&err);
+        }
     }
     else
     {
 
     }
     OS_CRITICAL_EXIT();
+    //CAN_ITConfig(CAN1,CAN_IT_FMP0, ENABLE);
 }
 
 
@@ -333,17 +342,4 @@ void CAN_init( void )
     CAN_GPIO_Config ();     // 初始化GPIO,需要用到TX:PA12 ,RX:PA11
     CAN_NVIC_Config ();     // 接收中断
     CAN_Interrupt();        // 设置波特率等其他参数
-    gt_TxMessage.StdId = 0x00;
-    gt_TxMessage.ExtId = 0x7800;
-    gt_TxMessage.RTR = CAN_RTR_DATA;
-    gt_TxMessage.IDE = CAN_ID_EXT;;
-    gt_TxMessage.DLC = 8;
-    gt_TxMessage.Data[0] = 0x55;
-    gt_TxMessage.Data[1] = 0xA0;
-    gt_TxMessage.Data[2] = 0x50;
-    gt_TxMessage.Data[3] = 0xA0;
-    gt_TxMessage.Data[4] = 0x50;
-    gt_TxMessage.Data[5] = 0xA0;
-    gt_TxMessage.Data[6] = 0x50;
-    gt_TxMessage.Data[7] = 0xA0;
 }

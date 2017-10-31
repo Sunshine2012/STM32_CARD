@@ -17,10 +17,10 @@ CARD_MACHINE_POWER_ON_FREME      g_tCardMechinePowerOnFrame = {'<', '0', CARD_MA
 
 /* 状态信息(42H)帧             30字节 */
 CARD_MACHINE_STATUES_FRAME       g_tCardMechineStatusFrame =    {'<', '0', 'B', '1','3',
-                                                                '0', '0', '9', '9', '9', '1',
-                                                                '0', '0', '9', '9', '9', '1',
-                                                                '0', '0', '9', '9', '9', '1',
-                                                                '0', '0', '9', '9', '9', '1',
+                                                                '0', '0', '4', '9', '9', '1',
+                                                                '0', '0', '4', '9', '9', '1',
+                                                                '0', '0', '4', '9', '9', '1',
+                                                                '0', '0', '4', '9', '9', '1',
                                                                 '>'};
 
 /* 已出卡信息(43H)帧            6字节 */
@@ -114,7 +114,7 @@ const Print_msg g_taShowFaultCode_msg[] = {
 // 复制要显示的菜单数据到数组中
 void copyMenu (CPU_INT08U num, CPU_INT08U cmd, CPU_INT08U values, CPU_INT08U addr, CPU_INT08U count)
 {
-    CPU_INT08U *str_id = CheckShowMsg(cmd);
+    CPU_INT08U *str_id = checkShowMsg(cmd);
     unsigned char i, n;
     n = check_menu (DLG_STATUS);
     for (i = addr; i < 16; i++)
@@ -131,7 +131,7 @@ void copyMenu (CPU_INT08U num, CPU_INT08U cmd, CPU_INT08U values, CPU_INT08U add
 // 复制要显示的菜单数据到数组中
 void copyStatusMsg (CPU_INT08U num, CPU_INT08U cmd, CPU_INT08U values, CPU_INT08U addr, CPU_INT08U count)
 {
-    CPU_INT08U *str_id = CheckShowStatusMsg(cmd);
+    CPU_INT08U *str_id = checkShowStatusMsg(cmd);
     unsigned char i, n;
     //strcpy() = CheckShowMsg(id);
     n = check_menu (DLG_STATUS);
@@ -144,7 +144,7 @@ void copyStatusMsg (CPU_INT08U num, CPU_INT08U cmd, CPU_INT08U values, CPU_INT08
 // 复制要显示的菜单数据到数组中
 void copyFaultMsg (CPU_INT08U num, CPU_INT08U cmd, CPU_INT08U values, CPU_INT08U addr, CPU_INT08U count)
 {
-    CPU_INT08U *str_id = CheckShowStatusMsg(cmd);
+    CPU_INT08U *str_id = checkShowStatusMsg(cmd);
     unsigned char i, n;
     //strcpy() = CheckShowMsg(id);
     n = check_menu (DLG_FAULT_CODE);
@@ -155,7 +155,7 @@ void copyFaultMsg (CPU_INT08U num, CPU_INT08U cmd, CPU_INT08U values, CPU_INT08U
 }
 
 // 找到打印的字符串，并返回其首地址
-CPU_INT08U * CheckShowFaultCode (CPU_INT08U ch)
+CPU_INT08U * checkShowFaultCode (CPU_INT08U ch)
 {
     CPU_INT08U i = 0;
     for (i = 0; i < (sizeof (g_taShowFaultCode_msg) / sizeof (g_taShowFaultCode_msg[0])); i++)
@@ -169,7 +169,7 @@ CPU_INT08U * CheckShowFaultCode (CPU_INT08U ch)
 }
 
 // 找到打印的字符串，并返回其首地址
-CPU_INT08U * CheckShowStatusMsg (CPU_INT08U ch)
+CPU_INT08U * checkShowStatusMsg (CPU_INT08U ch)
 {
     CPU_INT08U i = 0;
     for (i = 0; i < (sizeof (g_taShowStatus_msg) / sizeof (g_taShowStatus_msg[0])); i++)
@@ -183,7 +183,7 @@ CPU_INT08U * CheckShowStatusMsg (CPU_INT08U ch)
 }
 
 // 找到打印的字符串，并返回其首地址
-CPU_INT08U * CheckShowMsg (CPU_INT08U ch)
+CPU_INT08U * checkShowMsg (CPU_INT08U ch)
 {
     CPU_INT08U i = 0;
     for (i = 0; i < (sizeof (g_taShow_msg) / sizeof (g_taShow_msg[0])); i++)
@@ -197,7 +197,7 @@ CPU_INT08U * CheckShowMsg (CPU_INT08U ch)
 }
 
 // 找到打印的字符串，并返回其首地址
-CPU_INT08U * CheckPriMsg (CPU_INT08U ch)
+CPU_INT08U * checkPriMsg (CPU_INT08U ch)
 {
     CPU_INT08U i = 0;
     for (i = 0; i < (sizeof (g_taPri_msg) / sizeof (g_taPri_msg[0])); i++)
@@ -211,7 +211,7 @@ CPU_INT08U * CheckPriMsg (CPU_INT08U ch)
  }
 
 // CAN总线数据处理
- CPU_INT08U  AnalyzeCANFrame ( CanRxMsg arg )
+ CPU_INT08U  analyzeCANFrame ( CanRxMsg arg )
  {
     CPU_SR_ALLOC();      //使用到临界段（在关/开中断时）时必需该宏，该宏声明和定义一个局部变
                                              //量，用于保存关中断前的 CPU 状态寄存器 SR（临界段关中断只需保存SR）
@@ -219,12 +219,12 @@ CPU_INT08U * CheckPriMsg (CPU_INT08U ch)
 
     CanRxMsg mtRxMessage = arg;                       // can数据接收缓存
     OS_ERR      err;
-    unsigned char i, n;
+    unsigned char i = 0;
+    unsigned char n = 0;
     unsigned char ID_temp = 0;
     unsigned char str_id[10] = {0};
     static unsigned char count = 0;
     g_uiSerNum = mtRxMessage.Data[0];                               // 保持帧序号不变,将数据回复
-
 
     switch(mtRxMessage.Data[3])
     {
@@ -233,13 +233,14 @@ CPU_INT08U * CheckPriMsg (CPU_INT08U ch)
             {
                 if ( mtRxMessage.Data[4] == 0x10 ) // 未进入发卡流程,且有卡
                 {
-                    DEBUG_printf ( "%s\r\n", ( char * ) CheckPriMsg ( CARD_KEY_PRESS ) );
-                    g_tCardKeyPressFrame.MECHINE_ID = mtRxMessage.Data[1] + '0';
+
+                    g_tCardKeyPressFrame.MECHINE_ID = mtRxMessage.Data[1] + '0';		// 将数据转换未字符,然后将数据发送出去
                     printf ( "%s\n", ( char * ) &g_tCardKeyPressFrame );
                     g_ucaDeviceIsSTBY[mtRxMessage.Data[1] -1] = 0; // 按键发卡流程开始之后，再次按键不再响应
-                    //myCANTransmit ( &gt_TxMessage, mtRxMessage.Data[1], 0, WRITE_CARD_STATUS, CARD_IS_OK, 0, 0, NO_FAIL );
+                    myCANTransmit ( &gt_TxMessage, mtRxMessage.Data[1], 0, WRITE_CARD_STATUS, CARD_IS_OK, 0, 0, NO_FAIL );
                     copyMenu ( mtRxMessage.Data[1], KEY_PRESS, 0, 7, 4 );
-                    OSTimeDly ( 5, OS_OPT_TIME_DLY, &err );
+                    DEBUG_printf ( "%s\n", ( char * ) checkPriMsg ( CARD_KEY_PRESS ) );
+                    //OSTimeDly ( 5, OS_OPT_TIME_DLY, &err );
                 }
                 else
                 {
@@ -266,7 +267,7 @@ CPU_INT08U * CheckPriMsg (CPU_INT08U ch)
             switch ( mtRxMessage.Data[1] )
             {
                 case 1:
-                    if ( g_ucaFaultCode[1] == 0 && g_ucaMechineExist[1] == 1)   // 无故障,且通信正常
+                    if ( (g_ucaFaultCode[1] == 0) && (g_ucaMechineExist[1] == 1) )   // 无故障,且通信正常
                     {
                         g_ucaMechineExist[0] = 0;
                         g_ucaMechineExist[1] = 0;
@@ -277,7 +278,7 @@ CPU_INT08U * CheckPriMsg (CPU_INT08U ch)
                     }
                     break;
                 case 2:
-                    if ( g_ucaFaultCode[0] == 0 && g_ucaMechineExist[0] == 1)   // 无故障,且通信正常
+                    if ( (g_ucaFaultCode[0] == 0) && (g_ucaMechineExist[0] == 1) )   // 无故障,且通信正常
                     {
                         g_ucaMechineExist[0] = 0;
                         g_ucaMechineExist[1] = 0;
@@ -288,7 +289,7 @@ CPU_INT08U * CheckPriMsg (CPU_INT08U ch)
                     }
                     break;
                 case 3:
-                    if ( g_ucaFaultCode[3] == 0 && g_ucaMechineExist[3] == 1)   // 无故障,且通信正常
+                    if ( (g_ucaFaultCode[3] == 0) && (g_ucaMechineExist[3] == 1) )   // 无故障,且通信正常
                     {
                         g_ucaMechineExist[2] = 0;
                         g_ucaMechineExist[3] = 0;
@@ -299,7 +300,7 @@ CPU_INT08U * CheckPriMsg (CPU_INT08U ch)
                     }
                     break;
                 case 4:
-                    if ( g_ucaFaultCode[2] == 0 && g_ucaMechineExist[2] == 1)   // 无故障,且通信正常
+                    if ( (g_ucaFaultCode[2] == 0) && (g_ucaMechineExist[2] == 1) )   // 无故障,且通信正常
                     {
                         g_ucaMechineExist[2] = 0;
                         g_ucaMechineExist[3] = 0;
@@ -313,12 +314,12 @@ CPU_INT08U * CheckPriMsg (CPU_INT08U ch)
                     break;
             }
 
-            DEBUG_printf ( "%s\r\n", ( char * ) CheckPriMsg ( CARD_TAKE_AWAY ) );
             g_tCardKeyPressFrame.MECHINE_ID = mtRxMessage.Data[1] + '0';
             printf ( "%s\n", ( char * ) &g_tCardTakeAwayFrame );
             dacSet ( DATA_xiexie, SOUND_LENGTH_xiexie );
             copyMenu ( mtRxMessage.Data[1], CARD_TAKE_AWAY_NOTICE, 0, 7, 4 );
             copyStatusMsg ( mtRxMessage.Data[1], 0xfe, 0, 12, 4 );
+            DEBUG_printf ( "%s\n", ( char * ) checkPriMsg ( CARD_TAKE_AWAY ) );
 
             g_ucIsUpdateMenu    = 1;                    // 更新界面
             break;
@@ -339,8 +340,10 @@ CPU_INT08U * CheckPriMsg (CPU_INT08U ch)
                 switch ( mtRxMessage.Data[1] )
                 {
                     case 1:
-                        if ( g_ucaFaultCode[1] == 0 && g_ucaMechineExist[1] == 1)   // 无故障,且通信正常
+                        if ( (g_ucaFaultCode[1] == 0) && (g_ucaMechineExist[1] == 1) )   // 无故障,且通信正常
                         {
+                            g_ucaMechineExist[0] = 0;
+                            g_ucaMechineExist[1] = 0;
                             g_ucUpWorkingID     = 2;
                             g_ucUpBackingID     = 1;
                             myCANTransmit ( &gt_TxMessage, g_ucUpWorkingID, 0, SET_MECHINE_STATUS, WORKING_STATUS, 0, 0, NO_FAIL );
@@ -348,8 +351,10 @@ CPU_INT08U * CheckPriMsg (CPU_INT08U ch)
                         }
                         break;
                     case 2:
-                        if ( g_ucaFaultCode[0] == 0 && g_ucaMechineExist[0] == 1)   // 无故障,且通信正常
+                        if ( (g_ucaFaultCode[0] == 0) && (g_ucaMechineExist[0] == 1) )   // 无故障,且通信正常
                         {
+                            g_ucaMechineExist[0] = 0;
+                            g_ucaMechineExist[1] = 0;
                             g_ucUpWorkingID     = 1;
                             g_ucUpBackingID     = 2;
                             myCANTransmit ( &gt_TxMessage, g_ucUpWorkingID, 0, SET_MECHINE_STATUS, WORKING_STATUS, 0, 0, NO_FAIL );
@@ -357,8 +362,10 @@ CPU_INT08U * CheckPriMsg (CPU_INT08U ch)
                         }
                         break;
                     case 3:
-                        if ( g_ucaFaultCode[3] == 0 && g_ucaMechineExist[3] == 1)   // 无故障,且通信正常
+                        if ( (g_ucaFaultCode[3] == 0) && (g_ucaMechineExist[3] == 1) )   // 无故障,且通信正常
                         {
+                            g_ucaMechineExist[2] = 0;
+                            g_ucaMechineExist[3] = 0;
                             g_ucDownWorkingID   = 4;
                             g_ucDownBackingID   = 3;
                             myCANTransmit ( &gt_TxMessage, g_ucDownWorkingID, 0, SET_MECHINE_STATUS, WORKING_STATUS, 0, 0, NO_FAIL );
@@ -366,8 +373,10 @@ CPU_INT08U * CheckPriMsg (CPU_INT08U ch)
                         }
                         break;
                     case 4:
-                        if ( g_ucaFaultCode[2] == 0 && g_ucaMechineExist[2] == 1)   // 无故障,且通信正常
+                        if ( (g_ucaFaultCode[2] == 0) && (g_ucaMechineExist[2] == 1) )   // 无故障,且通信正常
                         {
+                            g_ucaMechineExist[2] = 0;
+                            g_ucaMechineExist[3] = 0;
                             g_ucDownWorkingID   = 3;
                             g_ucDownBackingID   = 4;
                             myCANTransmit ( &gt_TxMessage, g_ucDownWorkingID, 0, SET_MECHINE_STATUS, WORKING_STATUS, 0, 0, NO_FAIL );
@@ -376,12 +385,13 @@ CPU_INT08U * CheckPriMsg (CPU_INT08U ch)
                         break;
                     default:
                         break;
+
                 }
-                g_ucaFaultCode[mtRxMessage.Data[1] -1] = mtRxMessage.Data[7]; // 报告故障码
+                g_ucaFaultCode[mtRxMessage.Data[1] - 1] = mtRxMessage.Data[7]; // 报告故障码
             }
             else if ( mtRxMessage.Data[7] > FAULT_CODE11 )
             {
-                g_ucaFaultCode[mtRxMessage.Data[1] -1] = FAULT_CODE11 + 1; // 报告故障码
+                g_ucaFaultCode[mtRxMessage.Data[1] - 1] = FAULT_CODE11 + 1; // 报告故障码
             }
             g_ucIsUpdateMenu    = 1;                        // 更新界面
             break;
@@ -391,16 +401,18 @@ CPU_INT08U * CheckPriMsg (CPU_INT08U ch)
         case CYCLE_ACK:                 // 定时轮询回复
             break;
         case SET_MECHINE_STATUS_ACK:    // 如果每次设置卡机的主备机状态成功,卡机则会回复此状态,并置状态位为1
-            g_ucaMechineExist[mtRxMessage.Data[1] - 1] = 1;    // 如果主机开机,对设备进行设置,卡机有回复,则表明几个卡机存在,并通信正常
+            //g_ucaMechineExist[mtRxMessage.Data[1] - 1] = 1;    // 如果主机开机,对设备进行设置,卡机有回复,则表明几个卡机存在,并通信正常
+            //myCANTransmit ( &gt_TxMessage, 5,g_ucaMechineExist[ID_temp],5,5,5,5,5 );
             break;
         default:
+            //myCANTransmit ( &gt_TxMessage, 0, 0, 0, 0, 0, 0, 0 );
             break;
     }
     //OS_CRITICAL_EXIT();
     return 0;
 }
 
-CPU_INT08U  AnalyzeUartFrame ( CPU_INT08U argv[] , OS_MSG_SIZE size)
+CPU_INT08U  analyzeUartFrame ( CPU_INT08U argv[] , OS_MSG_SIZE size)
 {
     CPU_SR_ALLOC();      //使用到临界段（在关/开中断时）时必需该宏，该宏声明和定义一个局部变
                                      //量，用于保存关中断前的 CPU 状态寄存器 SR（临界段关中断只需保存SR）
@@ -424,9 +436,8 @@ CPU_INT08U  AnalyzeUartFrame ( CPU_INT08U argv[] , OS_MSG_SIZE size)
     {
         g_tP_RsctlFrame.RSCTL = ucNum;
         OS_CRITICAL_ENTER();                 // 进入临界段，不希望下面语句遭到中断
-        printf("%s",(char *)&g_tP_RsctlFrame);   //发送正应答帧
-        DEBUG_printf ("%s\r\n",(char *)CheckPriMsg(type_frame));
-        //printf ("%s\r\n","收到信息");
+        printf("%s\n",(char *)&g_tP_RsctlFrame);   //发送正应答帧
+        //printf ("%s\n","收到信息");
         switch(type_frame)
         {
             case PC_INIT_MECHINE:               /* 初始化卡机信息(61H)帧 */
@@ -436,7 +447,7 @@ CPU_INT08U  AnalyzeUartFrame ( CPU_INT08U argv[] , OS_MSG_SIZE size)
             case PC_SPIT_OUT_CARD:              /* 出卡信息(62H)帧 */
                 OLED_ShowStr(0,0,argv,1);
                 display_GB2312_string (0, 2, "出卡信息", 0);
-                if ( argv[3] )
+                if ( argv[3] <= '4' && argv[3] >= '1' )
                 {
                     myCANTransmit ( &gt_TxMessage, argv[3] - '0', 0, WRITE_CARD_STATUS, CARD_IS_OK, 0, 0, NO_FAIL );
                     dacSet ( DATA_quka, SOUND_LENGTH_quka );
@@ -481,6 +492,7 @@ CPU_INT08U  AnalyzeUartFrame ( CPU_INT08U argv[] , OS_MSG_SIZE size)
                 display_GB2312_string (0, 2, "无效信息", 0);
                 break;
         }
+        DEBUG_printf ("%s\n",(char *)checkPriMsg(type_frame));
         OS_CRITICAL_EXIT();
     }
     ucSerNum = (g_ucSerNum++) % 10 + '0';

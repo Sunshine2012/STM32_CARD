@@ -337,11 +337,12 @@ extern PC_SET_CARD_NUM_FRAME            g_tPcSetCardNumFrame;               /* É
 extern unsigned int g_uiaInitCardCount[5];    // ¿¨³õÊ¼ÉèÖÃÖµ,[0]Îª×Ü¿¨ÊýÁ¿,·¢1ÕÅ¿¨,¼õ1,[1~4]ÎªÃ¿¸ö¿¨»ú³õÊ¼¿¨ÊýÁ¿,·¢1ÕÅ¿¨,¼õ1.
 extern unsigned int g_uiaSpitCardCount[5];    // ³ö¿¨ÊýÁ¿,[0]Îª³ö¿¨×ÜÊýÁ¿,·¢1ÕÅ¿¨,¼Ó1,[1~4]ÎªÃ¿¸ö¿¨»ú·¢¿¨ÊýÁ¿,·¢1ÕÅ¿¨,¼Ó1.
 
-CPU_INT08U  AnalyzeCANFrame ( CanRxMsg arg );
-CPU_INT08U  AnalyzeUartFrame ( CPU_INT08U argv[], OS_MSG_SIZE size );
-CPU_INT08U * CheckShowStatusMsg (CPU_INT08U ch);
-CPU_INT08U * CheckShowMsg (CPU_INT08U ch);
-CPU_INT08U * CheckPriMsg (CPU_INT08U ch);
+CPU_INT08U  analyzeCANFrame ( CanRxMsg arg );
+CPU_INT08U  analyzeUartFrame ( CPU_INT08U argv[], OS_MSG_SIZE size );
+CPU_INT08U * checkShowFaultCode (CPU_INT08U ch);
+CPU_INT08U * checkShowStatusMsg (CPU_INT08U ch);
+CPU_INT08U * checkShowMsg (CPU_INT08U ch);
+CPU_INT08U * checkPriMsg (CPU_INT08U ch);
 void copyMenu (CPU_INT08U num, CPU_INT08U id, CPU_INT08U values, CPU_INT08U addr, CPU_INT08U count);
 void copyStatusMsg (CPU_INT08U num, CPU_INT08U id, CPU_INT08U values, CPU_INT08U addr, CPU_INT08U count);
 void copyWarningMsg (CPU_INT08U num, CPU_INT08U cmd, CPU_INT08U values, CPU_INT08U addr, CPU_INT08U count);

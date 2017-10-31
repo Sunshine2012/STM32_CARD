@@ -116,9 +116,9 @@ void USART1_SendString( USART_TypeDef * pUSARTx, char *str)
         k++;
     } while(*(str + k)!='\0');
 
-  /* 等待发送完成 */
-  while(USART_GetFlagStatus(pUSARTx,USART_FLAG_TC)==RESET)
-  {}
+    /* 等待发送完成 */
+    while(USART_GetFlagStatus(pUSARTx,USART_FLAG_TC)==RESET)
+    {}
 }
 
 /*****************  发送一个16位数 **********************/
@@ -160,11 +160,11 @@ void USART1_nSendString(USART_TypeDef * pUSARTx,char *str,int n)
 int fputc(int ch, FILE *f)
 {
     u32 i = 100000000;
-	/* 发送一个字节数据到串口 */
-	USART_SendData(macUSART1, (uint8_t) ch);
+    /* 发送一个字节数据到串口 */
+    USART_SendData(macUSART1, (uint8_t) ch);
 
-	/* 等待发送完毕 */
-	while (USART_GetFlagStatus(macUSART1, USART_FLAG_TXE) == RESET)
+    /* 等待发送完毕 */
+    while (USART_GetFlagStatus(macUSART1, USART_FLAG_TXE) == RESET)
     {
         if (i-- == 0)
         {
@@ -172,22 +172,22 @@ int fputc(int ch, FILE *f)
         }
     }
 
-        return (ch);
+    return (ch);
 }
 
 ///重定向c库函数scanf到串口，重写向后可使用scanf、getchar等函数
 int fgetc(FILE *f)
 {
     u32 i = 100000000;
-	/* 等待串口输入数据 */
-	while (USART_GetFlagStatus(macUSART1, USART_FLAG_RXNE) == RESET)
-	{
-		if (i-- == 0)
+    /* 等待串口输入数据 */
+    while (USART_GetFlagStatus(macUSART1, USART_FLAG_RXNE) == RESET)
+    {
+        if (i-- == 0)
         {
             break;
         }
     }
-	return (int)USART_ReceiveData(macUSART1);
+    return (int)USART_ReceiveData(macUSART1);
 }
 /*********************************************END OF FILE**********************/
 #endif
