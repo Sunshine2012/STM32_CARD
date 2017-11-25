@@ -190,7 +190,7 @@ void macUSART1_IRQHandler(void)
     }
     OS_CRITICAL_EXIT();
 }
-
+#if uart4
 // 串口中断服务函数
 // 把接收到的数据存在一个数组缓冲区里面，当接收到的的值等于0XFF时，把值返回
 void macUSART4_IRQHandler(void)
@@ -233,7 +233,7 @@ void macUSART4_IRQHandler(void)
     }
     OS_CRITICAL_EXIT();
 }
-
+#endif
 /**
   * @brief  This function handles PPP interrupt request.
   * @param  None

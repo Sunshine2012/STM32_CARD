@@ -18,17 +18,17 @@ Dlg g_dlg[] =           {
                         {DLG_LOGO,           "    ****电子    ", " www.*****.com  ", "   ****发卡机   ", "   版本: V1.0   "},
                         {DLG_STATUS,         "1.工作:         ", "2.备用:         ", "3.工作:         ", "4.备用:         "},
                         {DLG_MAIN,           "1.卡机状态      ", "2.卡数设置      ", "3.卡机设置      ", "4.调机运行      "},
-                        {DLG_CARD_COUNT_SET, "1号机卡数:      ", "2号机卡数:      ", "3号机卡数:      ", "4号机卡数:      "},
+                        {DLG_CARD_COUNT_SET, "1 号机卡数      ", "2 号机卡数      ", "3 号机卡数      ", "4 号机卡数      "},
                         {DLG_CARD_ID,        "   设置卡机ID   ", "搜索卡机        ", "卡机号:         ", "通信ID号:       "},
-                        {DLG_WORKING_SET,    " 卡机工作设置   ", "1:工作   2:备用 ", "3:工作   4:备用 ", "                "},
+                        {DLG_WORKING_SET,    "  卡机工作设置  ", "1:工作    2:备用", "3:工作    4:备用", "                "},
 
                         {DLG_CARD_MAIN,      "卡机状态:1号卡机", "         2号卡机", "         3号卡机", "         4号卡机"},
-                        {DLG_STATUS_ONE,     "1号出卡:        ", "2号出卡:        ", "3号出卡:        ", "4号出卡:        "},
-                        {DLG_STATUS_TWO,     "1号出坏卡:      ", "2号出坏卡:      ", "3号出坏卡:      ", "4号出坏卡:      "},
+                        {DLG_STATUS_ONE,     " 1号出卡        ", " 2号出卡        ", " 3号出卡        ", " 4号出卡        "},
+                        {DLG_STATUS_TWO,     " 1号出坏卡      ", " 2号出坏卡      ", " 3号出坏卡      ", " 4号出坏卡      "},
 
-                        {DLG_DEBUG_MAIN,     "     号卡机调试 ", "1:联动运行      ", "2:单动运行      ", "                "},
-                        {DLG_DEBUG_ONE,      "↑:翻一张好卡    ", "↓:翻一张坏卡    ", "←:勾一张卡      ", "→:循环出卡      "},
-                        {DLG_DEBUG_TWO,      "↑:单动正翻卡    ", "↓:单动反翻卡    ", "←:单动正勾卡    ", "→:单动反勾卡    "},
+                        {DLG_DEBUG_MAIN,     "    号卡机调试  ", "1:联动运行      ", "2:单动运行      ", "                "},
+                        {DLG_DEBUG_ONE,      "↑: 翻一张好卡   ", "↓: 翻一张坏卡   ", "←: 勾一张卡     ", "→: 循环出卡     "},
+                        {DLG_DEBUG_TWO,      "↑: 单动正翻卡   ", "↓: 单动反翻卡   ", "←: 单动正勾卡   ", "→: 单动反勾卡   "},
 
                         {DLG_FAULT_CODE,     "    号卡机故障  ", "故障码:         ", "说明:           ", "                "},
 
@@ -117,10 +117,35 @@ void doShowStatusMenu (unsigned char dlg_id, unsigned char isNotRow, void * p_pa
         }
 
     }
+
     for (i = 0; i < 4; i++)
     {
-        display_GB2312_string (0, i * 2, g_dlg[dlgId].MsgRow[i], i == isNotRow ? 1 : 0);
+        displayGB2312Sting (0, i * 2, g_dlg[dlgId].MsgRow[i], i == isNotRow ? 1 : 0);
     }
+    isTurnShow(0,isNotRow);
+    /*
+    LCD_Write_Byte(0x30, 0);
+    //LCD_Write_Byte(0x01, 0);
+    LCD_Write_Byte(0x0d, 0);
+
+    LCD_Set_xy(0, 0);
+
+    LCD_Write_Byte(0x34, 0);
+    LCD_Write_Byte(0x80, 0);
+    LCD_Write_Byte(0x80, 0);    //根据需要改变数值从而实现不同位置显示，看看12864的手册就知道了
+    LCD_Write_Byte(0x30, 0);
+
+    for (i = 0; i < 14; i++)
+    {
+        LCD_Write_Byte(0x1f,1);
+        //LCD_Write_Byte(master1[i],1);
+    }//delay(10000);//设置显示地址
+    //LCD_Write_Byte(0x30, 0);
+    //Display_CGRAM(0x40,0,master1[0], master1[1]);
+    //Display_CGRAM(0x40,4,master1[2], master1[3]);
+    //LCD_Write_Byte(0x36, 0);
+    //LCD_Write_Byte(0x30, 0);
+    */
 }
 
 // 显示菜单,如果有一行需要反显示,则设置当前行反显示,传递参数地址
@@ -132,8 +157,9 @@ void doShowMainMenu (unsigned char dlg_id, unsigned char isNotRow, void * p_parm
     unsigned char key = KEY_NUL;
     for (i = 0; i < 4; i++)
     {
-        display_GB2312_string (0, i * 2, g_dlg[dlgId].MsgRow[i], i == isNotRow ? 1 : 0);
+        displayGB2312Sting (0, i * 2, g_dlg[dlgId].MsgRow[i], i == isNotRow ? 1 : 0);
     }
+    isTurnShow(0,isNotRow);
     while (DEF_TRUE)
     {                            //任务体,通常写成一个死循环
         key = g_ucKeyValues;
@@ -163,12 +189,24 @@ void doShowMainMenu (unsigned char dlg_id, unsigned char isNotRow, void * p_parm
                 if (0 < isNotRow)
                 {
                     isNotRow--;
+                    isTurnShow(0,isNotRow);
+                    key = KEY_NUL;
+                }
+                else
+                {
+                    key = KEY_NUL;
                 }
                 break;
             case KEY_DOWN:
                 if (3 > isNotRow)
                 {
                     isNotRow++;
+                    isTurnShow(0,isNotRow);
+                    key = KEY_NUL;
+                }
+                else
+                {
+                    key = KEY_NUL;
                 }
                 break;
             case KEY_CANCEL:    // 退出
@@ -187,8 +225,9 @@ void doShowMainMenu (unsigned char dlg_id, unsigned char isNotRow, void * p_parm
             g_ucIsUpdateMenu = 0;
             for (i = 0; i < 4; i++)
             {
-                display_GB2312_string (0, i * 2, g_dlg[dlgId].MsgRow[i], i == isNotRow ? 1 : 0);
+                displayGB2312Sting (0, i * 2, g_dlg[dlgId].MsgRow[i], i == isNotRow ? 1 : 0);
             }
+            isTurnShow(0,isNotRow);
         }
         g_ucKeyValues = KEY_NUL;
         OSTimeDly ( 10, OS_OPT_TIME_DLY, & err );     //不断阻塞该任务
@@ -211,7 +250,7 @@ void doShowCardCountSet (unsigned char dlg_id, unsigned char isNotRow, void * p_
     unsigned short id = 0x7810 | num;                       // CAN通信的ID
     unsigned char id_h = ( id >> 8 ) & 0xff;                // CAN通信的ID高字节
     unsigned char id_l = id & 0xff;                         // CAN通信的ID低字节
-    unsigned char cardCountShowSeek = 10;   // 卡数量字符从此行中的第几个显示,默认从11个字节开始显示
+    unsigned char cardCountShowSeek = 11;   // 卡数量字符从此行中的第几个显示,默认从11个字节开始显示
     unsigned short usaCardCount[4] = {1000,1001,1002,1003};     // 所有卡机初始化卡数量缓存
     unsigned char str_aCardCount[4][6] = {0};                     // 所有卡机初始化卡数量缓存显示字符串
     for (i = 0; i < 4; i++)
@@ -227,13 +266,14 @@ void doShowCardCountSet (unsigned char dlg_id, unsigned char isNotRow, void * p_
     {
         for (j = 0; j < 4; j++)
         {
-            g_dlg[dlgId].MsgRow[i][j + 10] = str_aCardCount[i][j];
+            g_dlg[dlgId].MsgRow[i][j + cardCountShowSeek] = str_aCardCount[i][j];
         }
     }
     for (i = 0; i < 4; i++) // 显示
     {
-        display_GB2312_string (0, i * 2, g_dlg[dlgId].MsgRow[i], i == isNotRow ? 1 : 0);
+        displayGB2312Sting (0, i * 2, g_dlg[dlgId].MsgRow[i], i == isNotRow ? 1 : 0);
     }
+    isTurnShow(0,isNotRow);
     g_ucKeyValues = KEY_NUL;
     while (DEF_TRUE)
     {                            //任务体,通常写成一个死循环
@@ -248,12 +288,12 @@ void doShowCardCountSet (unsigned char dlg_id, unsigned char isNotRow, void * p_
                     case 2:
                     case 3:
                         isSetMode = 1;      // 进入设置模式,按取消键退出设置，再次按取消键才退回上一级菜单
-                        display_GB2312_string (0, isNotRow * 2, g_dlg[dlgId].MsgRow[isNotRow], 0);
-                        for (i = 0; i < 4; i++)
-                        {
-                            sprintf(str_aCardCount[i],"%04d",usaCardCount[i]);      // 格式化初始化卡数量到字符数组，以供显示,右对齐,高位不足用0补齐
-                            display_GB2312_char ((cardCountShowSeek + i) * 8, isNotRow * 2, str_aCardCount[isNotRow][i], i == seek ? 1 : 0);
-                        }
+                        displayGB2312Sting (0, isNotRow * 2, g_dlg[dlgId].MsgRow[isNotRow], 0);
+                        sprintf(str_aCardCount[isNotRow],"%04d",usaCardCount[isNotRow]);      // 格式化初始化卡数量到字符数组，以供显示,右对齐,高位不足用0补齐
+
+                        displayGB2312StingLen (cardCountShowSeek, isNotRow * 2, str_aCardCount[isNotRow][i], i == seek ? 1 : 0, 4); // 显示4字节
+
+                        isTurnShow(cardCountShowSeek / 2,isNotRow);
                         key = KEY_NUL;      // 不再更新界面了
                         g_ucIsUpdateMenu = 0;
                         break;
@@ -286,8 +326,9 @@ void doShowCardCountSet (unsigned char dlg_id, unsigned char isNotRow, void * p_
                     sprintf(str_aCardCount[isNotRow],"%04d",usaCardCount[isNotRow]);        // 格式化初始化卡数量到字符数组，以供显示,右对齐,高位不足用0补齐
                     for (i = 0; i < 4; i++)
                     {
-                        display_GB2312_char ((cardCountShowSeek + i) * 8, isNotRow * 2, str_aCardCount[isNotRow][i], i == seek ? 1 : 0);
+                        displayGB2312Sting (cardCountShowSeek + i, isNotRow * 2, str_aCardCount[isNotRow][i], i == seek ? 1 : 0);
                     }
+                    isTurnShow(0,isNotRow);
                     key = KEY_NUL;      // 不再更新界面了
                     g_ucIsUpdateMenu = 0;
                 }
@@ -296,6 +337,12 @@ void doShowCardCountSet (unsigned char dlg_id, unsigned char isNotRow, void * p_
                     if (0 < isNotRow)
                     {
                         isNotRow--;
+                        isTurnShow(0,isNotRow);
+                        key = KEY_NUL;
+                    }
+                    else
+                    {
+                        key = KEY_NUL;
                     }
                 }
                 break;
@@ -324,8 +371,9 @@ void doShowCardCountSet (unsigned char dlg_id, unsigned char isNotRow, void * p_
                     sprintf(str_aCardCount[isNotRow],"%04d",usaCardCount[isNotRow]);        // 格式化初始化卡数量到字符数组，以供显示,右对齐,高位不足用0补齐
                     for (i = 0; i < 4; i++)
                     {
-                        display_GB2312_char ((cardCountShowSeek + i) * 8, isNotRow * 2, str_aCardCount[isNotRow][i], i == seek ? 1 : 0);
+                        displayGB2312Sting (cardCountShowSeek + i, isNotRow * 2, str_aCardCount[isNotRow][i], i == seek ? 1 : 0);
                     }
+                    isTurnShow(0,isNotRow);
                     key = KEY_NUL;      // 不再更新界面了
                     g_ucIsUpdateMenu = 0;
                 }
@@ -334,6 +382,12 @@ void doShowCardCountSet (unsigned char dlg_id, unsigned char isNotRow, void * p_
                     if (isNotRow < 3)
                     {
                         isNotRow++;
+                        isTurnShow(0,isNotRow);
+                        key = KEY_NUL;
+                    }
+                    else
+                    {
+                        key = KEY_NUL;
                     }
                 }
 
@@ -344,8 +398,9 @@ void doShowCardCountSet (unsigned char dlg_id, unsigned char isNotRow, void * p_
                     seek--;
                     for (i = 0; i < 4; i++)
                     {
-                        display_GB2312_char ((cardCountShowSeek + i) * 8, isNotRow * 2, str_aCardCount[isNotRow][i], i == seek ? 1 : 0);
+                        displayGB2312Sting (cardCountShowSeek + i, isNotRow * 2, str_aCardCount[isNotRow][i], i == seek ? 1 : 0);
                     }
+                    isTurnShow(0,isNotRow);
                 }
                 key = KEY_NUL;
                 g_ucIsUpdateMenu = 0;
@@ -356,8 +411,9 @@ void doShowCardCountSet (unsigned char dlg_id, unsigned char isNotRow, void * p_
                     seek++;
                     for (i = 0; i < 4; i++)
                     {
-                        display_GB2312_char ((cardCountShowSeek + i) * 8, isNotRow * 2, str_aCardCount[isNotRow][i], i == seek ? 1 : 0);
+                        displayGB2312Sting (cardCountShowSeek + i, isNotRow * 2, str_aCardCount[isNotRow][i], i == seek ? 1 : 0);
                     }
+                    isTurnShow(0,isNotRow);
                 }
                 key = KEY_NUL;      // 不再更新界面了
                 g_ucIsUpdateMenu = 0;
@@ -397,8 +453,9 @@ void doShowCardCountSet (unsigned char dlg_id, unsigned char isNotRow, void * p_
             g_ucIsUpdateMenu = 0;
             for (i = 0; i < 4; i++)
             {
-                display_GB2312_string (0, i * 2, g_dlg[dlgId].MsgRow[i], i == isNotRow ? 1 : 0);
+                displayGB2312Sting (0, i * 2, g_dlg[dlgId].MsgRow[i], i == isNotRow ? 1 : 0);
             }
+            isTurnShow(0,isNotRow);
         }
         g_ucKeyValues = KEY_NUL;
         OSTimeDly ( 10, OS_OPT_TIME_DLY, & err );     //不断阻塞该任务
@@ -420,11 +477,12 @@ void doShowStatusOne (unsigned char dlg_id, unsigned char isNotRow, void * p_par
     unsigned short id = 0x7810 | num;       // CAN通信的ID
     unsigned char id_h = ( id >> 8 ) & 0xff;                // CAN通信的ID高字节
     unsigned char id_l = id & 0xff;                         // CAN通信的ID低字节
-    OLED_CLS(); // 显示之前,清屏
+    LCD12864_Clear();
     for (i = 0; i < 4; i++)
     {
-        display_GB2312_string (0, i * 2, g_dlg[dlgId].MsgRow[i], i == isNotRow ? 1 : 0);
+        displayGB2312Sting (0, i * 2, g_dlg[dlgId].MsgRow[i], i == isNotRow ? 1 : 0);
     }
+    isTurnShow(0,isNotRow);
     while (DEF_TRUE)
     {                            //任务体,通常写成一个死循环
         key = g_ucKeyValues;
@@ -447,9 +505,10 @@ void doShowStatusOne (unsigned char dlg_id, unsigned char isNotRow, void * p_par
         if (KEY_NUL != key || g_ucIsUpdateMenu)    // 如果有按键按下,则更新界面
         {
             g_ucIsUpdateMenu = 0;
+
             for (i = 0; i < 4; i++)
             {
-                display_GB2312_string (0, i * 2, g_dlg[dlgId].MsgRow[i], i == isNotRow ? 1 : 0);
+                displayGB2312Sting (0, i * 2, g_dlg[dlgId].MsgRow[i], i == isNotRow ? 1 : 0);
             }
         }
         g_ucKeyValues = KEY_NUL;
@@ -471,11 +530,12 @@ void doShowStatusTwo (unsigned char dlg_id, unsigned char isNotRow, void * p_par
     unsigned short id = 0x7810 | num;       // CAN通信的ID
     unsigned char id_h = ( id >> 8 ) & 0xff;                // CAN通信的ID高字节
     unsigned char id_l = id & 0xff;                         // CAN通信的ID低字节
-    OLED_CLS(); // 显示之前,清屏
+    LCD12864_Clear();
     for (i = 0; i < 4; i++)
     {
-        display_GB2312_string (0, i * 2, g_dlg[dlgId].MsgRow[i], i == isNotRow ? 1 : 0);
+        displayGB2312Sting (0, i * 2, g_dlg[dlgId].MsgRow[i], i == isNotRow ? 1 : 0);
     }
+    isTurnShow(0,isNotRow);
     while (DEF_TRUE)
     {                            //任务体,通常写成一个死循环
         key = g_ucKeyValues;
@@ -500,9 +560,10 @@ void doShowStatusTwo (unsigned char dlg_id, unsigned char isNotRow, void * p_par
         if (KEY_NUL != key || g_ucIsUpdateMenu)    // 如果有按键按下,则更新界面
         {
             g_ucIsUpdateMenu = 0;
+
             for (i = 0; i < 4; i++)
             {
-                display_GB2312_string (0, i * 2, g_dlg[dlgId].MsgRow[i], i == isNotRow ? 1 : 0);
+                displayGB2312Sting (0, i * 2, g_dlg[dlgId].MsgRow[i], i == isNotRow ? 1 : 0);
             }
         }
         g_ucKeyValues = KEY_NUL;
@@ -522,10 +583,10 @@ void doShowWorkingSet (unsigned char dlg_id, unsigned char isNotRow, void * p_pa
     unsigned char num = 1;      // 卡机号
     unsigned char str_num[10] = {0};
     unsigned char str_id[10] = {0};
-    unsigned char master1[] = "1:工作   2:备用 ";
-    unsigned char master2[] = "1:备用   2:工作 ";
-    unsigned char master3[] = "3:工作   4:备用 ";
-    unsigned char master4[] = "3:备用   4:工作 ";
+    unsigned char master1[] = "1:工作    2:备用";
+    unsigned char master2[] = "1:备用    2:工作";
+    unsigned char master3[] = "3:工作    4:备用";
+    unsigned char master4[] = "3:备用    4:工作";
 
     //unsigned short id = 0x7811;      // CAN通信的ID
 
@@ -560,8 +621,9 @@ void doShowWorkingSet (unsigned char dlg_id, unsigned char isNotRow, void * p_pa
     }
     for (i = 0; i < 4; i++)
     {
-        display_GB2312_string (0, i * 2, g_dlg[dlgId].MsgRow[i], i == isNotRow ? 1 : 0);
+        displayGB2312Sting (0, i * 2, g_dlg[dlgId].MsgRow[i], i == isNotRow ? 1 : 0);
     }
+    isTurnShow(0,isNotRow);
     while (DEF_TRUE)
     {                            //任务体,通常写成一个死循环
         key = g_ucKeyValues;
@@ -575,11 +637,19 @@ void doShowWorkingSet (unsigned char dlg_id, unsigned char isNotRow, void * p_pa
                 {
                     isNotRow--;
                 }
+                else
+                {
+                    key = KEY_NUL;
+                }
                 break;
             case KEY_DOWN:
                 if (2 > isNotRow)
                 {
                     isNotRow++;
+                }
+                else
+                {
+                    key = KEY_NUL;
                 }
                 break;
             case KEY_LEFT:
@@ -665,162 +735,14 @@ void doShowWorkingSet (unsigned char dlg_id, unsigned char isNotRow, void * p_pa
             g_ucIsUpdateMenu = 0;
             for (i = 0; i < 4; i++)
             {
-                display_GB2312_string (0, i * 2, g_dlg[dlgId].MsgRow[i], i == isNotRow ? 1 : 0);
+                displayGB2312Sting (0, i * 2, g_dlg[dlgId].MsgRow[i], i == isNotRow ? 1 : 0);
             }
+            isTurnShow(0,isNotRow);
         }
         g_ucKeyValues = KEY_NUL;
         OSTimeDly ( 10, OS_OPT_TIME_DLY, & err );     //不断阻塞该任务
     }
 }
-
-#if 0
-// ID设置菜单,如果有一行需要反显示,则设置当前行反显示,传递参数地址
-void doShowIdSetMenu (unsigned char dlg_id, unsigned char isNotRow, void * p_parm)
-{
-    OS_ERR      err;
-    unsigned char i;
-    unsigned char dlgId = check_menu(dlg_id);
-    unsigned char key = KEY_NUL;
-    unsigned char num = 1;      // 卡机号
-    unsigned char str_num[10] = {0};
-    unsigned char str_id[10] = {0};
-    unsigned char id_h = 0;          // CAN通信的ID高字节
-    unsigned char id_l = 0;          // CAN通信的ID低字节
-    unsigned char id = 1;            // CAN通信的ID
-    sprintf(str_num,"0%d      ",num);
-    sprintf(str_id,"%x   ",0x7810 | id);
-    for (i = 0; i < 6; i++)
-    {
-        g_dlg[dlgId].MsgRow[2][i + 10] = str_num[i];
-    }
-    for (i = 0; i < 6; i++)
-    {
-        g_dlg[dlgId].MsgRow[3][i + 10] = str_id[i];
-    }
-
-    for (i = 0; i < 4; i++)
-    {
-        display_GB2312_string (0, i * 2, g_dlg[dlgId].MsgRow[i], i == isNotRow ? 1 : 0);
-    }
-    while (DEF_TRUE)
-    {                            //任务体,通常写成一个死循环
-        key = g_ucKeyValues;
-        switch (key)
-        {
-            case KEY_ENTRY:
-                break;
-            case KEY_UP:
-                if (1 < isNotRow)
-                {
-                    isNotRow--;
-                }
-                break;
-            case KEY_DOWN:
-                if (3 > isNotRow)
-                {
-                    isNotRow++;
-                }
-                break;
-            case KEY_LEFT:
-                switch (isNotRow)
-                {
-                    case 2:
-                        if (1 < num)
-                        {
-                            num--;
-                            id--;
-                        }
-                        break;
-                    case 3:
-                        if (1 < id)
-                        {
-                            num--;
-                            id--;
-                        }
-                        break;
-                    default:
-                        break;
-                }
-                break;
-            case KEY_RIGHT:
-                switch (isNotRow)
-                {
-                    case 2:
-                        if (4 > num)
-                        {
-                            num++;
-                            id++;
-                        }
-                        break;
-                    case 3:
-                        if (4 > id)
-                        {
-                            num++;
-                            id++;
-                        }
-                        break;
-                    default:
-                        break;
-                }
-                break;
-            case KEY_OK:
-                switch (isNotRow)
-                {
-                    case 1:
-                        for (i = 0; i < 4; i++)         // 循环搜索四台卡机,看哪个卡机有回应
-                        {
-                            id_h = 0x78 ;
-                            id_l = 0x11 + i;
-                            //myCANTransmit(&gt_TxMessage, i, i, SEARCH_CARD_MECHINE, i, id_h, id_l, NO_FAIL);
-                        }
-                        break;
-                    //case 2:
-                    case 3:
-                        if (1 <= num && num <=4 && 1 <= id && id <= 4)    // 设置搜索到的卡机的卡机号和ID号
-                        {
-                            id_h = 0x78;
-                            id_l = g_ucCurID | 0x10;
-                            myCANTransmit(&gt_TxMessage, id_h, id_l, SET_MECHINE_ID, num, id_h, id_l, NO_FAIL);
-                        }
-                        break;
-                    default:
-                        break;
-                }
-                break;
-            case KEY_CANCEL:
-                return;
-                break;
-            default:
-                break;
-
-        }
-        if (g_ucKeyValues == KEY_QUIT)      // 按QUIT键,直接退到主界面,避免连续的刷屏,退出,并保持按键值不变
-        {
-            return;
-        }
-        if (KEY_NUL != key || g_ucIsUpdateMenu)    // 如果有按键按下,则更新界面
-        {
-            g_ucIsUpdateMenu = 0;
-            sprintf(str_num,"0%d      ",num);
-            sprintf(str_id,"%x   ",0x7810 | id );
-            for (i = 0; i < 6; i++)
-            {
-                g_dlg[dlgId].MsgRow[2][i + 10] = str_num[i];
-            }
-            for (i = 0; i < 6; i++)
-            {
-                g_dlg[dlgId].MsgRow[3][i + 10] = str_id[i];
-            }
-            for (i = 0; i < 4; i++)
-            {
-                display_GB2312_string (0, i * 2, g_dlg[dlgId].MsgRow[i], i == isNotRow ? 1 : 0);
-            }
-        }
-        g_ucKeyValues = KEY_NUL;
-        OSTimeDly ( 10, OS_OPT_TIME_DLY, & err );     //不断阻塞该任务
-    }
-}
-#endif
 
 // 调试菜单主选择,如果有一行需要反显示,则设置当前行反显示,传递参数地址
 void doShowDebugMain (unsigned char dlg_id, unsigned char isNotRow, void * p_parm)
@@ -839,13 +761,14 @@ void doShowDebugMain (unsigned char dlg_id, unsigned char isNotRow, void * p_par
     str_num [3] = 0;
     for (i = 0; i < 2; i++)
     {
-        g_dlg[dlgId].MsgRow[0][i + 2] = str_num[i];
+        g_dlg[dlgId].MsgRow[0][i] = str_num[i];
     }
-    OLED_CLS(); // 显示之前,清屏
+    LCD12864_Clear();
     for (i = 0; i < 4; i++)
     {
-        display_GB2312_string (0, i * 2, g_dlg[dlgId].MsgRow[i], i == isNotRow ? 1 : 0);
+        displayGB2312Sting (0, i * 2, g_dlg[dlgId].MsgRow[i], i == isNotRow ? 1 : 0);
     }
+    isTurnShow(0,isNotRow);
     while (DEF_TRUE)
     {                            //任务体,通常写成一个死循环
         key = g_ucKeyValues;
@@ -872,11 +795,19 @@ void doShowDebugMain (unsigned char dlg_id, unsigned char isNotRow, void * p_par
                 {
                     isNotRow--;
                 }
+                else
+                {
+                    key = KEY_NUL;
+                }
                 break;
             case KEY_DOWN:
                 if (isNotRow < 2)
                 {
                     isNotRow++;
+                }
+                else
+                {
+                    key = KEY_NUL;
                 }
                 break;
             case KEY_LEFT:
@@ -888,7 +819,7 @@ void doShowDebugMain (unsigned char dlg_id, unsigned char isNotRow, void * p_par
                     str_num [3] = 0;
                     for (i = 0; i < 2; i++)
                     {
-                        g_dlg[dlgId].MsgRow[0][i + 2] = str_num[i];
+                        g_dlg[dlgId].MsgRow[0][i] = str_num[i];
                     }
                 }
                 else
@@ -905,7 +836,7 @@ void doShowDebugMain (unsigned char dlg_id, unsigned char isNotRow, void * p_par
                     str_num [3] = 0;
                     for (i = 0; i < 2; i++)
                     {
-                        g_dlg[dlgId].MsgRow[0][i + 2] = str_num[i];
+                        g_dlg[dlgId].MsgRow[0][i] = str_num[i];
                     }
                 }
                 else
@@ -931,8 +862,9 @@ void doShowDebugMain (unsigned char dlg_id, unsigned char isNotRow, void * p_par
             g_ucIsUpdateMenu = 0;
             for (i = 0; i < 4; i++)
             {
-                display_GB2312_string (0, i * 2, g_dlg[dlgId].MsgRow[i], i == isNotRow ? 1 : 0);
+                displayGB2312Sting (0, i * 2, g_dlg[dlgId].MsgRow[i], i == isNotRow ? 1 : 0);
             }
+            isTurnShow(0,isNotRow);
         }
         g_ucKeyValues = KEY_NUL;
         OSTimeDly ( 10, OS_OPT_TIME_DLY, & err );     //不断阻塞该任务
@@ -954,11 +886,12 @@ void doShowDebugOne (unsigned char dlg_id, unsigned char isNotRow, void * p_parm
     unsigned short id = 0x7810 | num;       // CAN通信的ID
     unsigned char id_h = ( id >> 8 ) & 0xff;                // CAN通信的ID高字节
     unsigned char id_l = id & 0xff;                         // CAN通信的ID低字节
-    OLED_CLS(); // 显示之前,清屏
+    LCD12864_Clear();
     for (i = 0; i < 4; i++)
     {
-        display_GB2312_string (0, i * 2, g_dlg[dlgId].MsgRow[i], i == isNotRow ? 1 : 0);
+        displayGB2312Sting (0, i * 2, g_dlg[dlgId].MsgRow[i], i == isNotRow ? 1 : 0);
     }
+    isTurnShow(0,isNotRow);
     while (DEF_TRUE)
     {                            //任务体,通常写成一个死循环
         key = g_ucKeyValues;
@@ -1000,10 +933,13 @@ void doShowDebugOne (unsigned char dlg_id, unsigned char isNotRow, void * p_parm
         if (KEY_NUL != key || g_ucIsUpdateMenu)    // 如果有按键按下,则更新界面
         {
             g_ucIsUpdateMenu = 0;
+            /*
             for (i = 0; i < 4; i++)
             {
-                display_GB2312_string (0, i * 2, g_dlg[dlgId].MsgRow[i], i == isNotRow ? 1 : 0);
+                displayGB2312Sting (0, i * 2, g_dlg[dlgId].MsgRow[i], i == isNotRow ? 1 : 0);
             }
+            */
+            isTurnShow(0,isNotRow);
         }
         g_ucKeyValues = KEY_NUL;
         OSTimeDly ( 10, OS_OPT_TIME_DLY, & err );     //不断阻塞该任务
@@ -1024,11 +960,12 @@ void doShowDebugTwo (unsigned char dlg_id, unsigned char isNotRow, void * p_parm
     unsigned char id_h = ( id >> 8 ) & 0xff;                // CAN通信的ID高字节
     unsigned char id_l = id & 0xff;                         // CAN通信的ID低字节
     g_ucKeyContinu = 1;             // 进入单动模式
-    OLED_CLS(); // 显示之前,清屏
+    LCD12864_Clear();
     for (i = 0; i < 4; i++)
     {
-        display_GB2312_string (0, i * 2, g_dlg[dlgId].MsgRow[i], i == isNotRow ? 1 : 0);
+        displayGB2312Sting (0, i * 2, g_dlg[dlgId].MsgRow[i], i == isNotRow ? 1 : 0);
     }
+    isTurnShow(0,isNotRow);
     while (DEF_TRUE)
     {                            //任务体,通常写成一个死循环
         key = g_ucKeyValues;
@@ -1076,10 +1013,13 @@ void doShowDebugTwo (unsigned char dlg_id, unsigned char isNotRow, void * p_parm
         if (KEY_NUL != key || g_ucIsUpdateMenu)    // 如果有按键按下,则更新界面
         {
             g_ucIsUpdateMenu = 0;
+            /*
             for (i = 0; i < 4; i++)
             {
-                display_GB2312_string (0, i * 2, g_dlg[dlgId].MsgRow[i], i == isNotRow ? 1 : 0);
+                displayGB2312Sting (0, i * 2, g_dlg[dlgId].MsgRow[i], i == isNotRow ? 1 : 0);
             }
+            */
+            isTurnShow(0,isNotRow);
         }
         g_ucKeyValues = KEY_NUL;
         OSTimeDly ( 10, OS_OPT_TIME_DLY, & err );     //不断阻塞该任务
@@ -1121,7 +1061,7 @@ void doShowFaultCode (unsigned char dlg_id, unsigned char isNotRow, void * p_par
                 }
                 for (n = 0; n < 4; n++)
                 {
-                    display_GB2312_string (0, n * 2, g_dlg_fault_code[j].MsgRow[n], 0);     // 显示故障界面
+                    displayGB2312Sting (0, n * 2, g_dlg_fault_code[j].MsgRow[n], 0);     // 显示故障界面
                 }
                 goto while_label;
             }

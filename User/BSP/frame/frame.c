@@ -238,9 +238,8 @@ CPU_INT08U * checkPriMsg (CPU_INT08U ch)
                     printf ( "%s\n", ( char * ) &g_tCardKeyPressFrame );
                     g_ucaDeviceIsSTBY[mtRxMessage.Data[1] -1] = 0; // 按键发卡流程开始之后，再次按键不再响应
                     myCANTransmit ( &gt_TxMessage, mtRxMessage.Data[1], 0, WRITE_CARD_STATUS, CARD_IS_OK, 0, 0, NO_FAIL );
-                    copyMenu ( mtRxMessage.Data[1], KEY_PRESS, 0, 7, 4 );
+                    copyMenu ( mtRxMessage.Data[1], KEY_PRESS, 0, 8, 4 );
                     DEBUG_printf ( "%s\n", ( char * ) checkPriMsg ( CARD_KEY_PRESS ) );
-                    //OSTimeDly ( 5, OS_OPT_TIME_DLY, &err );
                 }
                 else
                 {
@@ -257,8 +256,7 @@ CPU_INT08U * checkPriMsg (CPU_INT08U ch)
         case CARD_SPIT_NOTICE:                          // 出卡通知
             myCANTransmit ( &gt_TxMessage, mtRxMessage.Data[1], 0, CARD_SPIT_NOTICE_ACK, 0, 0, 0, NO_FAIL );
             dacSet ( DATA_quka, SOUND_LENGTH_quka );
-            copyMenu ( mtRxMessage.Data[1], CARD_SPIT_NOTICE, 0, 7, 4 );
-            copyStatusMsg ( mtRxMessage.Data[1], 0xfe, 0, 12, 4 ); //
+            copyMenu ( mtRxMessage.Data[1], CARD_SPIT_NOTICE, 0, 8, 4 );
             break;
         case CARD_TAKE_AWAY_NOTICE:                     // 卡已被取走通知
             g_ucaDeviceIsSTBY[mtRxMessage.Data[1] -1] = 1;  // 表明卡已经被取走,置位状态
@@ -317,16 +315,14 @@ CPU_INT08U * checkPriMsg (CPU_INT08U ch)
             g_tCardKeyPressFrame.MECHINE_ID = mtRxMessage.Data[1] + '0';
             printf ( "%s\n", ( char * ) &g_tCardTakeAwayFrame );
             dacSet ( DATA_xiexie, SOUND_LENGTH_xiexie );
-            copyMenu ( mtRxMessage.Data[1], CARD_TAKE_AWAY_NOTICE, 0, 7, 4 );
-            copyStatusMsg ( mtRxMessage.Data[1], 0xfe, 0, 12, 4 );
+            copyMenu ( mtRxMessage.Data[1], CARD_TAKE_AWAY_NOTICE, 0, 8, 4 );
             DEBUG_printf ( "%s\n", ( char * ) checkPriMsg ( CARD_TAKE_AWAY ) );
 
             g_ucIsUpdateMenu    = 1;                    // 更新界面
             break;
         case CARD_IS_READY:                             // 卡就绪
             myCANTransmit ( &gt_TxMessage, mtRxMessage.Data[1], 0, CARD_READY_ACK, 0, 0, 0, NO_FAIL );
-            copyMenu ( mtRxMessage.Data[1], CARD_IS_READY, 0, 7, 6 );
-            copyStatusMsg ( mtRxMessage.Data[1], 0xfe, 0, 13, 3 );
+            copyMenu ( mtRxMessage.Data[1], CARD_IS_READY, 0, 8, 6 );
             break;
         case MECHINE_WARNING:                           // 报警
             myCANTransmit ( &gt_TxMessage, mtRxMessage.Data[1], 0, FAULT_CODE_ACK, 0, 0, 0, NO_FAIL ); // 回复故障码
@@ -438,58 +434,59 @@ CPU_INT08U  analyzeUartFrame ( CPU_INT08U argv[] , OS_MSG_SIZE size)
         OS_CRITICAL_ENTER();                 // 进入临界段，不希望下面语句遭到中断
         printf("%s\n",(char *)&g_tP_RsctlFrame);   //发送正应答帧
         //printf ("%s\n","收到信息");
+        LCD12864_Clear();
         switch(type_frame)
         {
             case PC_INIT_MECHINE:               /* 初始化卡机信息(61H)帧 */
-                OLED_ShowStr(0,0,argv,1);
-                display_GB2312_string (0, 2, "初始化", 0);
+                displayGB2312Sting (0, 0, argv, 1);
+                displayGB2312Sting (0, 2, "初始化", 0);
                 break;
             case PC_SPIT_OUT_CARD:              /* 出卡信息(62H)帧 */
-                OLED_ShowStr(0,0,argv,1);
-                display_GB2312_string (0, 2, "出卡信息", 0);
+                displayGB2312Sting (0, 0, argv, 1);
+                displayGB2312Sting (0, 2, "出卡信息", 0);
                 if ( argv[3] <= '4' && argv[3] >= '1' )
                 {
                     myCANTransmit ( &gt_TxMessage, argv[3] - '0', 0, WRITE_CARD_STATUS, CARD_IS_OK, 0, 0, NO_FAIL );
                     dacSet ( DATA_quka, SOUND_LENGTH_quka );
-                    copyMenu ( argv[3] - '0', CARD_SPIT_NOTICE, 0, 7, 4 );
+                    copyMenu ( argv[3] - '0', CARD_SPIT_NOTICE, 0, 8, 4 );
                     copyStatusMsg ( argv[3] - '0', 0xfe, 0, 12, 4 ); //
                 }
                 break;
             case PC_BAD_CARD:                /* 坏卡信息(63H)帧 */
-                OLED_ShowStr(0,0,argv,1);
-                display_GB2312_string (0, 2, "坏卡", 0);
+                displayGB2312Sting (0, 0 ,argv, 1);
+                displayGB2312Sting (0, 2, "坏卡", 0);
                 if ( argv[3] )
                 {
                     myCANTransmit ( &gt_TxMessage, argv[3] - '0', 0, WRITE_CARD_STATUS, CARD_IS_BAD, 0, 0, NO_FAIL );
                 }
                 break;
             case PC_QUERY_CARD_MECHINE:      /* 查询卡机状态(65H)帧 */
-                OLED_ShowStr(0,0,argv,1);
-                display_GB2312_string (0, 2, "查询卡机", 0);
+                displayGB2312Sting (0, 0, argv, 1);
+                displayGB2312Sting (0, 2, "查询卡机", 0);
                 break;
             case PC_QUERY_CARD_CLIP:
-                OLED_ShowStr(0,0,argv,1);   /* 查询卡夹(66H)帧 */
-                display_GB2312_string (0, 2, "查询卡夹", 0);
+                displayGB2312Sting (0, 0, argv, 1);   /* 查询卡夹(66H)帧 */
+                displayGB2312Sting (0, 2, "查询卡夹", 0);
                 break;
             case PC_SET_CARD_NUM:
-                OLED_ShowStr(0,0,argv,1);   /* 设置卡夹卡数(67H)帧 */
-                display_GB2312_string (0, 2, "设置卡夹", 0);
+                displayGB2312Sting (0, 0, argv, 1);   /* 设置卡夹卡数(67H)帧 */
+                displayGB2312Sting (0, 2, "设置卡夹", 0);
                 break;
             case PC_GET_DIST:
-                //OLED_ShowStr(0,0,argv,1);   /* 测距帧 */
-                //display_GB2312_string (0, 2, "测距", 0);
+                //displayGB2312Char(0,0,argv,1);   /* 测距帧 */
+                //displayGB2312Sting (0, 2, "测距", 0);
                 break;
             case PC_CAR_HAS_COMING:
-                OLED_ShowStr(0,0,argv,1);   /* 车以来 */
-                display_GB2312_string (0, 2, "车已来", 0);
+                displayGB2312Sting (0, 0, argv, 1);   /* 车以来 */
+                displayGB2312Sting (0, 2, "车已来", 0);
                 break;
             case PC_CAR_HAS_GONE:
-                OLED_ShowStr(0,0,argv,1);   /* 车以走 */
-                display_GB2312_string (0, 2, "车已走", 0);
+                displayGB2312Sting (0, 0, argv, 1);   /* 车以走 */
+                displayGB2312Sting (0, 2, "车已走", 0);
                 break;
             default:
-                OLED_ShowStr(0,0,argv,1);   /* 无效信息 */
-                display_GB2312_string (0, 2, "无效信息", 0);
+                displayGB2312Sting (0, 0, argv, 1);   /* 无效信息 */
+                displayGB2312Sting (0, 2, "无效信息", 0);
                 break;
         }
         DEBUG_printf ("%s\n",(char *)checkPriMsg(type_frame));

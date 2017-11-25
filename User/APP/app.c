@@ -127,7 +127,6 @@ int  main (void)
 {
     OS_ERR  err;
 
-
     OSInit(&err);                                                           //初始化 uC/OS-III
 
     /* 创建起始任务 */
@@ -359,23 +358,6 @@ static  void AppTaskOLED ( void * p_arg )
     doShowStatusMenu(DLG_STATUS, 5, NULL);      // 显示菜单,需要反显示的行
     while (DEF_TRUE)
     {                            //任务体，通常写成一个死循环
-        /*
-        OSTimeDly ( 1000, OS_OPT_TIME_DLY, & err ); //不断阻塞该任务
-
-        dacSet(DATA_anjianquka,SOUND_LENGTH_anjianquka);
-        OSTimeDly ( 2000, OS_OPT_TIME_DLY, & err );
-
-        dacSet(DATA_xiexie,SOUND_LENGTH_xiexie);
-        OSTimeDly ( 2500, OS_OPT_TIME_DLY, & err );
-        */
-        /* 阻塞任务，等待任务消息 */
-        /*
-        pcMsg = OSTaskQPend ((OS_TICK        )0,                    //无期限等待
-                            (OS_OPT         )OS_OPT_PEND_BLOCKING, //没有消息就阻塞任务
-                            (OS_MSG_SIZE   *)&msg_size,            //返回消息长度
-                            (CPU_TS        *)&ts,                  //返回消息被发布的时间戳
-                            (OS_ERR        *)&err);                //返回错误类型
-        */
 
         if (g_ucIsUpdateMenu || g_ucKeyValues == KEY_QUIT)
         {
@@ -453,7 +435,7 @@ void  AppTaskUartFrame ( void * p_arg )
     CPU_TS      ts  = 0;
     OS_MSG_SIZE    msg_size = 0;
     CPU_INT08U * pMsg = NULL;
-    CPU_INT08U ucaMsg[30] = "aiwesky uC/OS-III";
+    CPU_INT08U ucaMsg[30] = "";
 
     OSTimeDly ( 1000, OS_OPT_TIME_DLY, & err );                 //等待1S
     OS_CRITICAL_ENTER();                                        // 进入临界段，不希望下面语句遭到中断

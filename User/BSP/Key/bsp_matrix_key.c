@@ -150,12 +150,12 @@ void matrix_keyboard_init(void)
 
 static struct io_port matrix_key_output[4] =
 {
-    { GPIOC, GPIO_Pin_5 },   { GPIOB, GPIO_Pin_0 },
-    { GPIOC, GPIO_Pin_4 },   { GPIOB, GPIO_Pin_1 },
+    { GPIOC, GPIO_Pin_8 },   { GPIOC, GPIO_Pin_9 },
+    { GPIOC, GPIO_Pin_13 },   { GPIOC, GPIO_Pin_14 },
 };
 static struct io_port matrix_key_input[4] =
 {
-    { GPIOC, GPIO_Pin_8 }, { GPIOC, GPIO_Pin_9 },
+    { GPIOC, GPIO_Pin_6 }, { GPIOC, GPIO_Pin_7 },
 };
 
 void matrix_keyboard_init(void)
@@ -166,19 +166,13 @@ void matrix_keyboard_init(void)
     //GPIO_PinRemapConfig(GPIO_Remap_SWJ_Disable , ENABLE);           // 关闭JTAG和SW模式,管脚复用
 
     /* 键盘行扫描输出线 输出高电平 */
-    GPIO_InitStructure.GPIO_Pin = GPIO_Pin_4 | GPIO_Pin_5;
+    GPIO_InitStructure.GPIO_Pin = GPIO_Pin_8 | GPIO_Pin_9 | GPIO_Pin_13 | GPIO_Pin_14;
     GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_OD;
     GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
     GPIO_Init(GPIOC, &GPIO_InitStructure);
 
-
-    GPIO_InitStructure.GPIO_Pin = GPIO_Pin_0 | GPIO_Pin_1;
-    GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_OD;
-    GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
-    GPIO_Init(GPIOB, &GPIO_InitStructure);
-
     /* 键盘列扫描输入线 键被按时输入高电平 放开输入低电平 */
-    GPIO_InitStructure.GPIO_Pin = GPIO_Pin_8 | GPIO_Pin_9;
+    GPIO_InitStructure.GPIO_Pin = GPIO_Pin_6 | GPIO_Pin_7;
     GPIO_InitStructure.GPIO_Mode =  GPIO_Mode_IPU;
     GPIO_Init(GPIOC, &GPIO_InitStructure);
 

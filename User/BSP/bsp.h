@@ -72,7 +72,7 @@
 #include  <lib_mem.h>
 #include  <lib_str.h>
 
-#include "stm32f10x.h"          // Modified by fire (原是 #include  <stm32f10x_lib.h>)  
+#include "stm32f10x.h"          // Modified by fire (原是 #include  <stm32f10x_lib.h>)
 
 #include  <app_cfg.h>
 
@@ -80,12 +80,12 @@
 #include "menu.h"
 #include "bsp_led.h"
 #include "bsp_usart1.h"
-#include "bsp_usart4.h"
-#include "bsp_lcd_I2C.h"
+//#include "bsp_usart4.h"
+//#include "bsp_lcd_I2C.h"
 #include "bsp_can.h"
 #include "frame.h"
-#include "bsp_spi_flash.h"
-#include "bsp_font_flash.h"
+//#include "bsp_spi_flash.h"
+//#include "bsp_font_flash.h"
 #include "bsp_dac.h"
 #include "bsp_matrix_key.h"
 #include "bsp_GeneralTim.h"

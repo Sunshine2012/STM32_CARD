@@ -7,10 +7,10 @@
 
 /**************通用定时器TIM参数定义，只限TIM2、3、4、5************/
 // 当需要哪个定时器的时候，只需要把下面的宏定义改成1即可
-#define GENERAL_TIM2    0
+#define GENERAL_TIM2    1
 #define GENERAL_TIM3    0
 #define GENERAL_TIM4    0
-#define GENERAL_TIM5    1
+#define GENERAL_TIM5    0
 
 #if  GENERAL_TIM2
 #define            GENERAL_TIM                   TIM2
