@@ -185,6 +185,8 @@ void matrix_keyboard_init(void)
 
 #endif
 
+
+
 u8 matrix_update_key(void)
 {
     unsigned char i = 0;
@@ -201,29 +203,31 @@ u8 matrix_update_key(void)
         GPIO_ResetBits(matrix_key_output[i].GPIO_x, matrix_key_output[i].GPIO_pin);
         for(j = 0; j < 2; j++)            //j是输入口，当键按下时导通被置为低电平
         {
-            if(GPIO_ReadInputDataBit(matrix_key_input[j].GPIO_x, matrix_key_input[j].GPIO_pin) == 0)
+            if(!GPIO_ReadInputDataBit(matrix_key_input[j].GPIO_x, matrix_key_input[j].GPIO_pin))
             {
                 OSTimeDly ( 1, OS_OPT_TIME_DLY, & err );
                 while(!GPIO_ReadInputDataBit(matrix_key_input[j].GPIO_x, matrix_key_input[j].GPIO_pin))
                 {
-                    OSTimeDly ( 1, OS_OPT_TIME_DLY, & err );
-                    if (g_ucKeyContinu == 1)
+                    OSTimeDly ( 100, OS_OPT_TIME_DLY, & err );
+                    if (g_ucKeyContinu == 1)        // 以下是超时处理
                     {
-                        if (ucTime++ == 150)         // 如果是连续按键,150ms退出,加上进程延时50ms,共200ms发送一次按键
+                        if (ucTime++ == 2)         // 如果是连续按键,20ms退出,加上进程延时10ms,共210ms发送一次按键
                         {
                             ucTime = 0;
-                            ucKeyFlag = 1;           // 按键送开之后,发送数据
-                            g_ucKeyValues = (i + 1) * 10 + (j + 1);
+                            g_ucKeyContinu = 0;     // 连续模式按键,松开之后直接退出
+                            break;
+                        }
+                    }
+                    else
+                    {
+                        if (ucTime++ == 50)
+                        {
+                            // 长按,或者一直被拉低的情况,认为是错误情况,认为没有按键按下
+                            ucTime = 0;
+                            break;
                         }
                     }
                 }
-                if ( ucKeyFlag == 1)
-                {
-                    // 连续模式按键,松开之后直接退出
-                    g_ucKeyContinu = 0xff;
-                    return 0;
-                }
-                //macLED2_TOGGLE ();
                 GPIO_SetBits(matrix_key_output[i].GPIO_x, matrix_key_output[i].GPIO_pin);
                 g_ucKeyValues = (i + 1) * 10 + (j + 1);
                 return 0;

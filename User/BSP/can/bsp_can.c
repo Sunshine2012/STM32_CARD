@@ -130,7 +130,7 @@ unsigned char myCANTransmit (void * p_Msg, unsigned char mechine_id, unsigned ch
     u8 TransmitMailbox;
     CanTxMsg *p_TxMessage = (CanTxMsg *)p_Msg;
     CanTxMsg TxMessage;
-    OS_CRITICAL_ENTER();                 // 进入临界段，不希望下面语句遭到中断
+
     memset(p_TxMessage,0,sizeof (CanTxMsg));
     p_TxMessage->StdId = 0x00;
     p_TxMessage->ExtId = 0x7810 | mechine_id;
@@ -147,6 +147,7 @@ unsigned char myCANTransmit (void * p_Msg, unsigned char mechine_id, unsigned ch
     p_TxMessage->Data[7] = errNum;
     TransmitMailbox = CAN_Transmit(CAN1,p_TxMessage);
     i = 0;
+    //OS_CRITICAL_ENTER();                 // 进入临界段，不希望下面语句遭到中断
     while((CAN_TransmitStatus(CAN1,TransmitMailbox) != CANTXOK) && (i != 0xFFFF))
     {
         i++;
@@ -158,7 +159,7 @@ unsigned char myCANTransmit (void * p_Msg, unsigned char mechine_id, unsigned ch
         i++;
     }
     g_uiSerNum++;           // 帧序号每次加1
-    OS_CRITICAL_EXIT();
+    //OS_CRITICAL_EXIT();
     return 0;
 }
 
@@ -330,6 +331,7 @@ void USB_LP_CAN1_RX0_IRQHandler(void)
     {
 
     }
+    CAN_ClearITPendingBit(CAN1, CAN_IT_FMP0);
     OS_CRITICAL_EXIT();
     //CAN_ITConfig(CAN1,CAN_IT_FMP0, ENABLE);
 }

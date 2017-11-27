@@ -19,6 +19,7 @@
 * @           -> B、增加在检测液晶忙超时退出，预防死循环
 **********************************************************/
 
+
 #ifndef bsp_lcd12864_h_
 #define bsp_lcd12864_h_
 
@@ -26,9 +27,7 @@
                      外部函数头文件
          应用到不同的外设头文件请在这里修改即可
 **********************************************************/
-
 #include "includes.h"
-
 extern unsigned char CGROM_BAIHEJIU[];
 extern unsigned char CGROM_YIFUYUAN[];
 
@@ -36,87 +35,39 @@ extern unsigned char CGROM_YIFUYUAN[];
                     LCD工作模式选择
        LCD并口和串口选择请修改此参数和硬件电路即可
 **********************************************************/
-//#define LCD_Work_Mode           0       //0：为串口工作模式
-                                        //1：为并口工作模式
-
-#define LCD_USE_DELAY           0       //0: 为不使用延时调整通讯频率，对于12MHz以内的晶振
-                                        //1: 为使用延时调整通讯频率，对于12MHz以上的晶振
-
-#define Soft_PSB                0       //0：使用硬件控制串口
-                                        //1：使用软件控制串口
 
 /**********************************************************
                   延时调整通讯频率参数
           需要使用不同频率的请修改此延时函数值
 **********************************************************/
-
 #define LCD_Delay()             delay_us(100)
 
 /**********************************************************
                       定义接口信息
 **********************************************************/
-#ifdef Soft_PSB //定义了则使用软件控制
 
-#define LCD_PSB                 GPIO_Pin_3    //LCD并口和串口通讯选择口
-
-#endif
-
-//#define LCD_DATA_PORT   GPIOE
 #define LCD_DATA_PORT           GPIOB
-//#define LCD_RST                 GPIO_Pin_8    //LCD复位脚
 
 //=========================================================
 
-#ifdef  LCD_Work_Mode                /*    并口工作模式    */
-
-//=========================================================
-
-#define ktdata                  GPIOE    //8位数据接口
-
-#define LCD_EN                  GPIO_Pin_2
-#define LCD_RW                  GPIO_Pin_1
-#define LCD_RS                  GPIO_Pin_0
-
-#define LCD_EN_SET      GPIO_SetBits(LCD_DATA_PORT, LCD_EN)
-#define LCD_RW_SET      GPIO_SetBits(LCD_DATA_PORT, LCD_RW)
-#define LCD_RS_SET      GPIO_SetBits(LCD_DATA_PORT, LCD_RS)
-#define LCD_PSB_SET     GPIO_SetBits(LCD_DATA_PORT, LCD_PSB)
-#define LCD_RST_SET     GPIO_SetBits(LCD_DATA_PORT, LCD_RST)
-
-#define LCD_EN_RESET    GPIO_ResetBits(LCD_DATA_PORT, LCD_EN)
-#define LCD_RW_RESET    GPIO_ResetBits(LCD_DATA_PORT, LCD_RW)
-#define LCD_RS_RESET    GPIO_ResetBits(LCD_DATA_PORT, LCD_RS)
-#define LCD_PSB_RESET   GPIO_ResetBits(LCD_DATA_PORT, LCD_PSB)
-#define LCD_RST_RESET   GPIO_ResetBits(LCD_DATA_PORT, LCD_RST)
-//=========================================================
-
-#else    /*    串口工作模式    */
-
-//=========================================================
 /***********串口模式时接口定义***********/
-#define LCD_SCL			GPIO_Pin_13     //对应管脚为EN
-#define LCD_SDA			GPIO_Pin_15     //对应管脚为RW
-#define LCD_CS          GPIO_Pin_12     //对应管脚为RS
-#define LCD_RST			GPIO_Pin_5      //对应管脚为RST
-//#define LCD_BAK			GPIO_Pin_8      //对应管脚为背光
+#define LCD_SCL                 GPIO_Pin_13     //对应管脚为EN
+#define LCD_SDA                 GPIO_Pin_15     //对应管脚为RW
+#define LCD_CS                  GPIO_Pin_12     //对应管脚为RS
+#define LCD_RST                 GPIO_Pin_5      //对应管脚为RST
+#define LCD_BAK                 GPIO_Pin_8      //对应管脚为背光
 
 //=========================================================
-#define LCD_SCL_SET     GPIO_SetBits(LCD_DATA_PORT, LCD_SCL)
-#define LCD_SDA_SET     GPIO_SetBits(LCD_DATA_PORT, LCD_SDA)
-#define LCD_CS_SET      GPIO_SetBits(LCD_DATA_PORT, LCD_CS)
-#define LCD_RST_SET     GPIO_SetBits(LCD_DATA_PORT, LCD_RST)
-#define LCD_PSB_SET     GPIO_SetBits(LCD_DATA_PORT, LCD_PSB)
-//#define LCD_BAK_SET     GPIO_SetBits(LCD_DATA_PORT, LCD_BAK)
-
-
-#define LCD_SCL_RESET   GPIO_ResetBits(LCD_DATA_PORT, LCD_SCL)
-#define LCD_SDA_RESET   GPIO_ResetBits(LCD_DATA_PORT, LCD_SDA)
-#define LCD_CS_RESET    GPIO_ResetBits(LCD_DATA_PORT, LCD_CS)
-#define LCD_RST_RESET   GPIO_ResetBits(LCD_DATA_PORT, LCD_RST)
-#define LCD_PSB_RESET   GPIO_ResetBits(LCD_DATA_PORT, LCD_PSB)
-//#define LCD_BAK_RESET   GPIO_ResetBits(LCD_DATA_PORT, LCD_BAK)  // 背光引脚
-
-#endif    //结束串口、并口模式选择
+#define LCD_SCL_SET             GPIO_SetBits(LCD_DATA_PORT, LCD_SCL)
+#define LCD_SDA_SET             GPIO_SetBits(LCD_DATA_PORT, LCD_SDA)
+#define LCD_CS_SET              GPIO_SetBits(LCD_DATA_PORT, LCD_CS)
+#define LCD_RST_SET             GPIO_SetBits(LCD_DATA_PORT, LCD_RST)
+#define LCD_BAK_SET             GPIO_SetBits(LCD_DATA_PORT, LCD_BAK)
+#define LCD_SCL_RESET           GPIO_ResetBits(LCD_DATA_PORT, LCD_SCL)
+#define LCD_SDA_RESET           GPIO_ResetBits(LCD_DATA_PORT, LCD_SDA)
+#define LCD_CS_RESET            GPIO_ResetBits(LCD_DATA_PORT, LCD_CS)
+#define LCD_RST_RESET           GPIO_ResetBits(LCD_DATA_PORT, LCD_RST)
+#define LCD_BAK_RESET           GPIO_ResetBits(LCD_DATA_PORT, LCD_BAK)  // 背光引脚
 
 
 //=========================================================
@@ -125,7 +76,6 @@ extern unsigned char CGROM_YIFUYUAN[];
                         参数宏定义
 **********************************************************/
 #define LCD_Busy                0x80    //LCD忙标志
-
 #define Graph_BassADD           0x00    //显示GRAM基地址
 
 //CGRAM显示地址单元
@@ -155,16 +105,12 @@ extern unsigned char CGROM_YIFUYUAN[];
 //退出待机，写入任意指令可以退出，再将RE = 0即可
 
 /***********基本指令***********/
-
 //进入设定点（entry mode set）
 // b7  b6  b5  b4  b3  b2  b1  b0
 // 0   0   0   0   0   1   I/D  S
-
 #define Entry_ModeSet           0x04    //基数
-
 #define Vernier_ShiftRight      (Entry_ModeSet | (1<<1))        //游标右移，AC+1
 #define Vernier_ShiftLeft       (Entry_ModeSet | (0<<1))        //游标右移，AC-1
-
 #define Frames_ShiftRight       (Vernier_ShiftLeft | 0x01)      //画面整体右移
 #define Frames_ShiftLeft        (Vernier_ShiftRight | 0x01)     //画面整体左移
 
@@ -172,13 +118,10 @@ extern unsigned char CGROM_YIFUYUAN[];
 // b7  b6  b5  b4  b3  b2  b1  b0
 // 0   0   0   0   1   D   C   B
 #define Display_Status          0x08    //基数
-
 #define Open_Display            (Display_Status | (1<<2))       //整体显示开
 #define Close_Display           (Display_Status | (0<<2))       //整体显示关
-
 #define Open_Vernier            (Display_Status | (1<<1))       //游标显示开
 #define Close_Vernier           (Display_Status | (0<<1))       //游标显示关
-
 #define Vernier_White_Open      (Display_Status | 0x01)         //游标位置显示反白开
 #define Vernier_White_Close     (Display_Status | 0x00)         //游标位置显示反白关，正常显示
 
@@ -186,7 +129,6 @@ extern unsigned char CGROM_YIFUYUAN[];
 // b7  b6  b5  b4  b3    b2   b1  b0
 // 0   0   0   1   S/C  R/L1  X   X
 #define Cursor_Display_Control  0x10    //基数
-
 #define Cursor_ShiftLeft        (Cursor_Display_Control | (0<<2))    //游标向左移动，AC = AC - 1
 #define Cursor_ShiftRight       (Cursor_Display_Control | (1<<2))    //游标向右移动，AC = AC + 1
 #define Display_ShiftLeft       (Cursor_Display_Control | (2<<2))    //显示向左移动，游标跟着移动，AC = AC
@@ -196,16 +138,12 @@ extern unsigned char CGROM_YIFUYUAN[];
 // b7  b6  b5  b4  b3  b2    b1  b0
 // 0   0   1   DL  X   0/RE  X      X
 #define Function_SetBasic       0x20    //基数
-
 #define MPU_8bit                (Function_SetBasic | (1<<4))        //8bit MPU接口
 #define MPU_4bit                (Function_SetBasic | (0<<4))        //4bit MPU接口
-
 #define Instruct_Basic4         (MPU_4bit | (0<<2))                 //4bit MPU接口，基本指令集
 #define Instruct_Basic8         (MPU_8bit | (0<<2))                 //8bit MPU接口，基本指令集
-
 #define Instruct_Expansion4     (MPU_4bit | (1<<2))                 //4bit MPU接口，扩充指令集
 #define Instruct_Expansion8     (MPU_8bit | (1<<2))                 //8bit MPU接口，扩充指令集
-
 
 //设定CGRAM地址
 // b7  b6  b5  b4  b3  b2  b1  b0
@@ -252,17 +190,14 @@ extern unsigned char CGROM_YIFUYUAN[];
 //扩充功能设定
 // b7  b6  b5  b4  b3  b2  b1  b0
 // 0   0   1   DL  X   RE  G   X
-#define MPU_4bit_Basic_Draw_Open    (Instruct_Basic4 | (1<<1))    //4bit MPU接口，基本指令，绘图开
-#define MPU_4bit_Basic_Draw_Close   (Instruct_Basic4 | (0<<1))    //4bit MPU接口，基本指令，绘图关
-
-#define MPU_8bit_Basic_Draw_Open    (Instruct_Basic8 | (1<<1))    //8bit MPU接口，基本指令，绘图开
-#define MPU_8bit_Basic_Draw_Close   (Instruct_Basic8 | (0<<1))    //8bit MPU接口，基本指令，绘图关
-
-#define MPU_8bit_Expansion_Draw_Open    (Instruct_Expansion8 | (1<<1))    //8bit MPU接口，扩充指令，绘图开
-#define MPU_8bit_Expansion_Draw_Close   (Instruct_Expansion8 | (0<<1))    //8bit MPU接口，扩充指令，绘图关
-
-#define MPU_4bit_Expansion_Draw_Open    (Instruct_Expansion4 | (1<<1))    //4bit MPU接口，扩充指令，绘图开
-#define MPU_4bit_Expansion_Draw_Close   (Instruct_Expansion4 | (0<<1))    //4bit MPU接口，扩充指令，绘图关
+#define MPU_4bit_Basic_Draw_Open                (Instruct_Basic4 | (1<<1))    //4bit MPU接口，基本指令，绘图开
+#define MPU_4bit_Basic_Draw_Close               (Instruct_Basic4 | (0<<1))    //4bit MPU接口，基本指令，绘图关
+#define MPU_8bit_Basic_Draw_Open                (Instruct_Basic8 | (1<<1))    //8bit MPU接口，基本指令，绘图开
+#define MPU_8bit_Basic_Draw_Close               (Instruct_Basic8 | (0<<1))    //8bit MPU接口，基本指令，绘图关
+#define MPU_8bit_Expansion_Draw_Open            (Instruct_Expansion8 | (1<<1))    //8bit MPU接口，扩充指令，绘图开
+#define MPU_8bit_Expansion_Draw_Close           (Instruct_Expansion8 | (0<<1))    //8bit MPU接口，扩充指令，绘图关
+#define MPU_4bit_Expansion_Draw_Open            (Instruct_Expansion4 | (1<<1))    //4bit MPU接口，扩充指令，绘图开
+#define MPU_4bit_Expansion_Draw_Close           (Instruct_Expansion4 | (0<<1))    //4bit MPU接口，扩充指令，绘图关
 
 //设定IRAM地址或卷动地址
 // b7  b6  b5  b4  b3  b2  b1  b0
@@ -281,30 +216,17 @@ extern unsigned char CGROM_YIFUYUAN[];
 /**********************************************************
                       外部功能函数
 **********************************************************/
-
-void LCD12864_Init(void);    //LCD YB12864ZB初始化
-
-void LCD12864_Clear(void);    //LCD YB12864ZB清屏
-
-void LCD_Write_Byte(u8 dat,u8 ord);    //LCD写入一个字节命令或者数据，判断忙标志
-
-void displayGB2312tring(u8 x, u8 y, u8 * text, u8 isTurn);    //LCD显示字符串
-
-void displayGB2312StingLen(u8 x, u8 y, u8 * text, u8 isTurn, u8 len);
-
-void Display_String(u8 x,u8 y,u8 *str,u8 len);
-
-void Display_StringFromIndex(u8 x,u8 y,u8 *str,u8 starsum,u8 len);
-
-void Display_CGRAM(u8 x,u8 y,u8 add_h,u8 add_l);    //显示一个CGRAM内容
-
-void Display_GDRAM(u8 x,u8 y,u8 width,u8 height,u8 *bmp,u8 dis_mode);    //LCD写入GDRAM绘图
-
-void delay_us(int delay);
-
-void isTurnShow(u8 x, u8 y);
-
-
+void LCD12864_Init( void ); //LCD YB12864ZB初始化
+void LCD12864_Clear( void ); //LCD YB12864ZB清屏
+void LCD_Write_Byte( u8 dat, u8 ord ); //LCD写入一个字节命令或者数据，判断忙标志
+void displayGB2312tring( u8 x, u8 y, u8 * text, u8 isTurn ); //LCD显示字符串
+void displayGB2312StingLen( u8 x, u8 y, u8 * text, u8 isTurn, u8 len );
+void Display_String( u8 x, u8 y, u8 * str, u8 len );
+void Display_StringFromIndex( u8 x, u8 y, u8 * str, u8 starsum, u8 len );
+void Display_CGRAM( u8 x, u8 y, u8 add_h, u8 add_l ); //显示一个CGRAM内容
+void Display_GDRAM( u8 x, u8 y, u8 width, u8 height, u8 * bmp, u8 dis_mode ); //LCD写入GDRAM绘图
+void delay_us( int delay );
+void isTurnShow( u8 x, u8 y );
 
 /**********************************************************
 * 函数功能 ---> 写入自定义字符到LCD的CGRAM

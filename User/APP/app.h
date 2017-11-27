@@ -31,7 +31,7 @@
 #ifndef  __APP_H__
 #define  __APP_H__
 
-#define __DEBUG__
+//#define __DEBUG__
 
 #ifdef __DEBUG__
 #define DEBUG(format,...) printf("File: "__FILE__", Line: %05d: "format"\n", __LINE__, ##__VA_ARGS__)

@@ -477,7 +477,7 @@ void doShowStatusOne (unsigned char dlg_id, unsigned char isNotRow, void * p_par
     unsigned short id = 0x7810 | num;       // CAN通信的ID
     unsigned char id_h = ( id >> 8 ) & 0xff;                // CAN通信的ID高字节
     unsigned char id_l = id & 0xff;                         // CAN通信的ID低字节
-    LCD12864_Clear();
+    //LCD12864_Clear();
     for (i = 0; i < 4; i++)
     {
         displayGB2312Sting (0, i * 2, g_dlg[dlgId].MsgRow[i], i == isNotRow ? 1 : 0);
@@ -530,7 +530,7 @@ void doShowStatusTwo (unsigned char dlg_id, unsigned char isNotRow, void * p_par
     unsigned short id = 0x7810 | num;       // CAN通信的ID
     unsigned char id_h = ( id >> 8 ) & 0xff;                // CAN通信的ID高字节
     unsigned char id_l = id & 0xff;                         // CAN通信的ID低字节
-    LCD12864_Clear();
+    //LCD12864_Clear();
     for (i = 0; i < 4; i++)
     {
         displayGB2312Sting (0, i * 2, g_dlg[dlgId].MsgRow[i], i == isNotRow ? 1 : 0);
@@ -763,7 +763,7 @@ void doShowDebugMain (unsigned char dlg_id, unsigned char isNotRow, void * p_par
     {
         g_dlg[dlgId].MsgRow[0][i] = str_num[i];
     }
-    LCD12864_Clear();
+    //LCD12864_Clear();
     for (i = 0; i < 4; i++)
     {
         displayGB2312Sting (0, i * 2, g_dlg[dlgId].MsgRow[i], i == isNotRow ? 1 : 0);
@@ -886,7 +886,7 @@ void doShowDebugOne (unsigned char dlg_id, unsigned char isNotRow, void * p_parm
     unsigned short id = 0x7810 | num;       // CAN通信的ID
     unsigned char id_h = ( id >> 8 ) & 0xff;                // CAN通信的ID高字节
     unsigned char id_l = id & 0xff;                         // CAN通信的ID低字节
-    LCD12864_Clear();
+    //LCD12864_Clear();
     for (i = 0; i < 4; i++)
     {
         displayGB2312Sting (0, i * 2, g_dlg[dlgId].MsgRow[i], i == isNotRow ? 1 : 0);
@@ -894,11 +894,11 @@ void doShowDebugOne (unsigned char dlg_id, unsigned char isNotRow, void * p_parm
     isTurnShow(0,isNotRow);
     while (DEF_TRUE)
     {                            //任务体,通常写成一个死循环
-        key = g_ucKeyValues;
         for (i = 0; i < 4; i++)
         {
             g_ucaDeviceIsSTBY[i] = 1;
         }
+        key = g_ucKeyValues;
         switch (key)
         {
             case KEY_UP:
@@ -960,7 +960,7 @@ void doShowDebugTwo (unsigned char dlg_id, unsigned char isNotRow, void * p_parm
     unsigned char id_h = ( id >> 8 ) & 0xff;                // CAN通信的ID高字节
     unsigned char id_l = id & 0xff;                         // CAN通信的ID低字节
     g_ucKeyContinu = 1;             // 进入单动模式
-    LCD12864_Clear();
+    //LCD12864_Clear();
     for (i = 0; i < 4; i++)
     {
         displayGB2312Sting (0, i * 2, g_dlg[dlgId].MsgRow[i], i == isNotRow ? 1 : 0);
@@ -968,11 +968,11 @@ void doShowDebugTwo (unsigned char dlg_id, unsigned char isNotRow, void * p_parm
     isTurnShow(0,isNotRow);
     while (DEF_TRUE)
     {                            //任务体,通常写成一个死循环
-        key = g_ucKeyValues;
         for (i = 0; i < 4; i++)
         {
             g_ucaDeviceIsSTBY[i] = 1;
         }
+        key = g_ucKeyValues;
         switch (key)
         {
             case KEY_UP:
@@ -1001,10 +1001,6 @@ void doShowDebugTwo (unsigned char dlg_id, unsigned char isNotRow, void * p_parm
                 key = KEY_NUL;
                 break;
         }
-        if (g_ucKeyContinu == 0xff)
-        {
-            g_ucKeyContinu = 1;             // 松开按键之后,给卡机发送停止命令
-        }
         if (g_ucKeyValues == KEY_QUIT)      // 按QUIT键,直接退到主界面,避免连续的刷屏,退出,并保持按键值不变
         {
             g_ucKeyContinu = 0;             // 退出单动模式
@@ -1013,15 +1009,10 @@ void doShowDebugTwo (unsigned char dlg_id, unsigned char isNotRow, void * p_parm
         if (KEY_NUL != key || g_ucIsUpdateMenu)    // 如果有按键按下,则更新界面
         {
             g_ucIsUpdateMenu = 0;
-            /*
-            for (i = 0; i < 4; i++)
-            {
-                displayGB2312Sting (0, i * 2, g_dlg[dlgId].MsgRow[i], i == isNotRow ? 1 : 0);
-            }
-            */
             isTurnShow(0,isNotRow);
         }
         g_ucKeyValues = KEY_NUL;
+        g_ucKeyContinu = 1;             // 松开按键之后,重新置连续按键模式
         OSTimeDly ( 10, OS_OPT_TIME_DLY, & err );     //不断阻塞该任务
     }
 }

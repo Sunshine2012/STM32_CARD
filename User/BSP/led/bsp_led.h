@@ -4,14 +4,14 @@
 
 
 #include "stm32f10x.h"
- 
- 
- 
+
+
+
 /****************************** LED 引脚配置参数定义***************************************/
 #define             macLED1_GPIO_APBxClock_FUN              RCC_APB2PeriphClockCmd
 #define             macLED1_GPIO_CLK                        RCC_APB2Periph_GPIOB
 #define             macLED1_GPIO_PORT                       GPIOB
-#define             macLED1_GPIO_PIN                        GPIO_Pin_8
+#define             macLED1_GPIO_PIN                        GPIO_Pin_6
 
 #define             macLED2_GPIO_APBxClock_FUN              RCC_APB2PeriphClockCmd
 #define             macLED2_GPIO_CLK                        RCC_APB2Periph_GPIOC
@@ -21,7 +21,7 @@
 #define             macLED3_GPIO_APBxClock_FUN              RCC_APB2PeriphClockCmd
 #define             macLED3_GPIO_CLK                        RCC_APB2Periph_GPIOB
 #define             macLED3_GPIO_PORT                       GPIOB
-#define             macLED3_GPIO_PIN                        GPIO_Pin_5
+#define             macLED3_GPIO_PIN                        GPIO_Pin_4
 
 
 
@@ -45,8 +45,8 @@
 
 /************************** PAD 函数声明********************************/
 void                               LED_Init                         ( void );
- 
- 
+
+
 
 #endif /* __LED_H_ */
 

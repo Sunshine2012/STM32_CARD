@@ -210,8 +210,7 @@ void macUSART4_IRQHandler(void)
             g_num = 0;
             g_num++;
         }
-        // 当接收到的值等于0XFF时，把值发送回去
-        else if( g_rx_buf[g_num] == FRAME_END)
+        else if( g_rx_buf[g_num] == FRAME_END)  // 当接收到的值等于'>'时，结束一帧数据
         {
             g_rx_buf[g_num + 1] = 0;
             /* 发布消息到消息队列 queue */

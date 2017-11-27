@@ -85,7 +85,7 @@
 #include "bsp_can.h"
 #include "frame.h"
 //#include "bsp_spi_flash.h"
-//#include "bsp_font_flash.h"
+#include "bsp_font_flash.h"
 #include "bsp_dac.h"
 #include "bsp_matrix_key.h"
 #include "bsp_GeneralTim.h"

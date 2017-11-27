@@ -67,7 +67,7 @@ void FONT_SPI_FLASH_Init(void)
     SPI_InitStructure.SPI_CPOL = SPI_CPOL_High;
     SPI_InitStructure.SPI_CPHA = SPI_CPHA_2Edge;
     SPI_InitStructure.SPI_NSS = SPI_NSS_Soft;
-    SPI_InitStructure.SPI_BaudRatePrescaler = SPI_BaudRatePrescaler_256;
+    SPI_InitStructure.SPI_BaudRatePrescaler = SPI_BaudRatePrescaler_128;
     SPI_InitStructure.SPI_FirstBit = SPI_FirstBit_MSB;
     SPI_InitStructure.SPI_CRCPolynomial = 7;
     SPI_Init(FONT_FLASH_SPIx , &SPI_InitStructure);
@@ -168,6 +168,7 @@ static  uint16_t SPI_TIMEOUT_UserCallback(uint8_t errorCode)
     return 0;
 }
 
+#if 0
 /**
  * @brief  在LCD上指定位置显示一行字符串
  * @param  x:水平起始位置(0~128);y垂直起始位置(0~8);text:指向显示字符串的首地址;isTurn:是否反显
@@ -231,7 +232,7 @@ void display_GB2312_char(u8 x, u8 y, unsigned char uchar, unsigned char isTurn)
     FONT_SPI_FLASH_BufferRead( fontbuf, fontaddr, 16 );        /*取 16 个字节的数据，存到"fontbuf[32]"*/
     OLED_xShowEN(x, y, fontbuf , isTurn);
 }
-
+#endif
 
 
 /*********************************************END OF FILE**********************/

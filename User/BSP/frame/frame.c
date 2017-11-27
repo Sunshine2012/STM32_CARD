@@ -255,7 +255,7 @@ CPU_INT08U * checkPriMsg (CPU_INT08U ch)
             break;
         case CARD_SPIT_NOTICE:                          // 出卡通知
             myCANTransmit ( &gt_TxMessage, mtRxMessage.Data[1], 0, CARD_SPIT_NOTICE_ACK, 0, 0, 0, NO_FAIL );
-            dacSet ( DATA_quka, SOUND_LENGTH_quka );
+            //dacSet ( DATA_quka, SOUND_LENGTH_quka );
             copyMenu ( mtRxMessage.Data[1], CARD_SPIT_NOTICE, 0, 8, 4 );
             break;
         case CARD_TAKE_AWAY_NOTICE:                     // 卡已被取走通知
@@ -314,7 +314,7 @@ CPU_INT08U * checkPriMsg (CPU_INT08U ch)
 
             g_tCardKeyPressFrame.MECHINE_ID = mtRxMessage.Data[1] + '0';
             printf ( "%s\n", ( char * ) &g_tCardTakeAwayFrame );
-            dacSet ( DATA_xiexie, SOUND_LENGTH_xiexie );
+            //dacSet ( DATA_xiexie, SOUND_LENGTH_xiexie );
             copyMenu ( mtRxMessage.Data[1], CARD_TAKE_AWAY_NOTICE, 0, 8, 4 );
             DEBUG_printf ( "%s\n", ( char * ) checkPriMsg ( CARD_TAKE_AWAY ) );
 
@@ -434,7 +434,7 @@ CPU_INT08U  analyzeUartFrame ( CPU_INT08U argv[] , OS_MSG_SIZE size)
         OS_CRITICAL_ENTER();                 // 进入临界段，不希望下面语句遭到中断
         printf("%s\n",(char *)&g_tP_RsctlFrame);   //发送正应答帧
         //printf ("%s\n","收到信息");
-        LCD12864_Clear();
+        //LCD12864_Clear();
         switch(type_frame)
         {
             case PC_INIT_MECHINE:               /* 初始化卡机信息(61H)帧 */
