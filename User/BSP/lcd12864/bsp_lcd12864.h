@@ -227,6 +227,8 @@ void Display_CGRAM( u8 x, u8 y, u8 add_h, u8 add_l ); //显示一个CGRAM内容
 void Display_GDRAM( u8 x, u8 y, u8 width, u8 height, u8 * bmp, u8 dis_mode ); //LCD写入GDRAM绘图
 void delay_us( int delay );
 void isTurnShow( u8 x, u8 y );
+void convertChar( u8 x, u8 y, u8 width, u8 yn, u8 f );
+
 
 /**********************************************************
 * 函数功能 ---> 写入自定义字符到LCD的CGRAM

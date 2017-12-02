@@ -404,6 +404,10 @@ void displayGB2312Sting( u8 x, u8 y, u8 * text, u8 isTurn )
             i++;
         }
     }
+    if(isTurn)
+    {
+        //convertChar(y,0,16,0,0);
+    }
 }
 
 /**********************************************************
@@ -668,6 +672,114 @@ void isTurnShow( u8 x, u8 y )
     }
 }
 
+/*****
+反白思想:
+从使用手册上可知，扩展指令里的0x03+行号即可实现反白对应行。但是ST7920 控制器的128×64 点阵液晶其实原理上等同256×32 点阵，第三行对应的DDRAM 地址紧接第一行；第四行对应的DDRAM 地址紧接第二行。所以128×64
+点阵的液晶执行反白功能时实用意义不大，因为用户对第一行执行反白显示操作时，第三行必然也反白显示；第二行反白，第四行也必然反白。
+
+        其实我们还是有办法做到单行反白的，解决方法就是混用图形显示和字符显示。其理论支持在于：在ST7920中，字符显示的CGRAM和图形的GGRAM是相互独立的，而最后显示到液晶上的结果，是两个RAM中数据的异或。
+具体来说：假如某个点上，绘图RAM的没有绘图（数据为0），而字符RAM上有点阵（数据为1），那么异或的结果就是1，也就是说正常显示字符；当字符上RAM没有点阵的时候，异或的结果是0，自然也就不显示了。假如该点上绘图RAM图了（数据为1），当字符RAM上有点阵（数据为1时），异或的结果为0，效果就是反白显示；如果字符RAM没有点阵（数据为0时），异或结果为1，效果就是显示绘图的背景。
+
+        所以，如果要在某个地方反白显示，那么就在该点绘图并且写字，如果要取消反白，就重新用全0擦掉那个地方的绘图！这样一来可以实现任何地方、任意大小的反白显示，反而比原指令中的单行反白的功能更好更强大咯
+12864驱动程序（反白部份）
+
+*****/
+void dispBlack() //在反白之前先清绘图存储区,将绘图存储区的参数全设为不反白0x00.
+{
+    unsigned char i, j;
+
+    LCD_Write_Byte( 0x36, 0 );                                                      //图形方式
+
+    for ( i = 0; i < 32; i++ )
+    {
+        LCD_Write_Byte( 0x80 + i,0 );
+        LCD_Write_Byte( 0x80, 0 );
+
+        for ( j = 0; j < 16; j++ )
+        {
+            LCD_Write_Byte( 0x00, 1);
+        }
+    }
+
+    for ( i = 0; i < 32; i++ )
+    {
+        LCD_Write_Byte( 0x80 + i,0 );
+        LCD_Write_Byte( 0x80, 0 );
+
+        for ( j = 0; j < 16; j++ )
+        {
+            LCD_Write_Byte( 0x00, 1 );
+        }
+    }
+}
+void convertChar( u8 x, u8 y, u8 width, u8 yn, u8 f )
+{
+
+    u8 halfLineCnt = 0;
+    u8 basicBlock = 0;
+    u8 lcdPosX = 0;
+    u8 lcdPosY = 0;
+
+    if ( f == 1 )
+        dispBlack(); //清绘图区
+
+    lcdPosY = 0x80;
+
+    if ( x == 0 )
+    {
+        x  = 0x80;
+        halfLineCnt = 16;
+    }
+    else if ( x == 1 )
+    {
+        x  = 0x80;
+        halfLineCnt = 32;
+    }
+    else if ( x == 2 )
+    {
+        x  = 0x88;
+        halfLineCnt = 16;
+    }
+    else if ( x == 3 )
+    {
+        x  = 0x88;
+        halfLineCnt = 32;
+    }
+
+    lcdPosX = x + y;
+
+    for ( ; halfLineCnt != 0; halfLineCnt-- )
+    {
+        basicBlock = width;
+        LCD_Write_Byte( 0x34, 0 );
+        LCD_Write_Byte( lcdPosY, 0 );
+        LCD_Write_Byte( lcdPosX, 0 );
+        LCD_Write_Byte( 0x30, 0 );
+
+        for ( ; basicBlock != 0; basicBlock-- )
+        {
+            if ( halfLineCnt > 16 )
+            {
+                LCD_Write_Byte( 0x00, 1 );
+            }
+            else
+            {
+                if ( yn == 1 )
+                    LCD_Write_Byte( 0xff, 1 );
+                else
+                    LCD_Write_Byte( 0x00, 1 );
+            }
+        }
+
+        lcdPosY++;
+    }
+
+    LCD_Write_Byte( 0x36, 0 );
+    LCD_Write_Byte( 0x30, 0 );
+}
+
+
+
 /*******************************************************************************
 * Function Name  : GPIO_Configuration
 * Description    : Configure GPIO Pin
@@ -690,6 +802,8 @@ void GPIOConfiguration( void )
     GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;
     GPIO_Init( GPIOB, &GPIO_InitStructure );
 }
+
+
 void lcdInit( void )
 {
     GPIOConfiguration();                                                        // 初始化GPIO

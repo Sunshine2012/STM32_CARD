@@ -857,6 +857,11 @@
               <FileType>1</FileType>
               <FilePath>..\..\User\BSP\lcd12864\bsp_lcd12864.c</FilePath>
             </File>
+            <File>
+              <FileName>bsp_font_flash.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\User\BSP\fontFlash\bsp_font_flash.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
