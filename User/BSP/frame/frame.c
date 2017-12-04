@@ -218,22 +218,18 @@ CPU_INT08U * checkPriMsg (CPU_INT08U ch)
                                              //，开中断时将该值还原。
 
     CanRxMsg mtRxMessage = arg;                       // can数据接收缓存
-    OS_ERR      err;
     unsigned char i = 0;
     unsigned char n = 0;
-    unsigned char ID_temp = 0;
-    unsigned char str_id[10] = {0};
     static unsigned char count = 0;
     g_uiSerNum = mtRxMessage.Data[0];                               // 保持帧序号不变,将数据回复
 
     switch(mtRxMessage.Data[3])
     {
         case KEY_PRESS:                                 // 司机已按键
-            if ( g_ucaDeviceIsSTBY[0] == 1 && g_ucaDeviceIsSTBY[1] == 1 && g_ucaDeviceIsSTBY[2] == 1 && g_ucaDeviceIsSTBY[3] == 1 || mtRxMessage.Data[2] == 0xff )
+            if ((mtRxMessage.Data[2] == 0xff) || (g_ucaDeviceIsSTBY[0] == 1) && (g_ucaDeviceIsSTBY[1] == 1) && (g_ucaDeviceIsSTBY[2] == 1) && (g_ucaDeviceIsSTBY[3] == 1))
             {
                 if ( mtRxMessage.Data[4] == 0x10 ) // 未进入发卡流程,且有卡
                 {
-
                     g_tCardKeyPressFrame.MECHINE_ID = mtRxMessage.Data[1] + '0';		// 将数据转换未字符,然后将数据发送出去
                     printf ( "%s\n", ( char * ) &g_tCardKeyPressFrame );
                     g_ucaDeviceIsSTBY[mtRxMessage.Data[1] -1] = 0; // 按键发卡流程开始之后，再次按键不再响应
@@ -255,7 +251,7 @@ CPU_INT08U * checkPriMsg (CPU_INT08U ch)
             break;
         case CARD_SPIT_NOTICE:                          // 出卡通知
             myCANTransmit ( &gt_TxMessage, mtRxMessage.Data[1], 0, CARD_SPIT_NOTICE_ACK, 0, 0, 0, NO_FAIL );
-            //dacSet ( DATA_quka, SOUND_LENGTH_quka );
+            dacSet ( DATA_quka, SOUND_LENGTH_quka );
             copyMenu ( mtRxMessage.Data[1], CARD_SPIT_NOTICE, 0, 8, 4 );
             break;
         case CARD_TAKE_AWAY_NOTICE:                     // 卡已被取走通知
@@ -314,7 +310,7 @@ CPU_INT08U * checkPriMsg (CPU_INT08U ch)
 
             g_tCardKeyPressFrame.MECHINE_ID = mtRxMessage.Data[1] + '0';
             printf ( "%s\n", ( char * ) &g_tCardTakeAwayFrame );
-            //dacSet ( DATA_xiexie, SOUND_LENGTH_xiexie );
+            dacSet ( DATA_xiexie, SOUND_LENGTH_xiexie );
             copyMenu ( mtRxMessage.Data[1], CARD_TAKE_AWAY_NOTICE, 0, 8, 4 );
             DEBUG_printf ( "%s\n", ( char * ) checkPriMsg ( CARD_TAKE_AWAY ) );
 
@@ -414,7 +410,6 @@ CPU_INT08U  analyzeUartFrame ( CPU_INT08U argv[] , OS_MSG_SIZE size)
                                      //量，用于保存关中断前的 CPU 状态寄存器 SR（临界段关中断只需保存SR）
                                      //，开中断时将该值还原.
 
-    OS_ERR      err;
     CPU_INT08U ucaFrame[50] = {0};
     CPU_INT08U ucSerNum = 0;
     CPU_INT08U ucNum = argv[1];
@@ -438,12 +433,12 @@ CPU_INT08U  analyzeUartFrame ( CPU_INT08U argv[] , OS_MSG_SIZE size)
         switch(type_frame)
         {
             case PC_INIT_MECHINE:               /* 初始化卡机信息(61H)帧 */
-                displayGB2312Sting (0, 0, argv, 1);
-                displayGB2312Sting (0, 2, "初始化", 0);
+                displayGB2312String (0, 0, argv, 1);
+                displayGB2312String (0, 2, "初始化", 0);
                 break;
             case PC_SPIT_OUT_CARD:              /* 出卡信息(62H)帧 */
-                displayGB2312Sting (0, 0, argv, 1);
-                displayGB2312Sting (0, 2, "出卡信息", 0);
+                displayGB2312String (0, 0, argv, 1);
+                displayGB2312String (0, 2, "出卡信息", 0);
                 if ( argv[3] <= '4' && argv[3] >= '1' )
                 {
                     myCANTransmit ( &gt_TxMessage, argv[3] - '0', 0, WRITE_CARD_STATUS, CARD_IS_OK, 0, 0, NO_FAIL );
@@ -453,40 +448,40 @@ CPU_INT08U  analyzeUartFrame ( CPU_INT08U argv[] , OS_MSG_SIZE size)
                 }
                 break;
             case PC_BAD_CARD:                /* 坏卡信息(63H)帧 */
-                displayGB2312Sting (0, 0 ,argv, 1);
-                displayGB2312Sting (0, 2, "坏卡", 0);
+                displayGB2312String (0, 0 ,argv, 1);
+                displayGB2312String (0, 2, "坏卡", 0);
                 if ( argv[3] )
                 {
                     myCANTransmit ( &gt_TxMessage, argv[3] - '0', 0, WRITE_CARD_STATUS, CARD_IS_BAD, 0, 0, NO_FAIL );
                 }
                 break;
             case PC_QUERY_CARD_MECHINE:      /* 查询卡机状态(65H)帧 */
-                displayGB2312Sting (0, 0, argv, 1);
-                displayGB2312Sting (0, 2, "查询卡机", 0);
+                displayGB2312String (0, 0, argv, 1);
+                displayGB2312String (0, 2, "查询卡机", 0);
                 break;
             case PC_QUERY_CARD_CLIP:
-                displayGB2312Sting (0, 0, argv, 1);   /* 查询卡夹(66H)帧 */
-                displayGB2312Sting (0, 2, "查询卡夹", 0);
+                displayGB2312String (0, 0, argv, 1);   /* 查询卡夹(66H)帧 */
+                displayGB2312String (0, 2, "查询卡夹", 0);
                 break;
             case PC_SET_CARD_NUM:
-                displayGB2312Sting (0, 0, argv, 1);   /* 设置卡夹卡数(67H)帧 */
-                displayGB2312Sting (0, 2, "设置卡夹", 0);
+                displayGB2312String (0, 0, argv, 1);   /* 设置卡夹卡数(67H)帧 */
+                displayGB2312String (0, 2, "设置卡夹", 0);
                 break;
             case PC_GET_DIST:
                 //displayGB2312Char(0,0,argv,1);   /* 测距帧 */
                 //displayGB2312Sting (0, 2, "测距", 0);
                 break;
             case PC_CAR_HAS_COMING:
-                displayGB2312Sting (0, 0, argv, 1);   /* 车以来 */
-                displayGB2312Sting (0, 2, "车已来", 0);
+                displayGB2312String (0, 0, argv, 1);   /* 车以来 */
+                displayGB2312String (0, 2, "车已来", 0);
                 break;
             case PC_CAR_HAS_GONE:
-                displayGB2312Sting (0, 0, argv, 1);   /* 车以走 */
-                displayGB2312Sting (0, 2, "车已走", 0);
+                displayGB2312String (0, 0, argv, 1);   /* 车以走 */
+                displayGB2312String (0, 2, "车已走", 0);
                 break;
             default:
-                displayGB2312Sting (0, 0, argv, 1);   /* 无效信息 */
-                displayGB2312Sting (0, 2, "无效信息", 0);
+                displayGB2312String (0, 0, argv, 1);   /* 无效信息 */
+                displayGB2312String (0, 2, "无效信息", 0);
                 break;
         }
         DEBUG_printf ("%s\n",(char *)checkPriMsg(type_frame));

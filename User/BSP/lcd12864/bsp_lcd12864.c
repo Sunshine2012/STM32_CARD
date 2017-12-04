@@ -390,7 +390,7 @@ void Display_CGRAM( u8 x, u8 y, u8 add_h, u8 add_l )
 * 返回数值 ---> none
 * 功能说明 ---> 可以从显示数组的任意位置starsum开始显示len长度的字符串
 **********************************************************/
-void displayGB2312Sting( u8 x, u8 y, u8 * text, u8 isTurn )
+void displayGB2312String( u8 x, u8 y, u8 * text, u8 isTurn )
 {
     u8 i = 0;
 
@@ -404,10 +404,20 @@ void displayGB2312Sting( u8 x, u8 y, u8 * text, u8 isTurn )
             i++;
         }
     }
+    /*
     if(isTurn)
     {
-        //convertChar(y,0,16,0,0);
+        LCD_Write_Byte( 0x30, 0 );
+        LCD_Set_xy( 0, y );
+        LCD_Write_Byte( 0x0d, 0 );
     }
+    else
+    {
+        LCD_Write_Byte( 0x30, 0 );
+        LCD_Set_xy( 0, y );
+        LCD_Write_Byte( 0x0c, 0 );
+    }
+    */
 }
 
 /**********************************************************
@@ -419,7 +429,7 @@ void displayGB2312Sting( u8 x, u8 y, u8 * text, u8 isTurn )
 * 返回数值 ---> none
 * 功能说明 ---> 可以从显示数组的任意位置starsum开始显示len长度的字符串
 **********************************************************/
-void displayGB2312StingLen( u8 x, u8 y, u8 * text, u8 isTurn, u8 len )
+void displayGB2312StringLen( u8 x, u8 y, u8 * text, u8 isTurn, u8 len )
 {
     u8 i = 0;
 
@@ -491,7 +501,8 @@ void Display_StringFromIndex( u8 x, u8 y, u8 * str, u8 starsum, u8 len )
 void Display_GDRAM( u8 x, u8 y, u8 width, u8 height, u8 * bmp, u8 dis_mode )
 {
     u8 i, j, k;
-    u8 base_x, base_y;                                                          //起始坐标
+    u8 base_x = 0;
+    u8 base_y = 0;                                                          //起始坐标
 
     /******全屏绘图显示******/
     if ( dis_mode )
@@ -630,15 +641,15 @@ void LCD12864_Init( void )
 {
     /*********************************/
     LCD_RST_RESET;                                                              //显示屏复位
-    delay_us( 500 );
+    delay_us( 3500 );
     LCD_RST_SET;
-    delay_us( 500 );
+    delay_us( 3500 );
     LCD_Write_Byte( Instruct_Basic8, 0 );                                       //基本指令，8bit模式,0x30
     LCD_Write_Byte( Instruct_Basic8, 0 );                                       //基本指令，8bit模式,0x30
     LCD_Write_Byte( Open_Display, 0 );                                          //整体显示开，光标关，显示反白关,0x0c
     LCD_Write_Byte( Clear_Display, 0 );                                         //清屏,0x01
     LCD_Write_Byte( Vernier_ShiftRight, 0 );                                    //设定起点，光标右移,0x06
-    delay_us( 3500 );
+    delay_us( 35000 );
     LCD_BAK_RESET;
 
     /*******************************/
@@ -658,7 +669,7 @@ void delay_us( int delay )
 // 反显
 void isTurnShow( u8 x, u8 y )
 {
-    if ( y < 5 )
+    if ( y < 4 )
     {
         LCD_Write_Byte( 0x30, 0 );
         LCD_Set_xy( 0, y * 2 );

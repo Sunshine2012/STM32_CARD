@@ -31,11 +31,11 @@ void FONT_SPI_FLASH_Init(void)
     GPIO_InitTypeDef GPIO_InitStructure;
 
     /* 使能SPI时钟 */
-    FONT_FLASH_SPI_APBxClock_FUN ( FONT_FLASH_SPI_CLK, ENABLE );
+    FONT_FLASH_SPI_APBxClock_FUN ( FONT_FLASH_SPI_CLK | RCC_APB2Periph_GPIOB, ENABLE );
 
     /* 使能SPI引脚相关的时钟 */
-    FONT_FLASH_SPI_CS_APBxClock_FUN ( FONT_FLASH_SPI_CS_CLK|FONT_FLASH_SPI_SCK_CLK|
-                                      FONT_FLASH_SPI_MISO_PIN|FONT_FLASH_SPI_MOSI_PIN, ENABLE );
+    //FONT_FLASH_SPI_CS_APBxClock_FUN ( FONT_FLASH_SPI_CS_PIN|FONT_FLASH_SPI_SCK_PIN|
+    //                                  FONT_FLASH_SPI_MISO_PIN|FONT_FLASH_SPI_MOSI_PIN, ENABLE );
 
     /* 配置SPI的 CS引脚，普通IO即可 */
     GPIO_InitStructure.GPIO_Pin = FONT_FLASH_SPI_CS_PIN;
@@ -45,15 +45,20 @@ void FONT_SPI_FLASH_Init(void)
 
     /* 配置SPI的 SCK引脚*/
     GPIO_InitStructure.GPIO_Pin = FONT_FLASH_SPI_SCK_PIN;
+    GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
     GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF_PP;
     GPIO_Init(FONT_FLASH_SPI_SCK_PORT, &GPIO_InitStructure);
 
     /* 配置SPI的 MISO引脚*/
     GPIO_InitStructure.GPIO_Pin = FONT_FLASH_SPI_MISO_PIN;
+    GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+    GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF_PP;
     GPIO_Init(FONT_FLASH_SPI_MISO_PORT, &GPIO_InitStructure);
 
     /* 配置SPI的 MOSI引脚*/
     GPIO_InitStructure.GPIO_Pin = FONT_FLASH_SPI_MOSI_PIN;
+    GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+    GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF_PP;
     GPIO_Init(FONT_FLASH_SPI_MOSI_PORT, &GPIO_InitStructure);
 
     /* 停止信号 FLASH: CS引脚高电平*/
@@ -67,7 +72,7 @@ void FONT_SPI_FLASH_Init(void)
     SPI_InitStructure.SPI_CPOL = SPI_CPOL_High;
     SPI_InitStructure.SPI_CPHA = SPI_CPHA_2Edge;
     SPI_InitStructure.SPI_NSS = SPI_NSS_Soft;
-    SPI_InitStructure.SPI_BaudRatePrescaler = SPI_BaudRatePrescaler_64;
+    SPI_InitStructure.SPI_BaudRatePrescaler = SPI_BaudRatePrescaler_128;
     SPI_InitStructure.SPI_FirstBit = SPI_FirstBit_MSB;
     SPI_InitStructure.SPI_CRCPolynomial = 7;
     SPI_Init(FONT_FLASH_SPIx , &SPI_InitStructure);

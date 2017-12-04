@@ -120,7 +120,7 @@ void doShowStatusMenu (unsigned char dlg_id, unsigned char isNotRow, void * p_pa
 
     for (i = 0; i < 4; i++)
     {
-        displayGB2312Sting (0, i * 2, g_dlg[dlgId].MsgRow[i], i == isNotRow ? 1 : 0);
+        displayGB2312String (0, i * 2, g_dlg[dlgId].MsgRow[i], i == isNotRow ? 1 : 0);
     }
     isTurnShow(0,isNotRow);
     /*
@@ -157,7 +157,7 @@ void doShowMainMenu (unsigned char dlg_id, unsigned char isNotRow, void * p_parm
     unsigned char key = KEY_NUL;
     for (i = 0; i < 4; i++)
     {
-        displayGB2312Sting (0, i * 2, g_dlg[dlgId].MsgRow[i], i == isNotRow ? 1 : 0);
+        displayGB2312String (0, i * 2, g_dlg[dlgId].MsgRow[i], i == isNotRow ? 1 : 0);
     }
     isTurnShow(0,isNotRow);
     while (DEF_TRUE)
@@ -225,7 +225,7 @@ void doShowMainMenu (unsigned char dlg_id, unsigned char isNotRow, void * p_parm
             g_ucIsUpdateMenu = 0;
             for (i = 0; i < 4; i++)
             {
-                displayGB2312Sting (0, i * 2, g_dlg[dlgId].MsgRow[i], i == isNotRow ? 1 : 0);
+                displayGB2312String (0, i * 2, g_dlg[dlgId].MsgRow[i], i == isNotRow ? 1 : 0);
             }
             isTurnShow(0,isNotRow);
         }
@@ -271,7 +271,7 @@ void doShowCardCountSet (unsigned char dlg_id, unsigned char isNotRow, void * p_
     }
     for (i = 0; i < 4; i++) // 显示
     {
-        displayGB2312Sting (0, i * 2, g_dlg[dlgId].MsgRow[i], i == isNotRow ? 1 : 0);
+        displayGB2312String (0, i * 2, g_dlg[dlgId].MsgRow[i], i == isNotRow ? 1 : 0);
     }
     isTurnShow(0,isNotRow);
     g_ucKeyValues = KEY_NUL;
@@ -288,10 +288,10 @@ void doShowCardCountSet (unsigned char dlg_id, unsigned char isNotRow, void * p_
                     case 2:
                     case 3:
                         isSetMode = 1;      // 进入设置模式,按取消键退出设置，再次按取消键才退回上一级菜单
-                        displayGB2312Sting (0, isNotRow * 2, g_dlg[dlgId].MsgRow[isNotRow], 0);
+                        displayGB2312String (0, isNotRow * 2, g_dlg[dlgId].MsgRow[isNotRow], 0);
                         sprintf(str_aCardCount[isNotRow],"%04d",usaCardCount[isNotRow]);      // 格式化初始化卡数量到字符数组，以供显示,右对齐,高位不足用0补齐
 
-                        displayGB2312StingLen (cardCountShowSeek, isNotRow * 2, str_aCardCount[isNotRow][i], i == seek ? 1 : 0, 4); // 显示4字节
+                        displayGB2312StringLen (cardCountShowSeek, isNotRow * 2, str_aCardCount[isNotRow][i], i == seek ? 1 : 0, 4); // 显示4字节
 
                         isTurnShow(cardCountShowSeek / 2,isNotRow);
                         key = KEY_NUL;      // 不再更新界面了
@@ -326,7 +326,7 @@ void doShowCardCountSet (unsigned char dlg_id, unsigned char isNotRow, void * p_
                     sprintf(str_aCardCount[isNotRow],"%04d",usaCardCount[isNotRow]);        // 格式化初始化卡数量到字符数组，以供显示,右对齐,高位不足用0补齐
                     for (i = 0; i < 4; i++)
                     {
-                        displayGB2312Sting (cardCountShowSeek + i, isNotRow * 2, str_aCardCount[isNotRow][i], i == seek ? 1 : 0);
+                        displayGB2312String (cardCountShowSeek + i, isNotRow * 2, str_aCardCount[isNotRow][i], i == seek ? 1 : 0);
                     }
                     isTurnShow(0,isNotRow);
                     key = KEY_NUL;      // 不再更新界面了
@@ -371,7 +371,7 @@ void doShowCardCountSet (unsigned char dlg_id, unsigned char isNotRow, void * p_
                     sprintf(str_aCardCount[isNotRow],"%04d",usaCardCount[isNotRow]);        // 格式化初始化卡数量到字符数组，以供显示,右对齐,高位不足用0补齐
                     for (i = 0; i < 4; i++)
                     {
-                        displayGB2312Sting (cardCountShowSeek + i, isNotRow * 2, str_aCardCount[isNotRow][i], i == seek ? 1 : 0);
+                        displayGB2312String (cardCountShowSeek + i, isNotRow * 2, str_aCardCount[isNotRow][i], i == seek ? 1 : 0);
                     }
                     isTurnShow(0,isNotRow);
                     key = KEY_NUL;      // 不再更新界面了
@@ -398,7 +398,7 @@ void doShowCardCountSet (unsigned char dlg_id, unsigned char isNotRow, void * p_
                     seek--;
                     for (i = 0; i < 4; i++)
                     {
-                        displayGB2312Sting (cardCountShowSeek + i, isNotRow * 2, str_aCardCount[isNotRow][i], i == seek ? 1 : 0);
+                        displayGB2312String (cardCountShowSeek + i, isNotRow * 2, str_aCardCount[isNotRow][i], i == seek ? 1 : 0);
                     }
                     isTurnShow(0,isNotRow);
                 }
@@ -411,7 +411,7 @@ void doShowCardCountSet (unsigned char dlg_id, unsigned char isNotRow, void * p_
                     seek++;
                     for (i = 0; i < 4; i++)
                     {
-                        displayGB2312Sting (cardCountShowSeek + i, isNotRow * 2, str_aCardCount[isNotRow][i], i == seek ? 1 : 0);
+                        displayGB2312String (cardCountShowSeek + i, isNotRow * 2, str_aCardCount[isNotRow][i], i == seek ? 1 : 0);
                     }
                     isTurnShow(0,isNotRow);
                 }
@@ -453,7 +453,7 @@ void doShowCardCountSet (unsigned char dlg_id, unsigned char isNotRow, void * p_
             g_ucIsUpdateMenu = 0;
             for (i = 0; i < 4; i++)
             {
-                displayGB2312Sting (0, i * 2, g_dlg[dlgId].MsgRow[i], i == isNotRow ? 1 : 0);
+                displayGB2312String (0, i * 2, g_dlg[dlgId].MsgRow[i], i == isNotRow ? 1 : 0);
             }
             isTurnShow(0,isNotRow);
         }
@@ -480,7 +480,7 @@ void doShowStatusOne (unsigned char dlg_id, unsigned char isNotRow, void * p_par
     //LCD12864_Clear();
     for (i = 0; i < 4; i++)
     {
-        displayGB2312Sting (0, i * 2, g_dlg[dlgId].MsgRow[i], i == isNotRow ? 1 : 0);
+        displayGB2312String (0, i * 2, g_dlg[dlgId].MsgRow[i], i == isNotRow ? 1 : 0);
     }
     isTurnShow(0,isNotRow);
     while (DEF_TRUE)
@@ -508,7 +508,7 @@ void doShowStatusOne (unsigned char dlg_id, unsigned char isNotRow, void * p_par
 
             for (i = 0; i < 4; i++)
             {
-                displayGB2312Sting (0, i * 2, g_dlg[dlgId].MsgRow[i], i == isNotRow ? 1 : 0);
+                displayGB2312String (0, i * 2, g_dlg[dlgId].MsgRow[i], i == isNotRow ? 1 : 0);
             }
         }
         g_ucKeyValues = KEY_NUL;
@@ -533,7 +533,7 @@ void doShowStatusTwo (unsigned char dlg_id, unsigned char isNotRow, void * p_par
     //LCD12864_Clear();
     for (i = 0; i < 4; i++)
     {
-        displayGB2312Sting (0, i * 2, g_dlg[dlgId].MsgRow[i], i == isNotRow ? 1 : 0);
+        displayGB2312String (0, i * 2, g_dlg[dlgId].MsgRow[i], i == isNotRow ? 1 : 0);
     }
     isTurnShow(0,isNotRow);
     while (DEF_TRUE)
@@ -563,7 +563,7 @@ void doShowStatusTwo (unsigned char dlg_id, unsigned char isNotRow, void * p_par
 
             for (i = 0; i < 4; i++)
             {
-                displayGB2312Sting (0, i * 2, g_dlg[dlgId].MsgRow[i], i == isNotRow ? 1 : 0);
+                displayGB2312String (0, i * 2, g_dlg[dlgId].MsgRow[i], i == isNotRow ? 1 : 0);
             }
         }
         g_ucKeyValues = KEY_NUL;
@@ -621,7 +621,7 @@ void doShowWorkingSet (unsigned char dlg_id, unsigned char isNotRow, void * p_pa
     }
     for (i = 0; i < 4; i++)
     {
-        displayGB2312Sting (0, i * 2, g_dlg[dlgId].MsgRow[i], i == isNotRow ? 1 : 0);
+        displayGB2312String (0, i * 2, g_dlg[dlgId].MsgRow[i], i == isNotRow ? 1 : 0);
     }
     isTurnShow(0,isNotRow);
     while (DEF_TRUE)
@@ -735,7 +735,7 @@ void doShowWorkingSet (unsigned char dlg_id, unsigned char isNotRow, void * p_pa
             g_ucIsUpdateMenu = 0;
             for (i = 0; i < 4; i++)
             {
-                displayGB2312Sting (0, i * 2, g_dlg[dlgId].MsgRow[i], i == isNotRow ? 1 : 0);
+                displayGB2312String (0, i * 2, g_dlg[dlgId].MsgRow[i], i == isNotRow ? 1 : 0);
             }
             isTurnShow(0,isNotRow);
         }
@@ -766,7 +766,7 @@ void doShowDebugMain (unsigned char dlg_id, unsigned char isNotRow, void * p_par
     //LCD12864_Clear();
     for (i = 0; i < 4; i++)
     {
-        displayGB2312Sting (0, i * 2, g_dlg[dlgId].MsgRow[i], i == isNotRow ? 1 : 0);
+        displayGB2312String (0, i * 2, g_dlg[dlgId].MsgRow[i], i == isNotRow ? 1 : 0);
     }
     isTurnShow(0,isNotRow);
     while (DEF_TRUE)
@@ -862,7 +862,7 @@ void doShowDebugMain (unsigned char dlg_id, unsigned char isNotRow, void * p_par
             g_ucIsUpdateMenu = 0;
             for (i = 0; i < 4; i++)
             {
-                displayGB2312Sting (0, i * 2, g_dlg[dlgId].MsgRow[i], i == isNotRow ? 1 : 0);
+                displayGB2312String (0, i * 2, g_dlg[dlgId].MsgRow[i], i == isNotRow ? 1 : 0);
             }
             isTurnShow(0,isNotRow);
         }
@@ -889,7 +889,7 @@ void doShowDebugOne (unsigned char dlg_id, unsigned char isNotRow, void * p_parm
     //LCD12864_Clear();
     for (i = 0; i < 4; i++)
     {
-        displayGB2312Sting (0, i * 2, g_dlg[dlgId].MsgRow[i], i == isNotRow ? 1 : 0);
+        displayGB2312String (0, i * 2, g_dlg[dlgId].MsgRow[i], i == isNotRow ? 1 : 0);
     }
     isTurnShow(0,isNotRow);
     while (DEF_TRUE)
@@ -936,7 +936,7 @@ void doShowDebugOne (unsigned char dlg_id, unsigned char isNotRow, void * p_parm
             /*
             for (i = 0; i < 4; i++)
             {
-                displayGB2312Sting (0, i * 2, g_dlg[dlgId].MsgRow[i], i == isNotRow ? 1 : 0);
+                displayGB2312String (0, i * 2, g_dlg[dlgId].MsgRow[i], i == isNotRow ? 1 : 0);
             }
             */
             isTurnShow(0,isNotRow);
@@ -963,7 +963,7 @@ void doShowDebugTwo (unsigned char dlg_id, unsigned char isNotRow, void * p_parm
     //LCD12864_Clear();
     for (i = 0; i < 4; i++)
     {
-        displayGB2312Sting (0, i * 2, g_dlg[dlgId].MsgRow[i], i == isNotRow ? 1 : 0);
+        displayGB2312String (0, i * 2, g_dlg[dlgId].MsgRow[i], i == isNotRow ? 1 : 0);
     }
     isTurnShow(0,isNotRow);
     while (DEF_TRUE)
@@ -1052,7 +1052,7 @@ void doShowFaultCode (unsigned char dlg_id, unsigned char isNotRow, void * p_par
                 }
                 for (n = 0; n < 4; n++)
                 {
-                    displayGB2312Sting (0, n * 2, g_dlg_fault_code[j].MsgRow[n], 0);     // 显示故障界面
+                    displayGB2312String (0, n * 2, g_dlg_fault_code[j].MsgRow[n], 0);     // 显示故障界面
                 }
                 goto while_label;
             }

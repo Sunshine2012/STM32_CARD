@@ -216,18 +216,19 @@ extern unsigned char CGROM_YIFUYUAN[];
 /**********************************************************
                       外部功能函数
 **********************************************************/
-void LCD12864_Init( void ); //LCD YB12864ZB初始化
-void LCD12864_Clear( void ); //LCD YB12864ZB清屏
-void LCD_Write_Byte( u8 dat, u8 ord ); //LCD写入一个字节命令或者数据，判断忙标志
-void displayGB2312tring( u8 x, u8 y, u8 * text, u8 isTurn ); //LCD显示字符串
-void displayGB2312StingLen( u8 x, u8 y, u8 * text, u8 isTurn, u8 len );
-void Display_String( u8 x, u8 y, u8 * str, u8 len );
-void Display_StringFromIndex( u8 x, u8 y, u8 * str, u8 starsum, u8 len );
-void Display_CGRAM( u8 x, u8 y, u8 add_h, u8 add_l ); //显示一个CGRAM内容
-void Display_GDRAM( u8 x, u8 y, u8 width, u8 height, u8 * bmp, u8 dis_mode ); //LCD写入GDRAM绘图
-void delay_us( int delay );
-void isTurnShow( u8 x, u8 y );
-void convertChar( u8 x, u8 y, u8 width, u8 yn, u8 f );
+void lcd12864Init( void ); //LCD YB12864ZB初始化
+void lcd12864Clear( void ); //LCD YB12864ZB清屏
+void LCD_WriteByte( u8 dat, u8 ord ); //LCD写入一个字节命令或者数据，判断忙标志
+void displayGB2312String( u8 x, u8 y, u8 * text, u8 isTurn ); //LCD显示字符串
+void displayGB2312StringLen( u8 x, u8 y, u8 * text, u8 isTurn, u8 len );
+void displayString( u8 x, u8 y, u8 * str, u8 len );
+void displayStringFromIndex( u8 x, u8 y, u8 * str, u8 starsum, u8 len );
+void displayCGRAM( u8 x, u8 y, u8 add_h, u8 add_l ); //显示一个CGRAM内容
+void displayGDRAM( u8 x, u8 y, u8 width, u8 height, u8 * bmp, u8 dis_mode ); //LCD写入GDRAM绘图
+void delay_us( int delay );     // 延时
+void isTurnShow( u8 x, u8 y );  // 反显
+void convertChar( u8 x, u8 y, u8 width, u8 yn, u8 f );  // 反显一行
+void lcdInit(void); // 初始化
 
 
 /**********************************************************
