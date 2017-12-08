@@ -230,7 +230,6 @@ void isTurnShow( u8 x, u8 y );  // 反显
 void convertChar( u8 x, u8 y, u8 width, u8 yn, u8 f );  // 反显一行
 void lcdInit(void); // 初始化
 
-
 /**********************************************************
 * 函数功能 ---> 写入自定义字符到LCD的CGRAM
 * 入口参数 ---> *data_code：写入的数组

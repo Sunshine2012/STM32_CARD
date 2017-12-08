@@ -12,13 +12,13 @@
       <ToolsetName>ARM-ADS</ToolsetName>
       <TargetOption>
         <TargetCommonOption>
-          <Device>STM32F103VE</Device>
+          <Device>STM32F103RE</Device>
           <Vendor>STMicroelectronics</Vendor>
           <Cpu>IRAM(0x20000000-0x2000FFFF) IROM(0x8000000-0x807FFFF) CLOCK(8000000) CPUTYPE("Cortex-M3")</Cpu>
           <FlashUtilSpec></FlashUtilSpec>
           <StartupFile>"STARTUP\ST\STM32F10x\startup_stm32f10x_hd.s" ("STM32 High Density Line Startup Code")</StartupFile>
           <FlashDriverDll>UL2CM3(-O14 -S0 -C0 -N00("ARM Cortex-M3") -D00(1BA00477) -L00(4) -FO7 -FD20000000 -FC800 -FN1 -FF0STM32F10x_512 -FS08000000 -FL080000)</FlashDriverDll>
-          <DeviceId>4225</DeviceId>
+          <DeviceId>4229</DeviceId>
           <RegisterFile>stm32f10x.h</RegisterFile>
           <MemoryEnv></MemoryEnv>
           <Cmp></Cmp>
@@ -349,9 +349,9 @@
             <uSurpInc>0</uSurpInc>
             <VariousControls>
               <MiscControls></MiscControls>
-              <Define>STM32F10X_MD,USE_STDPERIPH_DRIVER,uart1</Define>
+              <Define>STM32F10X_HD,USE_STDPERIPH_DRIVER,uart1</Define>
               <Undefine></Undefine>
-              <IncludePath>..\..\Libraries\CMSIS;..\..\Libraries\FWlib\inc;..\..\User;..\..\User\APP;..\..\User\BSP;..\..\User\BSP\led;..\..\User\BSP\usart1;..\..\User\uC-CPU;..\..\User\uC-CPU\ARM-Cortex-M3\RealView;..\..\User\uC-LIB;..\..\User\uCOS-III\Source;..\..\User\uCOS-III\Ports\ARM-Cortex-M3\Generic\RealView;..\..\User\BSP\lcd;..\..\User\BSP\frame;..\..\User\BSP\usart4;..\..\User\BSP\can;..\..\User\BSP\flash;..\..\User\BSP\fontFlash;..\..\User\BSP\dacVoice;..\..\User\BSP\Key;..\..\User\BSP\generalTim;..\..\User\BSP\lcd12864</IncludePath>
+              <IncludePath>..\..\Libraries\CMSIS;..\..\Libraries\FWlib\inc;..\..\User;..\..\User\APP;..\..\User\BSP;..\..\User\BSP\led;..\..\User\BSP\usart1;..\..\User\uC-CPU;..\..\User\uC-CPU\ARM-Cortex-M3\RealView;..\..\User\uC-LIB;..\..\User\uCOS-III\Source;..\..\User\uCOS-III\Ports\ARM-Cortex-M3\Generic\RealView;..\..\User\BSP\lcd;..\..\User\BSP\frame;..\..\User\BSP\usart4;..\..\User\BSP\can;..\..\User\BSP\flash;..\..\User\BSP\fontFlash;..\..\User\BSP\dacVoice;..\..\User\BSP\Key;..\..\User\BSP\generalTim;..\..\User\BSP\lcd12864;..\..\User\BSP\iwdg</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -861,6 +861,11 @@
               <FileName>bsp_font_flash.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\..\User\BSP\fontFlash\bsp_font_flash.c</FilePath>
+            </File>
+            <File>
+              <FileName>iwdg.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\User\BSP\iwdg\iwdg.c</FilePath>
             </File>
           </Files>
         </Group>

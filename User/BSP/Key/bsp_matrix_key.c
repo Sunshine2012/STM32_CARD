@@ -208,10 +208,10 @@ u8 matrix_update_key(void)
                 OSTimeDly ( 1, OS_OPT_TIME_DLY, & err );
                 while(!GPIO_ReadInputDataBit(matrix_key_input[j].GPIO_x, matrix_key_input[j].GPIO_pin))
                 {
-                    OSTimeDly ( 100, OS_OPT_TIME_DLY, & err );
+                    OSTimeDly ( 50, OS_OPT_TIME_DLY, & err );
                     if (g_ucKeyContinu == 1)        // 以下是超时处理
                     {
-                        if (ucTime++ == 2)         // 如果是连续按键,20ms退出,加上进程延时10ms,共210ms发送一次按键
+                        if (ucTime++ == 4)         // 如果是连续按键,20ms退出,加上进程延时10ms,共210ms发送一次按键
                         {
                             ucTime = 0;
                             g_ucKeyContinu = 0;     // 连续模式按键,松开之后直接退出

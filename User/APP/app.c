@@ -476,5 +476,6 @@ void  AppTaskKeyScan ( void * p_arg )
     {                                                   //任务体，通常写成一个死循环
         matrix_update_key();                            // 扫描按键
         OSTimeDly ( 10, OS_OPT_TIME_DLY, & err );       //不断阻塞该任务
+        IWDG_Feed();                                    // 如果产生硬件错误,喂狗
     }
 }

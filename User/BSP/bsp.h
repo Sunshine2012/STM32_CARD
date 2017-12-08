@@ -80,6 +80,8 @@
 #include "menu.h"
 #include "bsp_led.h"
 #include "bsp_usart1.h"
+#include "bsp_lcd12864.h"
+#include "iwdg.h"
 //#include "bsp_usart4.h"
 //#include "bsp_lcd_I2C.h"
 #include "bsp_can.h"

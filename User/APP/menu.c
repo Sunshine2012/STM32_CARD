@@ -291,7 +291,7 @@ void doShowCardCountSet (unsigned char dlg_id, unsigned char isNotRow, void * p_
                         displayGB2312String (0, isNotRow * 2, g_dlg[dlgId].MsgRow[isNotRow], 0);
                         sprintf(str_aCardCount[isNotRow],"%04d",usaCardCount[isNotRow]);      // 格式化初始化卡数量到字符数组，以供显示,右对齐,高位不足用0补齐
 
-                        displayGB2312StringLen (cardCountShowSeek, isNotRow * 2, str_aCardCount[isNotRow][i], i == seek ? 1 : 0, 4); // 显示4字节
+                        displayGB2312StringLen (cardCountShowSeek, isNotRow * 2, &str_aCardCount[isNotRow][i], i == seek ? 1 : 0, 4); // 显示4字节
 
                         isTurnShow(cardCountShowSeek / 2,isNotRow);
                         key = KEY_NUL;      // 不再更新界面了
@@ -326,7 +326,7 @@ void doShowCardCountSet (unsigned char dlg_id, unsigned char isNotRow, void * p_
                     sprintf(str_aCardCount[isNotRow],"%04d",usaCardCount[isNotRow]);        // 格式化初始化卡数量到字符数组，以供显示,右对齐,高位不足用0补齐
                     for (i = 0; i < 4; i++)
                     {
-                        displayGB2312String (cardCountShowSeek + i, isNotRow * 2, str_aCardCount[isNotRow][i], i == seek ? 1 : 0);
+                        displayGB2312String (cardCountShowSeek + i, isNotRow * 2, &str_aCardCount[isNotRow][i], i == seek ? 1 : 0);
                     }
                     isTurnShow(0,isNotRow);
                     key = KEY_NUL;      // 不再更新界面了
@@ -371,7 +371,7 @@ void doShowCardCountSet (unsigned char dlg_id, unsigned char isNotRow, void * p_
                     sprintf(str_aCardCount[isNotRow],"%04d",usaCardCount[isNotRow]);        // 格式化初始化卡数量到字符数组，以供显示,右对齐,高位不足用0补齐
                     for (i = 0; i < 4; i++)
                     {
-                        displayGB2312String (cardCountShowSeek + i, isNotRow * 2, str_aCardCount[isNotRow][i], i == seek ? 1 : 0);
+                        displayGB2312String (cardCountShowSeek + i, isNotRow * 2, &str_aCardCount[isNotRow][i], i == seek ? 1 : 0);
                     }
                     isTurnShow(0,isNotRow);
                     key = KEY_NUL;      // 不再更新界面了
@@ -398,7 +398,7 @@ void doShowCardCountSet (unsigned char dlg_id, unsigned char isNotRow, void * p_
                     seek--;
                     for (i = 0; i < 4; i++)
                     {
-                        displayGB2312String (cardCountShowSeek + i, isNotRow * 2, str_aCardCount[isNotRow][i], i == seek ? 1 : 0);
+                        displayGB2312String (cardCountShowSeek + i, isNotRow * 2, &str_aCardCount[isNotRow][i], i == seek ? 1 : 0);
                     }
                     isTurnShow(0,isNotRow);
                 }
@@ -411,7 +411,7 @@ void doShowCardCountSet (unsigned char dlg_id, unsigned char isNotRow, void * p_
                     seek++;
                     for (i = 0; i < 4; i++)
                     {
-                        displayGB2312String (cardCountShowSeek + i, isNotRow * 2, str_aCardCount[isNotRow][i], i == seek ? 1 : 0);
+                        displayGB2312String (cardCountShowSeek + i, isNotRow * 2, &str_aCardCount[isNotRow][i], i == seek ? 1 : 0);
                     }
                     isTurnShow(0,isNotRow);
                 }

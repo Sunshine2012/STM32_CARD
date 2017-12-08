@@ -173,7 +173,7 @@ void  BSP_Init (void)
     //I2C_Configuration();      // 初始化IIC
     //LCD_GPIO_Config();        // 初始化屏幕
     lcdInit();
-
+    IWDG_Init(6,625);           // 分频数为256,重载值为625,溢出时间为8s   (1/40000)* 256 * 625  = 4s          40000代表着独立看门狗的RC振荡器为40KHz
 }
 
 
